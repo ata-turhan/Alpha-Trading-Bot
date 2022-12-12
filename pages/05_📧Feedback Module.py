@@ -47,7 +47,7 @@ contact_form = """
      <input type="email" name="email" placeholder="Your email" required>
      <textarea name="message" placeholder="Your message here"></textarea>
      <button type="submit">Send</button>
-     <input type="hidden" name="_next" value="http://localhost:8501">
+     <input type="hidden" name="_next" value="https://trading-bot.streamlit.app/">
 </form>
 """
 
