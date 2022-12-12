@@ -85,8 +85,53 @@ else:
                             st.session_state["predictions"] = correlation_trading(ohlcv1 = correlated_asset_ohclv, ohlcv2 = st.session_state["ohlcv"], downward_movement = downward_movement, upward_movement = 0.01)
                             if st.session_state["predictions"] is not None:
                                 st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
-                                st.success("Predictions of the strategy created and saved successfully")                            
-        if strategy_type == "AI Trading":
+                                st.success("Predictions of the strategy created and saved successfully")     
+        elif strategy_type == "Indicator Trading":    
+            indicator = st.selectbox("Select the indicator you want to use: ", ["<Select>",'RSI', 'SMA', "EMA", "Bollinger Bands"])
+            if indicator != "<Select>":
+                if indicator == "RSI":
+                    col1, col2= st.columns([1,1])
+                    with col1:
+                        oversold = st.number_input("Please enter the oversold value", value = 30)   
+                    with col2:
+                        overbought = st.number_input("Please enter the overbought value", value = 70) 
+                    if st.button("Create the predictions of the strategy."):    
+                        st.session_state["predictions"] = rsi_trading(ohlcv = st.session_state["ohlcv"], oversold = oversold,
+                                                                 overbought = overbought)
+                if indicator == "SMA":
+                    col1, col2= st.columns([1,1])
+                    with col1:
+                        short_smo = st.number_input("Please enter the short moving average value", value = 50)   
+                    with col2:
+                        long_smo = st.number_input("Please enter the long moving average value", value = 200) 
+                    strategy_created = st.button("Create the predictions of the strategy.")
+                    if strategy_created:    
+                        st.session_state["predictions"] = sma_trading(ohlcv = st.session_state["ohlcv"], short_mo = short_smo,
+                                                                 long_mo = long_smo)
+                if indicator == "EMA":
+                    col1, col2= st.columns([1,1])
+                    with col1:
+                        short_emo = st.number_input("Please enter the short moving average value", value = 50)   
+                    with col2:
+                        long_emo = st.number_input("Please enter the long moving average value", value = 200) 
+                    strategy_created = st.button("Create the predictions of the strategy.")
+                    if strategy_created:    
+                        st.session_state["predictions"] = ema_trading(ohlcv = st.session_state["ohlcv"], short_mo = short_emo,
+                                                                 long_mo = long_emo)
+                if indicator == "Bollinger Bands":
+                    col1, col2= st.columns([1,1])
+                    with col1:
+                        window = st.number_input("Please enter the window value", value = 20)   
+                    with col2:
+                        window_dev = st.number_input("Please enter the window deviation value", value = 2) 
+                    strategy_created = st.button("Create the predictions of the strategy.")
+                    if strategy_created:    
+                        st.session_state["predictions"] = bb_trading(ohlcv = st.session_state["ohlcv"], window = window,
+                                                                 window_dev = window_dev)
+                if st.session_state["predictions"] is not None and strategy_created: 
+                    st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
+                    st.success("Predictions of the strategy created and saved successfully")        
+        elif strategy_type == "AI Trading":
             analysis_type = st.selectbox("Select the analyse type you want to apply ai for: ", 
                                         ["<Select>","Technical Analysis", "Sentiment Analysis"])
             if analysis_type == "Sentiment Analysis":

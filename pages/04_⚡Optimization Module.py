@@ -65,7 +65,7 @@ else:
     stop_loss_ranges = st.slider('Select a range for stop loss values', 0, 50, (5, 25))
     stop_loss_values = list(range(stop_loss_ranges[0], stop_loss_ranges[1]))
     st.markdown("<br>", unsafe_allow_html=True)
-    leverage_ranges = st.slider('Select a range for leverage values', 1, 20, (5, 10))
+    leverage_ranges = st.slider('Select a range for leverage values', 1, 20, (1, 5))
     leverage_values = list(range(leverage_ranges[0], leverage_ranges[1]))
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2 = st.columns([1,1])

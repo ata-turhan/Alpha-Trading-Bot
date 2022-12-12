@@ -73,35 +73,35 @@ else:
         st.markdown("<br>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1,1,1])
         with col1:
-            hold_label = int(st.text_input("Enter hold label (Default is 0)", "0"))
+            hold_label = st.number_input("Enter the hold label", value = 0, step = 1)
             st.session_state["backtest_configuration"]["hold_label"] = hold_label
         with col2:
-            buy_label = int(st.text_input("Enter buy label (Default is 1)", "1"))
+            buy_label = st.number_input("Enter the buy label", value = 1, step = 1)
             st.session_state["backtest_configuration"]["buy_label"] = buy_label
         with col3:
-            sell_label = int(st.text_input("Enter sell label (Default is 2)", "2"))
+            sell_label = st.number_input("Enter the sell label", value = 2, step = 1)
             st.session_state["backtest_configuration"]["sell_label"] = sell_label
         st.markdown("<br>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1,1,1])
         with col1:
-            initial_capital = float(st.text_input("Enter the initial capital (Default is 1000)", "1000"))
+            initial_capital = st.number_input("Enter the initial capital", value = 1000.0, step = 1000.0) 
             st.session_state["backtest_configuration"]["initial_capital"] = initial_capital
         with col2:
-            risk_free_rate = float(st.text_input("Enter the risk free rate (Default is 0.01", "0.01")) / 252
+            risk_free_rate = st.number_input("Enter the risk free rate", value = 0.01, step = 0.01) / 252
             st.session_state["backtest_configuration"]["risk_free_rate"] = risk_free_rate
         with col3:
-            commission = float(st.text_input("Enter the commission (Default is 1)", "1"))
+            commission = st.number_input("Enter the commission rate", value = 1.0, step = 1.0)
             st.session_state["backtest_configuration"]["commission"] = commission
         st.markdown("<br>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1,1,1])
         with col1:
-            alpha = float(st.text_input("Enter the alpha (Default is 0.05)", "0.05"))
+            alpha = st.number_input("Enter the alpha", value = 0.05, step = 0.01)
             st.session_state["backtest_configuration"]["alpha"] = alpha
         with col2:
-            threshold = float(st.text_input("Enter the threshold (Default is 0)", "0"))
+            threshold = st.number_input("Enter the threshold", value = 0.0, step = 1.0)
             st.session_state["backtest_configuration"]["threshold"] = threshold
         with col3:
-            order = float(st.text_input("Enter the order (Default is 1)", "1"))
+            order = st.number_input("Enter the order", value = 1.0, step = 1.0)
             st.session_state["backtest_configuration"]["order"] = order
         st.markdown("<br>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1,1,1])
@@ -109,10 +109,10 @@ else:
             order_type = st.selectbox("Select the order type", ["market", "limit"])
             st.session_state["backtest_configuration"]["order_type"] = order_type
         with col2:
-            miss_rate = float(st.text_input("Enter the trade miss rate (Default is 10)", "10"))
+            miss_rate = st.number_input("Enter the trade miss rate", value = 10, step = 1)
             st.session_state["backtest_configuration"]["miss_rate"] = miss_rate
         with col3:
-            precision_point = int(st.text_input("Enter the precision point to show decimal numbers (Default is 3)", "3"))
+            precision_point = st.number_input("Enter the precision point to show decimal numbers", value = 3, step = 1)
             st.session_state["backtest_configuration"]["precision_point"] = precision_point
         st.markdown("<br>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1,1,1])
@@ -131,15 +131,22 @@ else:
             short_fee = st.number_input("Enter the short fee (Default is 1)", value = 1.0, step = 1.0)
             st.session_state["backtest_configuration"]["short_fee"] = short_fee
         with col2:
-            take_profit = st.number_input("Enter the take profit percentage (Default is 10)", value = 1.0, step = 1.0)
+            take_profit = st.number_input("Enter the take profit percentage (Default is 10)", value = 5.0, step = 1.0)
             st.session_state["backtest_configuration"]["take_profit"] = take_profit
         with col3:
-            stop_loss = st.number_input("Enter the stop loss percentage (Default is 10)", value = 1.0, step = 1.0)
+            stop_loss = st.number_input("Enter the stop loss percentage (Default is 10)", value = 5.0, step = 1.0)
             st.session_state["backtest_configuration"]["stop_loss"] = stop_loss
         st.markdown("<br>", unsafe_allow_html=True)
 
-        leverage = float(st.text_input("Enter the leverage multiplier (Default is 1)", "1"))
-        st.session_state["backtest_configuration"]["leverage"] = leverage
+        col1, col2, col3 = st.columns([1,1,1])
+        with col1:
+            leverage = st.number_input("Enter the leverage multiplier (Default is 1)", value = 1.0, step = 1.0)
+            st.session_state["backtest_configuration"]["leverage"] = leverage
+        with col2:
+            pass
+        with col3:
+            pass
+
         st.markdown("<br>", unsafe_allow_html=True)
 
     if st.button("Run the backtest"):

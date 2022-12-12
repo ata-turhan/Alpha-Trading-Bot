@@ -118,7 +118,9 @@ if data_fetch_way == "Fetch over the internet":
             st.error("Please fill all the areas.")
         else:    
             ohlcv = st.session_state["ohlcv"]
-            if ohlcv is not None:
+            if ohlcv is None:
+                st.error("Data could not be downloaded.")
+            else:
                 st.success("Data fetched successfully")
                 st.markdown("<br>", unsafe_allow_html=True)
                 smooth_method = st.selectbox("Which way do you want to smooth the signal?", ["<Select>", "None", 
