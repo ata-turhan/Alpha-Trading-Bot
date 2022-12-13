@@ -130,7 +130,43 @@ else:
                                                                  window_dev = window_dev)
                 if st.session_state["predictions"] is not None and strategy_created: 
                     st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
-                    st.success("Predictions of the strategy created and saved successfully")        
+                    st.success("Predictions of the strategy created and saved successfully")   
+        elif strategy_type == "Momentum Trading":    
+            indicator = st.selectbox("Select the momentum strategy you want to use: ", ["<Select>",'Momentum Day Trading',
+                                    "Momentum Percentage Trading"])
+            if indicator != "<Select>":
+                if indicator == "Momentum Day Trading":  
+                    col1, col2, col3 = st.columns([1,1,1])
+                    with col1:
+                        up_day = st.number_input("Please enter the up day number", value = 3)   
+                    with col2:
+                        down_day = st.number_input("Please enter the down day number", value = 3) 
+                    with col3:
+                        reverse = st.checkbox("Reverse the logic of the strategy")
+                    strategy_created = st.button("Create the predictions of the strategy.")
+                    if strategy_created:    
+                        st.session_state["predictions"] = momentum_day_trading(ohlcv = st.session_state["ohlcv"], up_day = up_day, 
+                                                                                down_day = down_day, reverse = reverse)
+                if indicator == "Momentum Percentage Trading":  
+                    col1, col2, col3, col4, col5 = st.columns([1,1,1,1,1])
+                    with col1:
+                        up_day = st.number_input("Please enter the up day number", value = 3)  
+                    with col2:
+                        up_percentage = st.number_input("Please enter the up percentage number", value = 3) 
+                    with col3:
+                        down_day = st.number_input("Please enter the down day number", value = 3) 
+                    with col4:
+                        down_percentage = st.number_input("Please enter the down percentage number", value = 3) 
+                    with col5:
+                        reverse = st.checkbox("Reverse the logic of the strategy")
+                    strategy_created = st.button("Create the predictions of the strategy.")
+                    if strategy_created:    
+                        st.session_state["predictions"] = momentum_percentage_trading(ohlcv = st.session_state["ohlcv"], 
+                            up_percentage = up_percentage, up_day = up_day, down_percentage = down_percentage, down_day = down_day,
+                            reverse = reverse)
+                if st.session_state["predictions"] is not None and strategy_created: 
+                    st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
+                    st.success("Predictions of the strategy created and saved successfully")   
         elif strategy_type == "AI Trading":
             analysis_type = st.selectbox("Select the analyse type you want to apply ai for: ", 
                                         ["<Select>","Technical Analysis", "Sentiment Analysis"])

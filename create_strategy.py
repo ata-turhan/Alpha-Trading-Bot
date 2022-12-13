@@ -75,6 +75,38 @@ def bb_trading(ohlcv:pd.DataFrame, window:int=20, window_dev:int=2):
     return predictions
 
 
+def momentum_day_trading(ohlcv:pd.DataFrame, up_day:int=3, down_day:int=3, reverse:bool=False):
+    predictions = pd.DataFrame(index=ohlcv.index, data={"Predictions":np.zeros((len(ohlcv),))})
+    ohlcv["change"] = ohlcv["Close"].pct_change()
+    for i in range(1, len(ohlcv)-up_day):
+        open_position = True
+        for j in range(up_day):
+            if ohlcv.at[ohlcv.index[i+j], "change"] <= 0:
+                open_position = False
+        if open_position:
+            predictions.at[ohlcv.index[i+1], "Predictions"] = 1 if not reverse else 2
+        open_position = True
+        for j in range(down_day):
+            if ohlcv.at[ohlcv.index[i+j], "change"] >= 0:
+                open_position = False
+        if open_position:
+            predictions.at[ohlcv.index[i+1], "Predictions"] = 2 if not reverse else 1
+    return predictions
+
+
+def momentum_percentage_trading(ohlcv:pd.DataFrame, up_percentage:int=5, up_day:int=3, down_percentage:int=5, 
+                         down_day:int=3, reverse:bool=False):
+    predictions = pd.DataFrame(index=ohlcv.index, data={"Predictions":np.zeros((len(ohlcv),))})
+    for i in range(1, len(ohlcv)-up_day-1):
+        if (ohlcv.at[ohlcv.index[i+up_day], "Close"] - ohlcv.at[ohlcv.index[i], "Close"]) \
+                / ohlcv.at[ohlcv.index[i], "Close"] * 100 >= up_percentage:
+            predictions.at[ohlcv.index[i+up_day+1], "Predictions"] = 1 if not reverse else 2
+        elif (ohlcv.at[ohlcv.index[i+down_day], "Close"] - ohlcv.at[ohlcv.index[i], "Close"]) \
+                / ohlcv.at[ohlcv.index[i], "Close"] * 100 <= -down_percentage:
+            predictions.at[ohlcv.index[i+down_day+1], "Predictions"] = 2 if not reverse else 1
+    return predictions
+
+
 def ai_trading(ai_model:str, train_data:pd.DataFrame, test_data:pd.DataFrame):
     with st.spinner('Data preprocessing...'):
         s = classification.setup(data = train_data, 
