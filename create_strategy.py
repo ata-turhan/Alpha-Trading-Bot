@@ -8,6 +8,7 @@ import numpy as np
 from pycaret import classification
 import ta
 from ta.volatility import BollingerBands
+from Pattern import *
 
 
 def correlation_trading(ohlcv1:pd.DataFrame, ohlcv2:pd.DataFrame, downward_movement:float=0.01, upward_movement:float=0.01):
@@ -133,4 +134,26 @@ def ai_trading(ai_model:str, train_data:pd.DataFrame, test_data:pd.DataFrame):
     print(tuned_model)
     predictions = classification.predict_model(tuned_model, data = test_data)
     return predictions["Label"]
+
+
+def candlestick_trading(ohlcv:pd.DataFrame, buy_pattern:str, sell_pattern:str):
+    candlestick_func_dict = {"Doji":doji, "Gravestone Doji":gravestone_doji, "Dragonfly Doji":dragonfly_doji, 
+                        "Longleg Doji":longleg_doji, "Hammer Hanging Man":Hammer_Hanging_Man, "Inverse Hammer":Inv_Hammer,
+                        "Spinning Top":Spinning_Top, "Dark Cloud Cover":DarkCloudCover, "Piercing Pattern":PiercingPattern,
+                        "Bullish Marubozu":Marubozu, "Bearish Marubozu":Marubozu, "Bullish Engulfing":Engulf,
+                        "Bearish Engulfing":Engulf, "Bullish Harami":Harami, "Bearish Harami":Harami}
+    candlestick_column_dict = {"Doji":"Doji", "Gravestone Doji":"Gravestone", "Dragonfly Doji":"Dragonfly", 
+                        "Longleg Doji":"LongLeg", "Hammer Hanging Man":"Hammer", "Inverse Hammer":"Inv_Hammer",
+                        "Spinning Top":"Spinning", "Dark Cloud Cover":"DarkCloud", "Piercing Pattern":"Piercing",
+                        "Bullish Marubozu":"Bull_Marubozu", "Bearish Marubozu":"Bear_Marubouzu", "Bullish Engulfing":"BullEngulf",
+                        "Bearish Engulfing":"BearEngulf", "Bullish Harami":"BullHarami", "Bearish Harami":"BearHarami"}
+    candlestick_func_dict[buy_pattern](ohlcv)
+    candlestick_func_dict[sell_pattern](ohlcv)
+    predictions = pd.DataFrame(index=ohlcv.index, data={"Predictions":np.zeros((len(ohlcv),))})
+    for i in range(len(ohlcv)-1):
+        if ohlcv.at[ohlcv.index[i], candlestick_column_dict[buy_pattern]] == True:
+            predictions.at[ohlcv.index[i+1], "Predictions"] = 1 
+        elif ohlcv.at[ohlcv.index[i], candlestick_column_dict[sell_pattern]] == True:
+            predictions.at[ohlcv.index[i+1], "Predictions"] = 2 
+    return predictions
 

@@ -211,7 +211,25 @@ else:
                                 if st.session_state["predictions"] is not None:
                                     st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
                                     st.success("Predictions of the strategy created and saved successfully") 
-                        
+        elif strategy_type == "Candlestick Pattern Trading":    
+            col1, col2= st.columns([1,1])
+            with col1:
+                buy_pattern = st.selectbox("Select the pattern you want to use for a buy signal:", ["<Select>", "Doji", 
+                "Gravestone Doji", "Dragonfly Doji", "Longleg Doji", "Hammer Hanging Man", "Inverse Hammer", "Spinning Top", 
+                "Dark Cloud Cover", "Piercing Pattern", "Bullish Marubozu", "Bullish Engulfing", "Bullish Harami"])   
+            with col2:
+                sell_pattern = st.selectbox("Select the pattern you want to use for a sell signal:", ["<Select>", "Doji", 
+                "Gravestone Doji", "Dragonfly Doji", "Longleg Doji", "Hammer Hanging Man", "Inverse Hammer", "Spinning Top", 
+                "Dark Cloud Cover", "Piercing Pattern", "Bearish Marubozu", "Bearish Engulfing", "Bearish Harami"])
+            if st.button("Create the predictions of the strategy."):    
+                if buy_pattern == "<Select>" or sell_pattern == "<Select>":
+                    st.warning("Please select the patterns for buy and sell signals.")
+                else:
+                    st.session_state["predictions"] = candlestick_trading(ohlcv = st.session_state["ohlcv"], buy_pattern = buy_pattern,
+                                                                 sell_pattern = sell_pattern)
+                    if st.session_state["predictions"] is not None: 
+                        st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
+                        st.success("Predictions of the strategy created and saved successfully")                           
 
 
 
