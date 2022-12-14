@@ -9,6 +9,7 @@ from pycaret import classification
 import ta
 from ta.volatility import BollingerBands
 from Pattern import *
+from sklearn.cluster import AgglomerativeClustering
 
 
 def correlation_trading(ohlcv1:pd.DataFrame, ohlcv2:pd.DataFrame, downward_movement:float=0.01, upward_movement:float=0.01):
@@ -155,5 +156,54 @@ def candlestick_trading(ohlcv:pd.DataFrame, buy_pattern:str, sell_pattern:str):
             predictions.at[ohlcv.index[i+1], "Predictions"] = 1 
         elif ohlcv.at[ohlcv.index[i], candlestick_column_dict[sell_pattern]] == True:
             predictions.at[ohlcv.index[i+1], "Predictions"] = 2 
+    return predictions
+
+
+def calculate_support_resistance(df, rolling_wave_length, num_clusters, area):
+    date = df.index
+    # Reset index for merging
+    df.reset_index(inplace=True)
+    # Create min and max waves
+    max_waves_temp = df.High.rolling(rolling_wave_length).max().rename('waves')
+    min_waves_temp = df.Low.rolling(rolling_wave_length).min().rename('waves')
+    max_waves = pd.concat([max_waves_temp, pd.Series(np.zeros(len(max_waves_temp)) + 1)], axis=1)
+    min_waves = pd.concat([min_waves_temp, pd.Series(np.zeros(len(min_waves_temp)) + -1)], axis=1)
+    #  Remove dups
+    max_waves.drop_duplicates('waves', inplace=True)
+    min_waves.drop_duplicates('waves', inplace=True)
+    #  Merge max and min waves
+    waves =  pd.concat([max_waves, min_waves]).sort_index()
+    waves = waves[waves[0] != waves[0].shift()].dropna()
+    # Find Support/Resistance with clustering using the rolling stats
+    # Create [x,y] array where y is always 1
+    x = np.concatenate((waves.waves.values.reshape(-1, 1),
+                        (np.zeros(len(waves)) + 1).reshape(-1, 1)), axis=1)
+    # Initialize Agglomerative Clustering
+    cluster = AgglomerativeClustering(n_clusters=num_clusters, affinity='euclidean', linkage='ward')
+    cluster.fit_predict(x)
+    waves['clusters'] = cluster.labels_
+    # Get index of the max wave for each cluster
+    if area == "resistance":
+        waves2 = waves.loc[waves.groupby('clusters')['waves'].idxmax()]
+    if area == "support":
+        waves2 = waves.loc[waves.groupby('clusters')['waves'].idxmin()]
+    df.index = date
+    df.drop("Date", axis=1, inplace=True)
+    waves2.waves.drop_duplicates(keep='first', inplace=True)
+    return waves2.reset_index().waves
+
+
+def support_resistance_trading(ohlcv:pd.DataFrame, rolling_wave_length:int=20, num_clusters:int=4):
+    predictions = pd.DataFrame(index=ohlcv.index, data={"Predictions":np.zeros((len(ohlcv),))})
+    supports = calculate_support_resistance(ohlcv, rolling_wave_length, num_clusters, "support")
+    resistances = calculate_support_resistance(ohlcv, rolling_wave_length, num_clusters, "resistance")
+    for i in range(rolling_wave_length*2+num_clusters, len(ohlcv)-1):
+        for support in supports:
+            if ohlcv.at[ohlcv.index[i-1], "Close"] >= support and ohlcv.at[ohlcv.index[i], "Close"] < support:
+                predictions.at[ohlcv.index[i+1], "Predictions"] = 2
+        if predictions.at[ohlcv.index[i+1], "Predictions"] == 0: 
+            for resistance in resistances:
+                if ohlcv.at[ohlcv.index[i-1], "Close"] <= resistance and ohlcv.at[ohlcv.index[i], "Close"] > resistance:
+                    predictions.at[ohlcv.index[i+1], "Predictions"] = 1
     return predictions
 

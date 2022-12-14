@@ -67,7 +67,7 @@ else:
                     st.success("The predictions of strategy fetched successfully")
     elif strategy_fetch_way == "Create a strategy":
         strategy_type = st.selectbox("Which strategy do you want to create: ", ["<Select>", "Correlation Trading", 
-        "Indicator Trading", "Momentum Trading", "AI Trading", "Harmonic Trading", "Candlestick Pattern Trading"])
+        "Indicator Trading", "Momentum Trading", "AI Trading", "Candlestick Pattern Trading", "Support-Resistance Trading"])
         if strategy_type == "Correlation Trading":
             market = st.selectbox("Select the correlated market: ", ["<Select>",'Stocks & ETFs', 'Forex', "Crypto"])
             if market != "<Select>":
@@ -229,7 +229,20 @@ else:
                                                                  sell_pattern = sell_pattern)
                     if st.session_state["predictions"] is not None: 
                         st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
-                        st.success("Predictions of the strategy created and saved successfully")                           
+                        st.success("Predictions of the strategy created and saved successfully")
+        elif strategy_type == "Support-Resistance Trading":    
+            col1, col2= st.columns([1,1])
+            with col1:
+                rolling_wave_length = st.number_input("Please enter the rolling wave length", value = 20)  
+            with col2:
+                num_clusters = st.number_input("Please enter the cluster numbers", value = 4)
+            if st.button("Create the predictions of the strategy."):    
+                st.session_state["predictions"] = support_resistance_trading(ohlcv = st.session_state["ohlcv"], 
+                                                                                rolling_wave_length = rolling_wave_length, 
+                                                                                num_clusters = num_clusters)
+                if st.session_state["predictions"] is not None: 
+                    st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
+                    st.success("Predictions of the strategy created and saved successfully")                           
 
 
 
