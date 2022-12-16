@@ -179,4 +179,33 @@ def create_train_test_data(market:pd.DataFrame):
     return X_train, y_train, X_test, y_test
 
 
+def plot_confusion_matrix(cm, labels, title):
+    # cm : confusion matrix list(list)
+    # labels : name of the data list(str)
+    # title : title for the heatmap
+    data = go.Heatmap(z=cm, y=labels, x=labels)
+    annotations = []
+    for i, row in enumerate(cm):
+        for j, value in enumerate(row):
+            annotations.append(
+                {
+                    "x": labels[i],
+                    "y": labels[j],
+                    "font": {"color": "white"},
+                    "text": str(value),
+                    "xref": "x1",
+                    "yref": "y1",
+                    "showarrow": False
+                }
+            )
+    layout = {
+        "title": title,
+        "xaxis": {"title": "Predicted value"},
+        "yaxis": {"title": "Real value"},
+        "annotations": annotations
+    }
+    fig = go.Figure(data=data, layout=layout)
+    return fig
+
+
 

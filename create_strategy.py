@@ -128,13 +128,12 @@ def ai_trading(ai_model:str, train_data:pd.DataFrame, test_data:pd.DataFrame):
         model = classification.create_model(ai_model)
     with st.spinner('Tune the model...'):
         tuned_model = classification.tune_model(model, optimize = "F1", n_iter = 5, choose_better = True)
+    with st.spinner('Finalizing the model...'):
+        final_model = classification.finalize_model(tuned_model);
     # default model
-    print(model)
-    print("\n\n")
-    # tuned model
-    print(tuned_model)
-    predictions = classification.predict_model(tuned_model, data = test_data)
-    return predictions["Label"]
+    model_predictions = classification.predict_model(tuned_model, data = test_data)
+    predictions = pd.DataFrame(index=test_data.index, data={"Predictions":model_predictions["Label"]})
+    return  predictions
 
 
 def candlestick_trading(ohlcv:pd.DataFrame, buy_pattern:str, sell_pattern:str):
@@ -206,4 +205,18 @@ def support_resistance_trading(ohlcv:pd.DataFrame, rolling_wave_length:int=20, n
                 if ohlcv.at[ohlcv.index[i-1], "Close"] <= resistance and ohlcv.at[ohlcv.index[i], "Close"] > resistance:
                     predictions.at[ohlcv.index[i+1], "Predictions"] = 1
     return predictions
+
+
+def show_predictions_on_chart(ohlcv:pd.DataFrame, predictions:np.array, ticker:str):
+    fig = go.Figure()
+    buy_labels = (predictions==1)
+    sell_labels = (predictions==2)
+    fig.add_trace(go.Scatter(x=ohlcv.index, y=ohlcv["Close"], mode='lines', 
+                             line=dict(color="#222266"), name='Close Price'))
+    fig.add_trace(go.Scatter(x=ohlcv[buy_labels].index, y=ohlcv[buy_labels]["Close"],
+                             mode='markers', marker=dict(size=6, color="#2cc05c"), name = "Buy"))
+    fig.add_trace(go.Scatter(x=ohlcv[sell_labels].index, y=ohlcv[sell_labels]["Close"],
+                             mode='markers', marker=dict(size=6, color='#f62728'), name = "Sell"))
+    fig.update_layout(title=f"<span style='font-size: 30px;'><b>Close Price with Predictions of {ticker}</b></span>", title_x=0.5)
+    st.plotly_chart(fig, use_container_width=True)
 

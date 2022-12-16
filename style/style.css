@@ -1,3 +1,6 @@
+body {
+  font-weight: bold;
+}
 /* Style inputs with type="text", type="email"and textareas */
 input[type=text], input[type=email], textarea {
   width: 100%; /* Full width */
