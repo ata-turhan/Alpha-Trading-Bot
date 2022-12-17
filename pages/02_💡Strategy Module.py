@@ -41,11 +41,15 @@ add_bg_from_local('data/background.png')
 if "ohlcv" not in st.session_state:
     st.session_state["ohlcv"] = None
 if "strategies" not in st.session_state:
-    st.session_state["strategies"] = []
+    st.session_state.strategies = dict()
 if "predictions" not in st.session_state:
     st.session_state["predictions"] = None
 if "ticker" not in st.session_state:
     st.session_state["ticker"] = ""
+if "mix" not in st.session_state:
+    st.session_state.mix = []
+if "added_keys" not in st.session_state:
+    st.session_state.added_keys = set()
 correlated_asset = None
 
 
@@ -93,6 +97,7 @@ else:
                             st.session_state["predictions"] = correlation_trading(ohlcv1 = correlated_asset_ohclv, ohlcv2 = st.session_state["ohlcv"], downward_movement = downward_movement, upward_movement = 0.01)
                             if st.session_state["predictions"] is not None:
                                 st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
+                                st.session_state["strategies"][f"Correlation Trading-{len(st.session_state['strategies'])}"] = st.session_state["predictions"]
                                 st.success("Predictions of the strategy created and saved successfully")     
         elif strategy_type == "Indicator Trading":    
             indicator = st.selectbox("Select the indicator you want to use: ", ["<Select>",'RSI', 'SMA', "EMA", "Bollinger Bands"])
@@ -103,7 +108,8 @@ else:
                         oversold = st.number_input("Please enter the oversold value", value = 30)   
                     with col2:
                         overbought = st.number_input("Please enter the overbought value", value = 70) 
-                    if st.button("Create the predictions of the strategy."):    
+                    strategy_created = st.button("Create the predictions of the strategy.")   
+                    if strategy_created:
                         st.session_state["predictions"] = rsi_trading(ohlcv = st.session_state["ohlcv"], oversold = oversold,
                                                                  overbought = overbought)
                 if indicator == "SMA":
@@ -139,6 +145,7 @@ else:
                                                                  window_dev = window_dev)
                 if st.session_state["predictions"] is not None and strategy_created: 
                     st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
+                    st.session_state["strategies"][f"Indicator Trading-{len(st.session_state['strategies'])}"] = st.session_state["predictions"]
                     st.success("Predictions of the strategy created and saved successfully")   
         elif strategy_type == "Momentum Trading":    
             indicator = st.selectbox("Select the momentum strategy you want to use: ", ["<Select>",'Momentum Day Trading',
@@ -176,6 +183,8 @@ else:
                             reverse = reverse)
                 if st.session_state["predictions"] is not None and strategy_created: 
                     st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
+                    st.write(type(st.session_state["strategies"]))
+                    st.session_state["strategies"][f"Momentum Trading-{len(st.session_state['strategies'])}"] = st.session_state["predictions"]
                     st.success("Predictions of the strategy created and saved successfully")   
         elif strategy_type == "AI Trading":
             analysis_type = st.selectbox("Select the analyse type you want to apply ai for: ", 
@@ -221,6 +230,7 @@ else:
                                 st.session_state["predictions"] = ai_trading(ai_model = pycaret_abbreviations[ai_model], train_data=train_data, test_data=test_data)                            
                                 if st.session_state["predictions"] is not None:
                                     st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
+                                    st.session_state["strategies"][f"AI Trading-{len(st.session_state['strategies'])}"] = st.session_state["predictions"]
                                     st.success("Predictions of the strategy created and saved successfully") 
                                     target_names = ['Hold', 'Buy', 'Sell']                                
                                     cm = confusion_matrix(test_data["Label"], st.session_state["predictions"]["Predictions"])
@@ -261,6 +271,7 @@ else:
                                                                  sell_pattern = sell_pattern)
                     if st.session_state["predictions"] is not None: 
                         st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
+                        st.session_state["strategies"][f"Candlestick Pattern Trading-{len(st.session_state['strategies'])}"] = st.session_state["predictions"]
                         st.success("Predictions of the strategy created and saved successfully")
         elif strategy_type == "Support-Resistance Trading":    
             col1, col2= st.columns([1,1])
@@ -275,11 +286,28 @@ else:
                                                                                 num_clusters = num_clusters)
                 if st.session_state["predictions"] is not None: 
                     st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
+                    st.session_state["strategies"][f"Support-Resistance-Trading-{len(st.session_state['strategies'])}"] = st.session_state["predictions"]
                     st.success("Predictions of the strategy created and saved successfully")
-        if st.session_state["predictions"] is not None:
+        if st.session_state["predictions"] is not None and strategy_type != "<Select>":
             predictions = st.session_state["predictions"]["Predictions"]
             show_predictions_on_chart(ohlcv = st.session_state["ohlcv"], predictions = np.array(predictions), 
-                                    ticker = st.session_state["ticker"])                           
+                                    ticker = st.session_state["ticker"])
+if len(st.session_state["strategies"]) != 0:
+    strategies = st.session_state["strategies"]
+    st.subheader("These strategies have been created:")
+    for key, val in strategies.items():
+        col1, col2 = st.columns([1,1])
+        with col1:
+            st.write(f"s{key[-1]} - " + key)
+        with col2:
+            if st.checkbox("Use this strategy in mix.", key = key) and key not in st.session_state.added_keys:
+                st.session_state.mix.append(strategies[key])
+                st.write(key)
+                st.session_state.added_keys.add(key)
+    mixing_logic = st.text_input("Write your logic to mix the strategies with and-or:", help = "For example: 's1 and s2 and s3'")
+    if st.button("Mix the strategies"):
+        st.session_state["predictions"] = mix_strategies(st.session_state.mix, mixing_logic) 
+        st.success("Predictions of the strategies mixed successfully")              
 
 
 

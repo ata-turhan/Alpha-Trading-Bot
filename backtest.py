@@ -420,7 +420,7 @@ def plot_tables(portfolio_value:np.array, benchmark_index:np.array, close_prices
             "Average Drawdown Squared": average_dd_2_value, "Maximum Drawdown": max_dd_value}
 
 
-def plot_charts(ticker: str, ohlcv: pd.DataFrame, predictions: np.array, portfolio_value: np.array, liquidated:bool) -> None:
+def plot_charts(ticker: str, ohlcv: pd.DataFrame, transactions: np.array, portfolio_value: np.array, liquidated:bool) -> None:
     if liquidated == True:
         st.write("\n----------------------------\nThis strategy is liquidated\n-------------------------------")
     fig = make_subplots(rows=2, cols=1, shared_xaxes=False, vertical_spacing=0.1, 
@@ -436,15 +436,15 @@ def plot_charts(ticker: str, ohlcv: pd.DataFrame, predictions: np.array, portfol
     st.plotly_chart(fig, use_container_width=True)
 
     fig = go.Figure()
-    buy_labels = (predictions==1)
-    sell_labels = (predictions==2)
+    buy_labels = (transactions==1)
+    sell_labels = (transactions==2)
     fig.add_trace(go.Scatter(x=ohlcv.index, y=ohlcv["Close"], mode='lines', 
                              line=dict(color="#222266"), name='Close Price'))
     fig.add_trace(go.Scatter(x=ohlcv[buy_labels].index, y=ohlcv[buy_labels]["Close"],
                              mode='markers', marker=dict(size=6, color="#2cc05c"), name = "Buy"))
     fig.add_trace(go.Scatter(x=ohlcv[sell_labels].index, y=ohlcv[sell_labels]["Close"],
                              mode='markers', marker=dict(size=6, color='#f62728'), name = "Sell"))
-    fig.update_layout(title=f"<span style='font-size: 30px;'><b>Close Price with Predictions of {ticker}</b></span>", title_x=0.5)
+    fig.update_layout(title=f"<span style='font-size: 30px;'><b>Close Price with Transactions of {ticker}</b></span>", title_x=0.5)
     st.plotly_chart(fig, use_container_width=True)
     
     fig = go.Figure()
@@ -490,8 +490,9 @@ def financial_evaluation(holdLabel:int = 0, buyLabel:int = 1, sellLabel:int = 2,
     portfolio_value = np.zeros(len(predictions)+1)
     portfolio_value[0] = initial_capital
     liquidated = False
-    if short == False:
-        for i in range(len(predictions)):     
+    transactions = np.zeros((len(predictions),))
+    if not short:
+        for i, value in enumerate(predictions):     
             change = 0
             if long_open == True and\
             (low_prices[i] <= stop_loss_price <= high_prices[i] or low_prices[i] <= take_profit_price <= high_prices[i]):
@@ -507,6 +508,7 @@ def financial_evaluation(holdLabel:int = 0, buyLabel:int = 1, sellLabel:int = 2,
                     stop_loss_price = long_price * (1-stop_loss/100)
                     take_profit_price = long_price * (1+take_profit/100)
                     capital -= commission
+                    transactions[i] = buyLabel 
             elif predictions[i] == sellLabel and long_open == True:
                 if order_type == "market":
                     long_open = False
@@ -517,6 +519,7 @@ def financial_evaluation(holdLabel:int = 0, buyLabel:int = 1, sellLabel:int = 2,
                 if long_open == False:
                     capital *= 1 + change
                     capital -= commission
+                    transactions[i] = sellLabel
                     if capital <= 0:
                         liquidated = True
                         break
@@ -528,8 +531,8 @@ def financial_evaluation(holdLabel:int = 0, buyLabel:int = 1, sellLabel:int = 2,
                 stop_loss_price = close_prices[i] * (1-stop_loss/100) 
             if long_open == True and trailing_take_profit == True:
                 take_profit_price = close_prices[i] * (1+take_profit/100)
-    elif short == True:
-        for i in range(len(predictions)):
+    elif short:
+        for i, value in enumerate(predictions): 
             change = 0
             if predictions[i] != 0 and long_open == False and short_open == False:
                 if predictions[i] == buyLabel:
@@ -627,7 +630,7 @@ def financial_evaluation(holdLabel:int = 0, buyLabel:int = 1, sellLabel:int = 2,
     metrics = plot_tables(portfolio_value[:i], benchmark_index[:i], close_prices[:i], total_trade_made, total_day_position_open, 
                           risk_free_rate, alpha, threshold, order, precision_point, show_tables)
     if show_charts:
-        plot_charts("SPY", ohlcv[:i], predictions[:i], portfolio_value[:i], liquidated) 
+        plot_charts("SPY", ohlcv[:i], transactions[:i], portfolio_value[:i], liquidated) 
     return metrics
     
     

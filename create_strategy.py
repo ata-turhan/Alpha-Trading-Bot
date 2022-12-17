@@ -10,6 +10,7 @@ import ta
 from ta.volatility import BollingerBands
 from Pattern import *
 from sklearn.cluster import AgglomerativeClustering
+import re
 
 
 def correlation_trading(ohlcv1:pd.DataFrame, ohlcv2:pd.DataFrame, downward_movement:float=0.01, upward_movement:float=0.01):
@@ -220,3 +221,25 @@ def show_predictions_on_chart(ohlcv:pd.DataFrame, predictions:np.array, ticker:s
     fig.update_layout(title=f"<span style='font-size: 30px;'><b>Close Price with Predictions of {ticker}</b></span>", title_x=0.5)
     st.plotly_chart(fig, use_container_width=True)
 
+
+def mix_strategies(mix:set, mixing_logic:str):
+    mix_prediction = np.zeros((len(mix[0]),))
+    mixing_logic = re.sub(r's[0-9]*', '{}', mixing_logic)
+    for m in mix:
+        m["is_buy"] = m["Predictions"] == 1
+        m["is_sell"] = m["Predictions"] == 2   
+    for i in range(len(mix[0])):
+        buy_evaluations = []
+        sell_evaluations = []
+        for m in mix:
+            buy_evaluations.append(m["is_buy"].iloc[i])
+            sell_evaluations.append(m["is_sell"].iloc[i])
+        buy_evaluation = eval(mixing_logic.format(*buy_evaluations))
+        sell_evaluation = eval(mixing_logic.format(*sell_evaluations))
+        #st.write(buy_evaluation)
+        if buy_evaluation:
+            mix_prediction[i] = 1
+        if sell_evaluation:
+            mix_prediction[i] = 2
+    predictions = pd.DataFrame(index=mix[0].index, data={"Predictions":mix_prediction})    
+    return predictions
