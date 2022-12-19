@@ -37,8 +37,8 @@ def rsi_trading(ohlcv:pd.DataFrame, oversold:int=30, overbought:int=70):
 
 def sma_trading(ohlcv:pd.DataFrame, short_mo:int=50, long_mo:int=200):
     predictions = pd.DataFrame(index=ohlcv.index, data={"Predictions":np.zeros((len(ohlcv),))})
-    ohlcv[f"SMA-{short_mo}"] = ohlcv['Close'].ewm(span=short_mo).mean()
-    ohlcv[f"SMA-{long_mo}"] = ohlcv['Close'].ewm(span=long_mo).mean()
+    ohlcv[f"SMA-{short_mo}"] = ohlcv['Close'].rolling(short_mo).mean()
+    ohlcv[f"SMA-{long_mo}"] = ohlcv['Close'].rolling(long_mo).mean()
     short_mo_above = False
     for i in range(len(ohlcv)-1):
         if ohlcv.loc[ohlcv.index[i], f"SMA-{short_mo}"] >= ohlcv.loc[ohlcv.index[i], f"SMA-{long_mo}"] and not short_mo_above:
@@ -243,3 +243,57 @@ def mix_strategies(mix:set, mixing_logic:str):
             mix_prediction[i] = 2
     predictions = pd.DataFrame(index=mix[0].index, data={"Predictions":mix_prediction})    
     return predictions
+
+
+def draw_technical_indicators(ohlcv:pd.DataFrame, indicator_name:str):
+    if indicator_name == "Bollinger Bands":
+        indicator_bb = BollingerBands(close=ohlcv["Close"], window=20, window_dev=2)
+        ohlcv["bb_bbh"] = indicator_bb.bollinger_hband()
+        ohlcv["bb_bbl"] = indicator_bb.bollinger_lband()
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=ohlcv.index, y=ohlcv["Close"], mode='lines', 
+                                line=dict(color="#222266"), name='Close Price'))
+        fig.add_trace(go.Scatter(x=ohlcv.index, y=ohlcv["bb_bbh"], mode='lines', 
+                                line=dict(color="#2cc05c"), name='Bollinger Higher Band'))
+        fig.add_trace(go.Scatter(x=ohlcv.index, y=ohlcv["bb_bbl"], mode='lines', 
+                                line=dict(color="#f62728"), name='Bollinger Lower Band'))
+        fig.update_layout(title=f"<span style='font-size: 30px;'><b>Close Price with Bollinger Bands</b></span>", title_x=0.5)
+        st.plotly_chart(fig, use_container_width=True)
+    elif indicator_name == "RSI":
+        ohlcv["RSI"] = ta.momentum.RSIIndicator(close = ohlcv["Close"], window  = 14, fillna = False).rsi()
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=False, vertical_spacing=0.1, 
+                        subplot_titles=(f"<span style='font-size: 30px;'><b>Close Price</b></span>", 
+                                    f"<span style='font-size: 30px;'><b>RSI Value</b></span>"), row_width=[1, 1])
+        fig.add_trace(go.Scatter(x=ohlcv.index, y=ohlcv["Close"], mode='lines', 
+                                line=dict(color="#222266"), name='Close Price'), row=1, col=1)
+        fig.add_trace(go.Scatter(x=ohlcv.index, y=ohlcv["RSI"], mode='lines', 
+                                line=dict(color="#880099"), name='RSI Value'), row=2, col=1)
+        fig.update_layout(title=f"<span style='font-size: 30px;'><b>Close Price with RSI</b></span>", title_x=0.5)
+        fig.update_layout(autosize=True, width=950, height=950,)
+        st.plotly_chart(fig, use_container_width=True)
+    elif indicator_name == "SMA":
+        ohlcv["SMA-short"] = ohlcv['Close'].rolling(50).mean()
+        ohlcv["SMA-long"] = ohlcv['Close'].rolling(200).mean()
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=ohlcv.index, y=ohlcv["Close"], mode='lines', 
+                                line=dict(color="#222266"), name='Close Price'))
+        fig.add_trace(go.Scatter(x=ohlcv.index, y=ohlcv["SMA-short"], mode='lines', 
+                                line=dict(color="#2cc05c"), name='Short SMA'))
+        fig.add_trace(go.Scatter(x=ohlcv.index, y=ohlcv["SMA-long"], mode='lines', 
+                                line=dict(color="#f62728"), name='Long SMA'))
+        fig.update_layout(title=f"<span style='font-size: 30px;'><b>Close Price with SMAs</b></span>", title_x=0.5)
+        st.plotly_chart(fig, use_container_width=True)
+    elif indicator_name == "EMA":
+        ohlcv["EMA-short"] = ohlcv['Close'].ewm(span=50).mean()
+        ohlcv["EMA-long"] = ohlcv['Close'].ewm(span=200).mean()
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=ohlcv.index, y=ohlcv["Close"], mode='lines', 
+                                line=dict(color="#222266"), name='Close Price'))
+        fig.add_trace(go.Scatter(x=ohlcv.index, y=ohlcv["EMA-short"], mode='lines', 
+                                line=dict(color="#2cc05c"), name='Short SMA'))
+        fig.add_trace(go.Scatter(x=ohlcv.index, y=ohlcv["EMA-long"], mode='lines', 
+                                line=dict(color="#f62728"), name='Long SMA'))
+        fig.update_layout(title=f"<span style='font-size: 30px;'><b>Close Price with EMAs</b></span>", title_x=0.5)
+        st.plotly_chart(fig, use_container_width=True)
+

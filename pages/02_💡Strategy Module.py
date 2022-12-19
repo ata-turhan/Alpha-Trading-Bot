@@ -146,7 +146,8 @@ else:
                 if st.session_state["predictions"] is not None and strategy_created: 
                     st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
                     st.session_state["strategies"][f"Indicator Trading-{len(st.session_state['strategies'])}"] = st.session_state["predictions"]
-                    st.success("Predictions of the strategy created and saved successfully")   
+                    st.success("Predictions of the strategy created and saved successfully")  
+                    draw_technical_indicators(ohlcv = st.session_state["ohlcv"], indicator_name = indicator) 
         elif strategy_type == "Momentum Trading":    
             indicator = st.selectbox("Select the momentum strategy you want to use: ", ["<Select>",'Momentum Day Trading',
                                     "Momentum Percentage Trading"])
