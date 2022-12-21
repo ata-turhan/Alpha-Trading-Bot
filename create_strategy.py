@@ -87,13 +87,13 @@ def momentum_day_trading(ohlcv:pd.DataFrame, up_day:int=3, down_day:int=3, rever
             if ohlcv.at[ohlcv.index[i+j], "change"] <= 0:
                 open_position = False
         if open_position:
-            predictions.at[ohlcv.index[i+1], "Predictions"] = 1 if not reverse else 2
+            predictions.at[ohlcv.index[i+up_day], "Predictions"] = 1 if not reverse else 2
         open_position = True
         for j in range(down_day):
             if ohlcv.at[ohlcv.index[i+j], "change"] >= 0:
                 open_position = False
         if open_position:
-            predictions.at[ohlcv.index[i+1], "Predictions"] = 2 if not reverse else 1
+            predictions.at[ohlcv.index[i+down_day], "Predictions"] = 2 if not reverse else 1
     return predictions
 
 
