@@ -28,10 +28,10 @@ def rsi_trading(ohlcv:pd.DataFrame, oversold:int=30, overbought:int=70):
     predictions = pd.DataFrame(index=ohlcv.index, data={"Predictions":np.zeros((len(ohlcv),))})
     ohlcv["RSI"] = ta.momentum.RSIIndicator(close = ohlcv["Close"], window  = 14, fillna = False).rsi()
     for i in range(len(ohlcv)-1):
-        if ohlcv.loc[ohlcv.index[i], "RSI"] <= oversold:
-            predictions.loc[ohlcv.index[i+1], "Predictions"] = 1
-        elif ohlcv.loc[ohlcv.index[i], "RSI"] >= overbought:
-            predictions.loc[ohlcv.index[i+1], "Predictions"] = 2
+        if ohlcv.at[ohlcv.index[i], "RSI"] <= oversold:
+            predictions.at[ohlcv.index[i+1], "Predictions"] = 1
+        elif ohlcv.at[ohlcv.index[i], "RSI"] >= overbought:
+            predictions.at[ohlcv.index[i+1], "Predictions"] = 2
     return predictions
 
 
@@ -41,11 +41,11 @@ def sma_trading(ohlcv:pd.DataFrame, short_mo:int=50, long_mo:int=200):
     ohlcv[f"SMA-{long_mo}"] = ohlcv['Close'].rolling(long_mo).mean()
     short_mo_above = False
     for i in range(len(ohlcv)-1):
-        if ohlcv.loc[ohlcv.index[i], f"SMA-{short_mo}"] >= ohlcv.loc[ohlcv.index[i], f"SMA-{long_mo}"] and not short_mo_above:
-            predictions.loc[ohlcv.index[i+1], "Predictions"] = 1
+        if ohlcv.at[ohlcv.index[i], f"SMA-{short_mo}"] >= ohlcv.at[ohlcv.index[i], f"SMA-{long_mo}"] and not short_mo_above:
+            predictions.at[ohlcv.index[i+1], "Predictions"] = 1
             short_mo_above = True
-        elif ohlcv.loc[ohlcv.index[i], f"SMA-{short_mo}"] <= ohlcv.loc[ohlcv.index[i], f"SMA-{long_mo}"] and short_mo_above:
-            predictions.loc[ohlcv.index[i+1], "Predictions"] = 2
+        elif ohlcv.at[ohlcv.index[i], f"SMA-{short_mo}"] <= ohlcv.at[ohlcv.index[i], f"SMA-{long_mo}"] and short_mo_above:
+            predictions.at[ohlcv.index[i+1], "Predictions"] = 2
             short_mo_above = False
     return predictions
 
@@ -56,11 +56,11 @@ def ema_trading(ohlcv:pd.DataFrame, short_mo:int=50, long_mo:int=200):
     ohlcv[f"EMA-{long_mo}"] = ohlcv['Close'].ewm(span=long_mo).mean()
     short_mo_above = False
     for i in range(len(ohlcv)-1):
-        if ohlcv.loc[ohlcv.index[i], f"EMA-{short_mo}"] >= ohlcv.loc[ohlcv.index[i], f"EMA-{long_mo}"] and not short_mo_above:
-            predictions.loc[ohlcv.index[i+1], "Predictions"] = 1
+        if ohlcv.at[ohlcv.index[i], f"EMA-{short_mo}"] >= ohlcv.at[ohlcv.index[i], f"EMA-{long_mo}"] and not short_mo_above:
+            predictions.at[ohlcv.index[i+1], "Predictions"] = 1
             short_mo_above = True
-        elif ohlcv.loc[ohlcv.index[i], f"EMA-{short_mo}"] <= ohlcv.loc[ohlcv.index[i], f"EMA-{long_mo}"] and short_mo_above:
-            predictions.loc[ohlcv.index[i+1], "Predictions"] = 2
+        elif ohlcv.at[ohlcv.index[i], f"EMA-{short_mo}"] <= ohlcv.at[ohlcv.index[i], f"EMA-{long_mo}"] and short_mo_above:
+            predictions.at[ohlcv.index[i+1], "Predictions"] = 2
             short_mo_above = False
     return predictions
 
@@ -71,10 +71,10 @@ def bb_trading(ohlcv:pd.DataFrame, window:int=20, window_dev:int=2):
     ohlcv["bb_bbh"] = indicator_bb.bollinger_hband()
     ohlcv["bb_bbl"] = indicator_bb.bollinger_lband()
     for i in range(len(ohlcv)-1):
-        if ohlcv.loc[ohlcv.index[i], "Close"] <= ohlcv.loc[ohlcv.index[i], "bb_bbl"]:
-            predictions.loc[ohlcv.index[i+1], "Predictions"] = 1
-        elif ohlcv.loc[ohlcv.index[i], "Close"] >= ohlcv.loc[ohlcv.index[i], "bb_bbh"]:
-            predictions.loc[ohlcv.index[i+1], "Predictions"] = 2
+        if ohlcv.at[ohlcv.index[i], "Close"] <= ohlcv.at[ohlcv.index[i], "bb_bbl"]:
+            predictions.at[ohlcv.index[i+1], "Predictions"] = 1
+        elif ohlcv.at[ohlcv.index[i], "Close"] >= ohlcv.at[ohlcv.index[i], "bb_bbh"]:
+            predictions.at[ohlcv.index[i+1], "Predictions"] = 2
     return predictions
 
 
@@ -232,8 +232,8 @@ def mix_strategies(mix:set, mixing_logic:str):
         buy_evaluations = []
         sell_evaluations = []
         for m in mix:
-            buy_evaluations.append(m["is_buy"].iloc[i])
-            sell_evaluations.append(m["is_sell"].iloc[i])
+            buy_evaluations.append(m["is_buy"].iat[i])
+            sell_evaluations.append(m["is_sell"].iat[i])
         buy_evaluation = eval(mixing_logic.format(*buy_evaluations))
         sell_evaluation = eval(mixing_logic.format(*sell_evaluations))
         #st.write(buy_evaluation)
