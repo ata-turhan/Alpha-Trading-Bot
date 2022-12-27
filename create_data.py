@@ -19,6 +19,7 @@ from sklearn.linear_model import LinearRegression
 if "ohlcv" not in st.session_state:
     st.session_state["ohlcv"] = None
 
+@st.cache
 def get_financial_data(tickers:str, start:str, end:str, interval:str, auto_adjust:bool) -> pd.DataFrame:
     return yf.download(tickers=tickers, start=start, end=end, interval=interval,
                                 auto_adjust=auto_adjust, progress=False)
