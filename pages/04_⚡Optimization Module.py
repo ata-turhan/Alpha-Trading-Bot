@@ -47,7 +47,7 @@ for _ in range(22):
 st.sidebar.write('Developed by Ata Turhan')
 st.sidebar.write('Contact at ataturhan21@gmail.com')
 
-st.markdown("<h1 style='text-align: center; color: black;'> 📈 Backtest Module </h1> <br> <br>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: black;'> ⚡Optimization Module </h1> <br> <br>", unsafe_allow_html=True)
 st.markdown("<br> <br>", unsafe_allow_html=True)
 if st.session_state["ohlcv"] is None or st.session_state["predictions"] is None or st.session_state["ticker"] == "" or st.session_state["backtest_configuration_ready"] == False:
     st.error("Please get the data, create the strategy and backtest the strategy first.")
