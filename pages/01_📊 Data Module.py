@@ -96,7 +96,6 @@ if data_fetch_way == "Fetch over the internet":
             full_data = yf.download(tickers = tickers, interval = interval)
             start = full_data.index[0]
             end = full_data.index[-1]
-            
             if interval in ["1d", "5d", "1wk", "1mo", "3mo"]:
                 val1 = dt.datetime.strptime((full_data.index[(len(full_data)//3)]).strftime("%d-%m-%Y"), '%d-%m-%Y')
                 val2 = dt.datetime.strptime((full_data.index[(len(full_data)*2//3)]).strftime("%d-%m-%Y"), '%d-%m-%Y')
