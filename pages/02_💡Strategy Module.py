@@ -11,9 +11,11 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 
 
-def add_bg_from_local(image_file):
-    with open(image_file, "rb") as image_file:
+def add_bg_from_local(background_file, sidebar_background_file):
+    with open(background_file, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read())
+    with open(sidebar_background_file, "rb") as image_file:
+        sidebar_encoded_string = base64.b64encode(image_file.read())    
     st.markdown(
     f"""
     <style>
@@ -21,7 +23,11 @@ def add_bg_from_local(image_file):
         background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
         background-size: cover
     }}
-    </style>
+    section[data-testid="stSidebar"] div[class="css-6qob1r e1fqkh3o3"]
+    {{
+        background-image: url(data:image/{"png"};base64,{sidebar_encoded_string.decode()});
+        background-size: 400px 800px
+    }}
     """,
     unsafe_allow_html=True
     )
@@ -35,7 +41,7 @@ st.set_page_config(page_title='Trading Bot',
 page_icon='🤖', layout="wide")
 st.markdown("<h1 style='text-align: center; color: black;'> 💡 Strategy Module </h1> <br> <br>", unsafe_allow_html=True)
 
-add_bg_from_local('data/background.png')
+add_bg_from_local('data/background.png', 'data/bot.png')
 
 
 if "ohlcv" not in st.session_state:
@@ -207,12 +213,15 @@ else:
                     ai_method = st.selectbox("Select the artifical intelligence method you want to use: ", 
                                             ["<Select>", "Machine Learning", "Deep Learning"])
                     if ai_method == "Machine Learning":
-                        ai_model = st.selectbox("Select the machine learning model you want to use: ",     
-                                                ["<Select>","Extreme Gradient Boosting", "Light Gradient Boosting Machine",
-                                                "CatBoost Classifier", "MLP Classifier", "Logistic Regression", "Ada Boost Classifier", 
-                                                 "Random Forest Classifier", "Gradient Boosting Classifier", "Extra Trees Classifier", 
-                                                 "Decision Tree Classifier", "Quadratic Discriminant Analysis", "K Neighbors Classifier",
-                                                 "Gaussian Process Classifier", "SVM - Radial Kernel"])
+                        models = get_ml_models(st.session_state["ohlcv"].iloc[:100,:])
+                        ai_models = st.multiselect("Select the machine learning models you want to use: ", models.keys())     
+                                                
+                                                
+                                                #["<Select>","Extreme Gradient Boosting", "Light Gradient Boosting Machine",
+                                                #"CatBoost Classifier", "MLP Classifier", "Logistic Regression", "Ada Boost Classifier", 
+                                                # "Random Forest Classifier", "Gradient Boosting Classifier", "Extra Trees Classifier", 
+                                                # "Decision Tree Classifier", "Quadratic Discriminant Analysis", "K Neighbors Classifier",
+                                                # "Gaussian Process Classifier", "SVM - Radial Kernel"])
                         pycaret_abbreviations = {"Extreme Gradient Boosting":"xgboost", "Light Gradient Boosting Machine":"lightgbm",
                                                 "CatBoost Classifier":"catboost", "MLP Classifier":"mlp",
                                                  "Logistic Regression":"lr", "Ada Boost Classifier":"ada", 
@@ -220,7 +229,9 @@ else:
                                                  "Extra Trees Classifier":"et", "Decision Tree Classifier":"dt",
                                                  "Quadratic Discriminant Analysis":"qda", "K Neighbors Classifier":"knn",
                                                  "Gaussian Process Classifier":"gpc", "SVM - Radial Kernel":"rbfsvm"}
-                        if ai_model != "<Select>":
+                        if len(ai_models) != 0:
+                            selected_models = [models[key] for key in ai_models]
+                            #st.write(type(selected_models))
                             st.markdown("<br>", unsafe_allow_html=True)
                             if st.button("Create the predictions of the strategy."):
                                 #train_data = pd.concat([pd.DataFrame(X_train[0], index=y_train[0].index), y_train[0]], axis=1)
@@ -228,7 +239,7 @@ else:
                                 market = st.session_state["ohlcv"] 
                                 train_data = market.iloc[:len(market)*4//5,:]
                                 test_data = market.iloc[len(market)*4//5:,:]
-                                st.session_state["predictions"] = ai_trading(ai_model = pycaret_abbreviations[ai_model], train_data=train_data, test_data=test_data)                            
+                                st.session_state["predictions"] = ai_trading(train_data=train_data, test_data=test_data, selected_models=selected_models)                            
                                 if st.session_state["predictions"] is not None:
                                     st.session_state["predictions"].to_csv(f"Predictions of the {strategy_type}.csv")
                                     st.session_state["strategies"][f"AI Trading-{len(st.session_state['strategies'])}"] = st.session_state["predictions"]

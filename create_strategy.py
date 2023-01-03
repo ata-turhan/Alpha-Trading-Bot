@@ -110,7 +110,17 @@ def momentum_percentage_trading(ohlcv:pd.DataFrame, up_percentage:int=5, up_day:
     return predictions
 
 
-def ai_trading(ai_model:str, train_data:pd.DataFrame, test_data:pd.DataFrame):
+def get_ml_models(train_data:pd.DataFrame):
+    s = classification.setup(data = train_data, 
+            target = 'Label',
+            silent=True,)
+    df = classification.models()
+    ids = df.index
+    names = df.Name
+    models = {name:id_val for id_val, name in zip(ids, names) }
+    return models
+
+def ai_trading(train_data:pd.DataFrame, test_data:pd.DataFrame, selected_models:list):
     with st.spinner('Data preprocessing...'):
         s = classification.setup(data = train_data, 
             target = 'Label', 
@@ -125,11 +135,11 @@ def ai_trading(ai_model:str, train_data:pd.DataFrame, test_data:pd.DataFrame):
             fix_imbalance = True,
             silent=True,
             )
-    with st.spinner('Create the model...'):
-        model = classification.create_model(ai_model)
-    with st.spinner('Tune the model...'):
+    with st.spinner('Create the models...'):
+        model = classification.compare_models(include=selected_models)
+    with st.spinner('Tune the best model...'):
         tuned_model = classification.tune_model(model, optimize = "F1", n_iter = 5, choose_better = True)
-    with st.spinner('Finalizing the model...'):
+    with st.spinner('Finalizing the best model...'):
         final_model = classification.finalize_model(tuned_model);
     # default model
     model_predictions = classification.predict_model(tuned_model, data = test_data)

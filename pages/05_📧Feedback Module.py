@@ -10,9 +10,11 @@ from backtest import *
 import base64
 
 
-def add_bg_from_local(image_file):
-    with open(image_file, "rb") as image_file:
+def add_bg_from_local(background_file, sidebar_background_file):
+    with open(background_file, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read())
+    with open(sidebar_background_file, "rb") as image_file:
+        sidebar_encoded_string = base64.b64encode(image_file.read())    
     st.markdown(
     f"""
     <style>
@@ -20,7 +22,11 @@ def add_bg_from_local(image_file):
         background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
         background-size: cover
     }}
-    </style>
+    section[data-testid="stSidebar"] div[class="css-6qob1r e1fqkh3o3"]
+    {{
+        background-image: url(data:image/{"png"};base64,{sidebar_encoded_string.decode()});
+        background-size: 400px 800px
+    }}
     """,
     unsafe_allow_html=True
     )
@@ -28,7 +34,7 @@ def add_bg_from_local(image_file):
 st.set_page_config(page_title='Trading Bot', 
 page_icon='🤖', layout="wide")
 
-add_bg_from_local('data/background.png')
+add_bg_from_local('data/background.png', 'data/bot.png')
 
 for _ in range(22):
     st.sidebar.text("\n")
