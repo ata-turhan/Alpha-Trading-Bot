@@ -115,6 +115,7 @@ def get_ml_models(train_data:pd.DataFrame):
             target = 'Label',
             silent=True,)
     df = classification.models()
+    df = df[df.Name != "Dummy Classifier"]
     ids = df.index
     names = df.Name
     models = {name:id_val for id_val, name in zip(ids, names) }
