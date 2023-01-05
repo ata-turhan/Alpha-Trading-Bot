@@ -14,9 +14,9 @@ def add_bg_from_local(background_file, sidebar_background_file):
     with open(background_file, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read())
     with open(sidebar_background_file, "rb") as image_file:
-        sidebar_encoded_string = base64.b64encode(image_file.read())    
+        sidebar_encoded_string = base64.b64encode(image_file.read())
     st.markdown(
-    f"""
+        f"""
     <style>
     .stApp {{
         background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
@@ -28,22 +28,27 @@ def add_bg_from_local(background_file, sidebar_background_file):
         background-size: 400px 800px
     }}
     """,
-    unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
-st.set_page_config(page_title='Trading Bot', 
-page_icon='🤖', layout="wide")
 
-add_bg_from_local('data/background.png', 'data/bot.png')
+st.set_page_config(page_title="Trading Bot", page_icon="🤖", layout="wide")
+
+add_bg_from_local("data/background.png", "data/bot.png")
 
 for _ in range(22):
     st.sidebar.text("\n")
-st.sidebar.write('Developed by Ata Turhan')
-st.sidebar.write('Contact at ataturhan21@gmail.com')
+st.sidebar.write("Developed by Ata Turhan")
+st.sidebar.write("Contact at ataturhan21@gmail.com")
 
-st.markdown("<h1 style='text-align: center; color: black;'> 📧 Feedback Module </h1> <br> <br>", unsafe_allow_html=True)
+st.markdown(
+    "<h1 style='text-align: center; color: black;'> 📧 Feedback Module </h1> <br> <br>",
+    unsafe_allow_html=True,
+)
 st.markdown("<br> <br>", unsafe_allow_html=True)
-st.header("You can use the text area below to send your feedback about the app to the developer. Thanks!")
+st.header(
+    "You can use the text area below to send your feedback about the app to the developer. Thanks!"
+)
 
 contact_form = """
 <form action="https://formsubmit.co/kuantum21fizik@gmail.com" method="POST">
@@ -64,7 +69,5 @@ def local_css(file_name):
     with open(file_name) as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
+
 local_css("style/style.css")
-
-
-        
