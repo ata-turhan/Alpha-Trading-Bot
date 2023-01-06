@@ -199,47 +199,6 @@ if data_fetch_way == "Fetch over the internet":
             else:
                 st.success("Data fetched successfully")
                 st.markdown("<br>", unsafe_allow_html=True)
-                if st.checkbox("Do you want to smooth the signal?"):
-                    smooth_method = st.selectbox(
-                        "Which way do you want to smooth the signal?",
-                        [
-                            "<Select>",
-                            "Moving Average",
-                            "Heikin-Ashi",
-                            "Trend Normalization",
-                        ],
-                    )
-                    if smooth_method != "<Select>":
-                        ohlcv = signal_smoothing(
-                            data=ohlcv,
-                            smoothing_method=smooth_method,
-                            parameters={"window": 20},
-                        )
-                        st.session_state["ohlcv"] = ohlcv
-                        st.markdown("<br>", unsafe_allow_html=True)
-                if (
-                    st.button(
-                        "Show the data in a tabular format",
-                        on_click=show_data_button_click,
-                    )
-                    or st.session_state["show_data_button_clicked"]
-                ):
-                    st.dataframe(ohlcv)
-                st.markdown("<br>", unsafe_allow_html=True)
-                display_format = st.selectbox(
-                    "Select the price to show in the chart: ",
-                    ["<Select>", "All", "Open", "High", "Low", "Close"],
-                    on_change=chart_data_selectbox_click,
-                )
-                if (
-                    display_format != "<Select>"
-                    and st.session_state["chart_data_selectbox_clicked"]
-                ):
-                    show_prices(
-                        data=st.session_state["ohlcv"],
-                        ticker=tickers,
-                        show_which_price=display_format,
-                    )
 elif data_fetch_way == "Read from a file":
     uploaded_file = st.file_uploader(
         "Choose a csv or excel file which first word of its name equal to the ticker name to upload "
@@ -264,46 +223,45 @@ elif data_fetch_way == "Read from a file":
                 st.session_state["ohlcv"].index
             )
             ohlcv = st.session_state["ohlcv"]
-            if ohlcv is not None:
-                st.success("Data fetched successfully")
-                st.markdown("<br>", unsafe_allow_html=True)
-                if st.checkbox("Do you want to smooth the signal?"):
+            st.success("Data fetched successfully")
+            st.markdown("<br>", unsafe_allow_html=True)
+if st.session_state["ohlcv"] is not None:
+    if st.checkbox("Do you want to smooth the signal?"):
                     smooth_method = st.selectbox(
-                        "Which way do you want to smooth the signal?",
-                        [
-                            "<Select>",
-                            "None",
-                            "Moving Average",
-                            "Heikin-Ashi",
-                            "Trend Normalization",
-                        ],
+                    "Which way do you want to smooth the signal?",
+                    [
+                        "<Select>",
+                        "Moving Average",
+                        "Heikin-Ashi",
+                        "Trend Normalization",
+                    ],
                     )
-                    if smooth_method != "<Select>":
-                        ohlcv = signal_smoothing(
-                            data=ohlcv,
-                            smoothing_method=smooth_method,
-                            parameters={"window": 20},
-                        )
-                        st.session_state["ohlcv"] = ohlcv
-                        st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("Show the data in a tabular format"):
-                    st.dataframe(ohlcv)
-                st.markdown("<br> <br>", unsafe_allow_html=True)
-                display_format = st.selectbox(
-                    "Select the price to show in the chart: ",
-                    ["<Select>", "All", "Open", "High", "Low", "Close"],
-                    on_change=chart_data_selectbox_click,
+    if smooth_method != "<Select>":
+        ohlcv = signal_smoothing(
+                data=ohlcv,
+                smoothing_method=smooth_method,
+                parameters={"window": 20},
                 )
-                if (
-                    display_format != "<Select>"
-                    and st.session_state["chart_data_selectbox_clicked"]
-                ):
-                    show_prices(
-                        data=st.session_state["ohlcv"],
-                        ticker=tickers,
-                        show_which_price=display_format,
-                    )
-                st.markdown("<br>", unsafe_allow_html=True)
+        st.session_state["ohlcv"] = ohlcv
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("Show the data in a tabular format"):
+            st.dataframe(ohlcv)
+    st.markdown("<br> <br>", unsafe_allow_html=True)
+    display_format = st.selectbox(
+                "Select the price to show in the chart: ",
+                ["<Select>", "All", "Open", "High", "Low", "Close"],
+                on_change=chart_data_selectbox_click,
+                )
+    if (
+            display_format != "<Select>"
+            and st.session_state["chart_data_selectbox_clicked"]
+            ):
+        show_prices(
+                data=st.session_state["ohlcv"],
+                ticker=tickers,
+                show_which_price=display_format,
+                )
+    st.markdown("<br>", unsafe_allow_html=True)
 if (
     data_fetch_way != "<Select>"
     and st.session_state["ohlcv"] is not None
