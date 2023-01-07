@@ -227,40 +227,40 @@ elif data_fetch_way == "Read from a file":
             st.markdown("<br>", unsafe_allow_html=True)
 if st.session_state["ohlcv"] is not None:
     if st.checkbox("Do you want to smooth the signal?"):
-                    smooth_method = st.selectbox(
-                    "Which way do you want to smooth the signal?",
-                    [
-                        "<Select>",
-                        "Moving Average",
-                        "Heikin-Ashi",
-                        "Trend Normalization",
-                    ],
-                    )
+        smooth_method = st.selectbox(
+            "Which way do you want to smooth the signal?",
+            [
+                "<Select>",
+                "Moving Average",
+                "Heikin-Ashi",
+                "Trend Normalization",
+            ],
+        )
     if smooth_method != "<Select>":
         ohlcv = signal_smoothing(
-                data=ohlcv,
-                smoothing_method=smooth_method,
-                parameters={"window": 20},
-                )
+            data=ohlcv,
+            smoothing_method=smooth_method,
+            parameters={"window": 20},
+        )
         st.session_state["ohlcv"] = ohlcv
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("Show the data in a tabular format"):
-            st.dataframe(ohlcv)
+        st.dataframe(ohlcv)
     st.markdown("<br> <br>", unsafe_allow_html=True)
     display_format = st.selectbox(
-                "Select the price to show in the chart: ",
-                ["<Select>", "All", "Open", "High", "Low", "Close"],
-                on_change=chart_data_selectbox_click,
-                )
+        "Select the price to show in the chart: ",
+        ["<Select>", "All", "Open", "High", "Low", "Close"],
+        on_change=chart_data_selectbox_click,
+    )
     if (
-            display_format != "<Select>"
-            and st.session_state["chart_data_selectbox_clicked"]
-            ):
+        display_format != "<Select>"
+        and st.session_state["chart_data_selectbox_clicked"]
+    ):
         show_prices(
-                data=st.session_state["ohlcv"],
-                ticker=tickers,
-                show_which_price=display_format,
-                )
+            data=st.session_state["ohlcv"],
+            ticker=tickers,
+            show_which_price=display_format,
+        )
     st.markdown("<br>", unsafe_allow_html=True)
 if (
     data_fetch_way != "<Select>"
