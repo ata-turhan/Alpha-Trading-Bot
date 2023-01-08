@@ -64,13 +64,15 @@ def main():
         unsafe_allow_html=True,
     )
 
-    # Add a title and intro text
-    st.write("This is a web app that allows you to")
-    st.write("• get financial data in any financial market")
-    st.write("• create trading strategies with various methods")
-    st.write("• backtest these strategies extensively")
-    st.write("\n\n")
-    st.write("You can use the modules on the sidebar to navigate in the web app.")
+    welcome_message = '<p style="font-family:Arial; font-size: 26px;"> \
+    This is a web app that allows you to <br> \
+        • get financial data in any financial market <br> \
+        • create trading strategies with various methods <br> \
+        • backtest these strategies extensively <br> \
+                                               <br> \
+        You can use the modules on the sidebar to navigate in the web app. \
+    </p>'
+    st.markdown(welcome_message, unsafe_allow_html=True)
 
 
 if __name__ == "__main__":

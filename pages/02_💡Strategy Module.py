@@ -350,28 +350,11 @@ else:
                         "Select the machine learning models you want to use: ",
                         models.keys(),
                     )
-
-                    # ["<Select>","Extreme Gradient Boosting", "Light Gradient Boosting Machine",
-                    # "CatBoost Classifier", "MLP Classifier", "Logistic Regression", "Ada Boost Classifier",
-                    # "Random Forest Classifier", "Gradient Boosting Classifier", "Extra Trees Classifier",
-                    # "Decision Tree Classifier", "Quadratic Discriminant Analysis", "K Neighbors Classifier",
-                    # "Gaussian Process Classifier", "SVM - Radial Kernel"])
-                    pycaret_abbreviations = {
-                        "Extreme Gradient Boosting": "xgboost",
-                        "Light Gradient Boosting Machine": "lightgbm",
-                        "CatBoost Classifier": "catboost",
-                        "MLP Classifier": "mlp",
-                        "Logistic Regression": "lr",
-                        "Ada Boost Classifier": "ada",
-                        "Random Forest Classifier": "rf",
-                        "Gradient Boosting Classifier": "gbc",
-                        "Extra Trees Classifier": "et",
-                        "Decision Tree Classifier": "dt",
-                        "Quadratic Discriminant Analysis": "qda",
-                        "K Neighbors Classifier": "knn",
-                        "Gaussian Process Classifier": "gpc",
-                        "SVM - Radial Kernel": "rbfsvm",
-                    }
+                    tune_number = st.number_input(
+                        "Select the number of the iterations to tune the model",
+                        value=5,
+                        step=5,
+                    )
                     if len(ai_models) != 0:
                         selected_models = [models[key] for key in ai_models]
                         # st.write(type(selected_models))
@@ -386,6 +369,7 @@ else:
                                 train_data=train_data,
                                 test_data=test_data,
                                 selected_models=selected_models,
+                                tune_number=tune_number,
                             )
                             if st.session_state["predictions"] is not None:
                                 st.session_state["predictions"].to_csv(

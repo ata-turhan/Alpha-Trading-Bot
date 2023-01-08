@@ -184,7 +184,10 @@ def get_ml_models(train_data: pd.DataFrame):
 
 
 def ai_trading(
-    train_data: pd.DataFrame, test_data: pd.DataFrame, selected_models: list
+    train_data: pd.DataFrame,
+    test_data: pd.DataFrame,
+    selected_models: list,
+    tune_number: int,
 ):
     with st.spinner("Data preprocessing..."):
         s = classification.setup(
@@ -205,7 +208,7 @@ def ai_trading(
         model = classification.compare_models(include=selected_models)
     with st.spinner("Tune the best model..."):
         tuned_model = classification.tune_model(
-            model, optimize="F1", n_iter=5, choose_better=True
+            model, optimize="F1", n_iter=tune_number, choose_better=True
         )
     with st.spinner("Finalizing the best model..."):
         final_model = classification.finalize_model(tuned_model)

@@ -130,3 +130,10 @@ dmypy.json
 
 # Generated data
 *.csv
+
+# Research and Planning Documents
+
+/Articles
+/Books
+/Codes
+/Roadmap
