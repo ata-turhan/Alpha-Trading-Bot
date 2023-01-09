@@ -344,7 +344,12 @@ else:
                     "Select the artifical intelligence method you want to use: ",
                     ["<Select>", "Machine Learning", "Deep Learning"],
                 )
-                if ai_method == "Machine Learning":
+                if ai_method == "Deep Learning":
+                    dl_method = st.selectbox(
+                        "Select the deep learning model you want to use: ",
+                        ["<Select>", "AutoKeras", "Prophet"],
+                    )
+                elif ai_method == "Machine Learning":
                     models = get_ml_models(st.session_state["ohlcv"].iloc[:100, :])
                     ai_models = st.multiselect(
                         "Select the machine learning models you want to use: ",
