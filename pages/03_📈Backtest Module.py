@@ -6,7 +6,7 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from create_data import *
-from backtest import *
+from create_backtest import *
 import base64
 
 
