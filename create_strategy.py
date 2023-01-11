@@ -13,6 +13,7 @@ from sklearn.cluster import AgglomerativeClustering
 import re
 
 
+@st.cache
 def correlation_trading(
     ohlcv1: pd.DataFrame,
     ohlcv2: pd.DataFrame,
@@ -31,6 +32,7 @@ def correlation_trading(
     return predictions
 
 
+@st.cache
 def rsi_trading(ohlcv: pd.DataFrame, oversold: int = 30, overbought: int = 70):
     predictions = pd.DataFrame(
         index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
@@ -46,6 +48,7 @@ def rsi_trading(ohlcv: pd.DataFrame, oversold: int = 30, overbought: int = 70):
     return predictions
 
 
+@st.cache
 def sma_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
     predictions = pd.DataFrame(
         index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
@@ -71,6 +74,7 @@ def sma_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
     return predictions
 
 
+@st.cache
 def ema_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
     predictions = pd.DataFrame(
         index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
@@ -96,6 +100,7 @@ def ema_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
     return predictions
 
 
+@st.cache
 def bb_trading(ohlcv: pd.DataFrame, window: int = 20, window_dev: int = 2):
     predictions = pd.DataFrame(
         index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
@@ -113,6 +118,7 @@ def bb_trading(ohlcv: pd.DataFrame, window: int = 20, window_dev: int = 2):
     return predictions
 
 
+@st.cache
 def momentum_day_trading(
     ohlcv: pd.DataFrame, up_day: int = 3, down_day: int = 3, reverse: bool = False
 ):
@@ -140,6 +146,7 @@ def momentum_day_trading(
     return predictions
 
 
+@st.cache
 def momentum_percentage_trading(
     ohlcv: pd.DataFrame,
     up_percentage: int = 5,
@@ -169,6 +176,7 @@ def momentum_percentage_trading(
     return predictions
 
 
+@st.cache
 def get_ml_models(train_data: pd.DataFrame):
     s = classification.setup(
         data=train_data,
@@ -183,6 +191,7 @@ def get_ml_models(train_data: pd.DataFrame):
     return models
 
 
+@st.cache
 def ai_trading(
     train_data: pd.DataFrame,
     test_data: pd.DataFrame,
@@ -220,6 +229,7 @@ def ai_trading(
     return predictions
 
 
+@st.cache
 def candlestick_trading(ohlcv: pd.DataFrame, buy_pattern: str, sell_pattern: str):
     candlestick_func_dict = {
         "Doji": doji,
@@ -268,6 +278,7 @@ def candlestick_trading(ohlcv: pd.DataFrame, buy_pattern: str, sell_pattern: str
     return predictions
 
 
+@st.cache
 def calculate_support_resistance(df, rolling_wave_length, num_clusters, area):
     date = df.index
     # Reset index for merging
@@ -310,6 +321,7 @@ def calculate_support_resistance(df, rolling_wave_length, num_clusters, area):
     return waves2.reset_index().waves
 
 
+@st.cache
 def support_resistance_trading(
     ohlcv: pd.DataFrame, rolling_wave_length: int = 20, num_clusters: int = 4
 ):
@@ -339,6 +351,7 @@ def support_resistance_trading(
     return predictions
 
 
+@st.cache
 def show_predictions_on_chart(ohlcv: pd.DataFrame, predictions: np.array, ticker: str):
     fig = go.Figure()
     buy_labels = predictions == 1
@@ -377,6 +390,7 @@ def show_predictions_on_chart(ohlcv: pd.DataFrame, predictions: np.array, ticker
     st.plotly_chart(fig, use_container_width=True)
 
 
+@st.cache
 def mix_strategies(mix: set, mixing_logic: str):
     mix_prediction = np.zeros((len(mix[0]),))
     mixing_logic = re.sub(r"s[0-9]*", "{}", mixing_logic)
@@ -400,6 +414,7 @@ def mix_strategies(mix: set, mixing_logic: str):
     return predictions
 
 
+@st.cache
 def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
     if indicator_name == "Bollinger Bands":
         indicator_bb = BollingerBands(close=ohlcv["Close"], window=20, window_dev=2)

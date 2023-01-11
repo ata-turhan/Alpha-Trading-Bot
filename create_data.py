@@ -191,7 +191,6 @@ def create_ohlcv_alike(ohlcv: pd.DataFrame, new_asset: str):
 
 
 def create_technical_indicators(market: pd.DataFrame) -> pd.DataFrame:
-    # market.ta.strategy("All")
     market = add_all_ta_features(
         market, open="Open", high="High", low="Low", close="Close", volume="Volume"
     )
