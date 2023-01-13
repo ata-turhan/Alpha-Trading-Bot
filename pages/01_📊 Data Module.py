@@ -5,7 +5,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import re
-from create_data import *
+import create_data as cd
 import base64
 
 
@@ -47,7 +47,7 @@ def fetch_data_button_click():
             st.session_state["show_data_button_clicked"] = False
             st.session_state["chart_data_selectbox_clicked"] = False
         st.session_state["fetch_data_button_clicked"] = True
-        st.session_state["ohlcv"] = get_financial_data(
+        st.session_state["ohlcv"] = cd.get_financial_data(
             tickers=tickers,
             start=start,
             end=end,
@@ -237,7 +237,7 @@ if st.session_state["ohlcv"] is not None:
             ],
         )
     if smooth_method != "<Select>":
-        ohlcv = signal_smoothing(
+        ohlcv = cd.signal_smoothing(
             data=ohlcv,
             smoothing_method=smooth_method,
             parameters={"window": 20},
@@ -256,7 +256,7 @@ if st.session_state["ohlcv"] is not None:
         display_format != "<Select>"
         and st.session_state["chart_data_selectbox_clicked"]
     ):
-        show_prices(
+        cd.show_prices(
             data=st.session_state["ohlcv"],
             ticker=tickers,
             show_which_price=display_format,
