@@ -4,8 +4,8 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from create_data import *
-from create_strategy import *
+import create_data as cd
+import create_strategy as cs
 import base64
 import matplotlib.pyplot as plt
 from sklearn.metrics import (
@@ -115,7 +115,7 @@ else:
                 assets.insert(0, "<Select>")
                 correlated_asset = st.selectbox("Select the correlated asset: ", assets)
                 if correlated_asset is not None and correlated_asset != "<Select>":
-                    correlated_asset_ohclv = create_ohlcv_alike(
+                    correlated_asset_ohclv = cd.create_ohlcv_alike(
                         ohlcv=st.session_state["ohlcv"],
                         new_asset=st.session_state["assets"][market][correlated_asset],
                     )
@@ -128,7 +128,7 @@ else:
                     if downward_movement != 0:
                         st.markdown("<br>", unsafe_allow_html=True)
                         if st.button("Create the predictions of the strategy."):
-                            st.session_state["predictions"] = correlation_trading(
+                            st.session_state["predictions"] = cs.correlation_trading(
                                 ohlcv1=correlated_asset_ohclv,
                                 ohlcv2=st.session_state["ohlcv"],
                                 downward_movement=downward_movement,
@@ -164,7 +164,7 @@ else:
                         "Create the predictions of the strategy."
                     )
                     if strategy_created:
-                        st.session_state["predictions"] = rsi_trading(
+                        st.session_state["predictions"] = cs.rsi_trading(
                             ohlcv=st.session_state["ohlcv"],
                             oversold=oversold,
                             overbought=overbought,
@@ -183,7 +183,7 @@ else:
                         "Create the predictions of the strategy."
                     )
                     if strategy_created:
-                        st.session_state["predictions"] = sma_trading(
+                        st.session_state["predictions"] = cs.sma_trading(
                             ohlcv=st.session_state["ohlcv"],
                             short_mo=short_smo,
                             long_mo=long_smo,
@@ -202,7 +202,7 @@ else:
                         "Create the predictions of the strategy."
                     )
                     if strategy_created:
-                        st.session_state["predictions"] = ema_trading(
+                        st.session_state["predictions"] = cs.ema_trading(
                             ohlcv=st.session_state["ohlcv"],
                             short_mo=short_emo,
                             long_mo=long_emo,
@@ -222,7 +222,7 @@ else:
                     )
                     st.markdown("<br>", unsafe_allow_html=True)
                     if strategy_created:
-                        st.session_state["predictions"] = bb_trading(
+                        st.session_state["predictions"] = cs.bb_trading(
                             ohlcv=st.session_state["ohlcv"],
                             window=window,
                             window_dev=window_dev,
@@ -237,7 +237,7 @@ else:
                     st.success(
                         "Predictions of the strategy created and saved successfully"
                     )
-                    draw_technical_indicators(
+                    cs.draw_technical_indicators(
                         ohlcv=st.session_state["ohlcv"], indicator_name=indicator
                     )
         elif strategy_type == "Momentum Trading":
@@ -262,7 +262,7 @@ else:
                         "Create the predictions of the strategy."
                     )
                     if strategy_created:
-                        st.session_state["predictions"] = momentum_day_trading(
+                        st.session_state["predictions"] = cs.momentum_day_trading(
                             ohlcv=st.session_state["ohlcv"],
                             up_day=up_day,
                             down_day=down_day,
@@ -293,7 +293,7 @@ else:
                         "Create the predictions of the strategy."
                     )
                     if strategy_created:
-                        st.session_state["predictions"] = momentum_percentage_trading(
+                        st.session_state["predictions"] = cs.momentum_percentage_trading(
                             ohlcv=st.session_state["ohlcv"],
                             up_percentage=up_percentage,
                             up_day=up_day,
@@ -330,11 +330,11 @@ else:
                     and "volume_obv" not in st.session_state["ohlcv"].columns
                 ):
                     with st.spinner("Technical indicators are created..."):
-                        st.session_state["ohlcv"] = create_technical_indicators(
+                        st.session_state["ohlcv"] = cd.create_technical_indicators(
                             st.session_state["ohlcv"]
                         )
                     with st.spinner("True labels are created..."):
-                        st.session_state["ohlcv"] = create_labels(
+                        st.session_state["ohlcv"] = cd.create_labels(
                             st.session_state["ohlcv"]
                         )
                     # with st.spinner('Train and test data are created...'):
@@ -370,7 +370,7 @@ else:
                             market = st.session_state["ohlcv"]
                             train_data = market.iloc[: len(market) * 4 // 5, :]
                             test_data = market.iloc[len(market) * 4 // 5 :, :]
-                            st.session_state["predictions"] = ai_trading(
+                            st.session_state["predictions"] = cs.ai_trading(
                                 train_data=train_data,
                                 test_data=test_data,
                                 selected_models=selected_models,
@@ -469,7 +469,7 @@ else:
                 if buy_pattern == "<Select>" or sell_pattern == "<Select>":
                     st.warning("Please select the patterns for buy and sell signals.")
                 else:
-                    st.session_state["predictions"] = candlestick_trading(
+                    st.session_state["predictions"] = cs.candlestick_trading(
                         ohlcv=st.session_state["ohlcv"],
                         buy_pattern=buy_pattern,
                         sell_pattern=sell_pattern,
@@ -496,7 +496,7 @@ else:
                 )
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("Create the predictions of the strategy."):
-                st.session_state["predictions"] = support_resistance_trading(
+                st.session_state["predictions"] = cs.support_resistance_trading(
                     ohlcv=st.session_state["ohlcv"],
                     rolling_wave_length=rolling_wave_length,
                     num_clusters=num_clusters,
@@ -513,7 +513,7 @@ else:
                     )
         if st.session_state["predictions"] is not None and strategy_type != "<Select>":
             predictions = st.session_state["predictions"]["Predictions"]
-            show_predictions_on_chart(
+            cs.show_predictions_on_chart(
                 ohlcv=st.session_state["ohlcv"],
                 predictions=np.array(predictions),
                 ticker=st.session_state["ticker"],
@@ -538,7 +538,7 @@ if len(st.session_state["strategies"]) != 0:
         help="For example: 's1 and s2 and s3'",
     )
     if st.button("Mix the strategies"):
-        st.session_state["predictions"] = mix_strategies(
+        st.session_state["predictions"] = cs.mix_strategies(
             st.session_state.mix, mixing_logic
         )
         st.success("Predictions of the strategies mixed successfully")
