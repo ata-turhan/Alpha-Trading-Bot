@@ -1,0 +1,3 @@
+[tool.isort]
+line_length = 79
+src_paths = ["create_data.py", "create_strategy.py", "create_backtest.py"]

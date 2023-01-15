@@ -1,16 +1,17 @@
-import streamlit as st
 import datetime as dt
-import yfinance as yf
+import re
+
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import numpy as np
-from pycaret import classification
+import streamlit as st
 import ta
-from ta.volatility import BollingerBands
+import yfinance as yf
 from Pattern import *
+from plotly.subplots import make_subplots
+from pycaret import classification
 from sklearn.cluster import AgglomerativeClustering
-import re
+from ta.volatility import BollingerBands
 
 
 @st.cache

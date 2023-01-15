@@ -1,20 +1,17 @@
-import streamlit as st
 import datetime as dt
-import yfinance as yf
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
+import streamlit as st
+import yfinance as yf
 from plotly.subplots import make_subplots
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import (RFE, SelectFromModel, SelectKBest,
+                                       f_classif)
+from sklearn.linear_model import LinearRegression, LogisticRegression
 from ta import add_all_ta_features
 from ta.utils import dropna
-
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import f_classif
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import SelectFromModel
-from sklearn.feature_selection import RFE
-from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import LinearRegression
 
 if "ohlcv" not in st.session_state:
     st.session_state["ohlcv"] = None

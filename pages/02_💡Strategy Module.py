@@ -1,18 +1,16 @@
-import streamlit as st
+import base64
 import datetime as dt
-import yfinance as yf
-import pandas as pd
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+
 import create_data as cd
 import create_strategy as cs
-import base64
 import matplotlib.pyplot as plt
-from sklearn.metrics import (
-    classification_report,
-    confusion_matrix,
-    ConfusionMatrixDisplay,
-)
+import pandas as pd
+import plotly.graph_objects as go
+import streamlit as st
+import yfinance as yf
+from plotly.subplots import make_subplots
+from sklearn.metrics import (ConfusionMatrixDisplay, classification_report,
+                             confusion_matrix)
 
 
 def add_bg_from_local(background_file, sidebar_background_file):

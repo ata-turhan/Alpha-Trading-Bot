@@ -1,6 +1,7 @@
 # Import the required Libraries
-import streamlit as st
 import base64
+
+import streamlit as st
 
 
 def add_bg_from_local(background_file, sidebar_background_file):

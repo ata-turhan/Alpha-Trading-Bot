@@ -1,14 +1,15 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
-import plotly.express as px
-import yfinance as yf
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+import datetime as dt
 import math
 import random
-import datetime as dt
 import time
+
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
+import yfinance as yf
+from plotly.subplots import make_subplots
 
 
 def adjustPrices(ohlcv: pd.DataFrame) -> None:
