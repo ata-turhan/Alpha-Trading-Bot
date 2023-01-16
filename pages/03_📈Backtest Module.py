@@ -6,8 +6,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 import yfinance as yf
-from create_backtest import *
-from create_data import *
+import create_backtest as cb
+import create_data as cd
 from plotly.subplots import make_subplots
 
 
@@ -195,7 +195,7 @@ else:
 
     if st.button("Run the backtest"):
         st.session_state["backtest_configuration_ready"] = True
-        metrics = financial_evaluation(
+        metrics = cb.financial_evaluation(
             hold_label,
             buy_label,
             sell_label,

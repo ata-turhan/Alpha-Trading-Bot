@@ -52,14 +52,6 @@ def main():
     [![Follow](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ata-turhan-555b5b160/)
     """
 
-    # st.markdown("""
-    # <style>
-    # section[data-testid="stSidebar"] div[class="css-6qob1r e1fqkh3o3"]
-    # {background-image: linear-gradient(#8993ab,#8993ab);color: white}
-    # </style>
-    # """,
-    # unsafe_allow_html=True)
-
     st.markdown(
         "<h1 style='text-align: center; color: black;'> 🤖 Fully-Fledged Trading  Bot </h1> <br> <br>",
         unsafe_allow_html=True,

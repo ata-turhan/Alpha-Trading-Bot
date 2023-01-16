@@ -5,6 +5,7 @@ import create_data as cd
 import create_strategy as cs
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 import yfinance as yf

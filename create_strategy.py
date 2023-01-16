@@ -352,7 +352,6 @@ def support_resistance_trading(
     return predictions
 
 
-@st.cache
 def show_predictions_on_chart(ohlcv: pd.DataFrame, predictions: np.array, ticker: str):
     fig = go.Figure()
     buy_labels = predictions == 1

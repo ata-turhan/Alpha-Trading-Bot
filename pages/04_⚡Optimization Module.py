@@ -6,8 +6,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 import yfinance as yf
-from create_backtest import *
-from create_data import *
+import create_backtest as cb
+import create_data as cd
 from plotly.subplots import make_subplots
 
 
@@ -70,8 +70,8 @@ if (
     )
 else:
     ticker = st.session_state["ticker"]
-    ohlcv: pd.DataFrame = st.session_state["ohlcv"]
-    predictions: np.array = np.array(st.session_state["predictions"])
+    ohlcv = st.session_state["ohlcv"]
+    predictions = np.array(st.session_state["predictions"])
     st.markdown("<br>", unsafe_allow_html=True)
     metric_optimized = st.selectbox(
         "Please select the backtest metrics to optimize:",
@@ -81,12 +81,15 @@ else:
     take_profit_ranges = st.slider(
         "Select a range for take profit values", 0, 50, (5, 25)
     )
-    take_profit_values = list(range(take_profit_ranges[0], take_profit_ranges[1]))
+    take_profit_values = list(
+        range(take_profit_ranges[0], take_profit_ranges[1]))
     st.markdown("<br>", unsafe_allow_html=True)
-    stop_loss_ranges = st.slider("Select a range for stop loss values", 0, 50, (5, 25))
+    stop_loss_ranges = st.slider(
+        "Select a range for stop loss values", 0, 50, (5, 25))
     stop_loss_values = list(range(stop_loss_ranges[0], stop_loss_ranges[1]))
     st.markdown("<br>", unsafe_allow_html=True)
-    leverage_ranges = st.slider("Select a range for leverage values", 1, 20, (1, 5))
+    leverage_ranges = st.slider(
+        "Select a range for leverage values", 1, 20, (1, 5))
     leverage_values = list(range(leverage_ranges[0], leverage_ranges[1]))
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2 = st.columns([1, 1])
@@ -98,7 +101,8 @@ else:
         )
     with col2:
         best_n = int(
-            st.number_input("Choose the number of best combinations to see.", value=0)
+            st.number_input(
+                "Choose the number of best combinations to see.", value=0)
         )
     col1, col2 = st.columns([1, 1])
     with col1:
@@ -108,7 +112,7 @@ else:
 
     if metric_optimized != "<Select>" and iteration != 0 and best_n != 0:
         if st.button("Run the optimization"):
-            optimize_backtest(
+            cb.optimize_backtest(
                 metric_optimized=metric_optimized,
                 take_profit_values=take_profit_values,
                 stop_loss_values=stop_loss_values,
