@@ -10,8 +10,11 @@ import plotly.graph_objects as go
 import streamlit as st
 import yfinance as yf
 from plotly.subplots import make_subplots
-from sklearn.metrics import (ConfusionMatrixDisplay, classification_report,
-                             confusion_matrix)
+from sklearn.metrics import (
+    ConfusionMatrixDisplay,
+    classification_report,
+    confusion_matrix,
+)
 
 
 def add_bg_from_local(background_file, sidebar_background_file):
@@ -292,7 +295,9 @@ else:
                         "Create the predictions of the strategy."
                     )
                     if strategy_created:
-                        st.session_state["predictions"] = cs.momentum_percentage_trading(
+                        st.session_state[
+                            "predictions"
+                        ] = cs.momentum_percentage_trading(
                             ohlcv=st.session_state["ohlcv"],
                             up_percentage=up_percentage,
                             up_day=up_day,

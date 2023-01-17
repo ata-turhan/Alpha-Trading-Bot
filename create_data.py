@@ -7,8 +7,7 @@ import streamlit as st
 import yfinance as yf
 from plotly.subplots import make_subplots
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import (RFE, SelectFromModel, SelectKBest,
-                                       f_classif)
+from sklearn.feature_selection import RFE, SelectFromModel, SelectKBest, f_classif
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from ta import add_all_ta_features
 from ta.utils import dropna

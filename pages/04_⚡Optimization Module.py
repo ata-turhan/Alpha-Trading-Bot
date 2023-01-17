@@ -81,15 +81,12 @@ else:
     take_profit_ranges = st.slider(
         "Select a range for take profit values", 0, 50, (5, 25)
     )
-    take_profit_values = list(
-        range(take_profit_ranges[0], take_profit_ranges[1]))
+    take_profit_values = list(range(take_profit_ranges[0], take_profit_ranges[1]))
     st.markdown("<br>", unsafe_allow_html=True)
-    stop_loss_ranges = st.slider(
-        "Select a range for stop loss values", 0, 50, (5, 25))
+    stop_loss_ranges = st.slider("Select a range for stop loss values", 0, 50, (5, 25))
     stop_loss_values = list(range(stop_loss_ranges[0], stop_loss_ranges[1]))
     st.markdown("<br>", unsafe_allow_html=True)
-    leverage_ranges = st.slider(
-        "Select a range for leverage values", 1, 20, (1, 5))
+    leverage_ranges = st.slider("Select a range for leverage values", 1, 20, (1, 5))
     leverage_values = list(range(leverage_ranges[0], leverage_ranges[1]))
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2 = st.columns([1, 1])
@@ -101,8 +98,7 @@ else:
         )
     with col2:
         best_n = int(
-            st.number_input(
-                "Choose the number of best combinations to see.", value=0)
+            st.number_input("Choose the number of best combinations to see.", value=0)
         )
     col1, col2 = st.columns([1, 1])
     with col1:
