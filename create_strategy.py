@@ -414,7 +414,6 @@ def mix_strategies(mix: set, mixing_logic: str):
     return predictions
 
 
-@st.cache
 def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
     if indicator_name == "Bollinger Bands":
         indicator_bb = BollingerBands(close=ohlcv["Close"], window=20, window_dev=2)
