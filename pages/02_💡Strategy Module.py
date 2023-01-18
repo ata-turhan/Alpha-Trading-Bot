@@ -54,6 +54,8 @@ add_bg_from_local("data/background.png", "data/bot.png")
 
 if "ohlcv" not in st.session_state:
     st.session_state["ohlcv"] = None
+if "smoothed_ohlcv" not in st.session_state:
+    st.session_state["smoothed_ohlcv"] = None
 if "strategies" not in st.session_state:
     st.session_state.strategies = dict()
 if "predictions" not in st.session_state:
@@ -86,7 +88,7 @@ else:
         if uploaded_file is not None:
             try:
                 st.session_state["predictions"] = np.array(pd.read_csv(uploaded_file))
-            except:
+            except FileNotFoundError as exception:
                 st.error("you need to upload a csv or excel file.")
             else:
                 predictions = st.session_state["predictions"]
@@ -94,6 +96,20 @@ else:
                     st.markdown("<br>", unsafe_allow_html=True)
                     st.success("The predictions of strategy fetched successfully")
     elif strategy_fetch_way == "Create a strategy":
+        smooth_method = st.selectbox(
+            "Which way do you want to use the price data with smoothing?",
+            [
+                "None",
+                "Moving Average",
+                "Heikin-Ashi",
+                "Trend Normalization",
+            ],
+        )
+        st.session_state["smoothed_ohlcv"] = cd.signal_smoothing(
+            data=st.session_state["ohlcv"],
+            smoothing_method=smooth_method,
+            parameters={"window": 20},
+        )
         strategy_type = st.selectbox(
             "Which strategy do you want to create: ",
             [
@@ -118,21 +134,21 @@ else:
                 correlated_asset = st.selectbox("Select the correlated asset: ", assets)
                 if correlated_asset is not None and correlated_asset != "<Select>":
                     correlated_asset_ohclv = cd.create_ohlcv_alike(
-                        ohlcv=st.session_state["ohlcv"],
+                        ohlcv=st.session_state["smoothed_ohlcv"],
                         new_asset=st.session_state["assets"][market][correlated_asset],
                     )
                     try:
                         downward_movement = st.number_input(
                             "How much downward movement do you expect to see from the correlated asset?"
                         )
-                    except:
+                    except TypeError:
                         st.write("Please write a number.")
                     if downward_movement != 0:
                         st.markdown("<br>", unsafe_allow_html=True)
                         if st.button("Create the predictions of the strategy."):
                             st.session_state["predictions"] = cs.correlation_trading(
                                 ohlcv1=correlated_asset_ohclv,
-                                ohlcv2=st.session_state["ohlcv"],
+                                ohlcv2=st.session_state["smoothed_ohlcv"],
                                 downward_movement=downward_movement,
                                 upward_movement=0.01,
                             )
@@ -167,7 +183,7 @@ else:
                     )
                     if strategy_created:
                         st.session_state["predictions"] = cs.rsi_trading(
-                            ohlcv=st.session_state["ohlcv"],
+                            ohlcv=st.session_state["smoothed_ohlcv"],
                             oversold=oversold,
                             overbought=overbought,
                         )
@@ -186,7 +202,7 @@ else:
                     )
                     if strategy_created:
                         st.session_state["predictions"] = cs.sma_trading(
-                            ohlcv=st.session_state["ohlcv"],
+                            ohlcv=st.session_state["smoothed_ohlcv"],
                             short_mo=short_smo,
                             long_mo=long_smo,
                         )
@@ -205,7 +221,7 @@ else:
                     )
                     if strategy_created:
                         st.session_state["predictions"] = cs.ema_trading(
-                            ohlcv=st.session_state["ohlcv"],
+                            ohlcv=st.session_state["smoothed_ohlcv"],
                             short_mo=short_emo,
                             long_mo=long_emo,
                         )
@@ -225,7 +241,7 @@ else:
                     st.markdown("<br>", unsafe_allow_html=True)
                     if strategy_created:
                         st.session_state["predictions"] = cs.bb_trading(
-                            ohlcv=st.session_state["ohlcv"],
+                            ohlcv=st.session_state["smoothed_ohlcv"],
                             window=window,
                             window_dev=window_dev,
                         )
@@ -240,7 +256,8 @@ else:
                         "Predictions of the strategy created and saved successfully"
                     )
                     cs.draw_technical_indicators(
-                        ohlcv=st.session_state["ohlcv"], indicator_name=indicator
+                        ohlcv=st.session_state["smoothed_ohlcv"],
+                        indicator_name=indicator,
                     )
         elif strategy_type == "Momentum Trading":
             indicator = st.selectbox(
@@ -265,7 +282,7 @@ else:
                     )
                     if strategy_created:
                         st.session_state["predictions"] = cs.momentum_day_trading(
-                            ohlcv=st.session_state["ohlcv"],
+                            ohlcv=st.session_state["smoothed_ohlcv"],
                             up_day=up_day,
                             down_day=down_day,
                             reverse=reverse,
@@ -298,7 +315,7 @@ else:
                         st.session_state[
                             "predictions"
                         ] = cs.momentum_percentage_trading(
-                            ohlcv=st.session_state["ohlcv"],
+                            ohlcv=st.session_state["smoothed_ohlcv"],
                             up_percentage=up_percentage,
                             up_day=up_day,
                             down_percentage=down_percentage,
@@ -330,16 +347,18 @@ else:
                     pass
             if analysis_type == "Technical Analysis":
                 if (
-                    "Label" not in st.session_state["ohlcv"].columns
-                    and "volume_obv" not in st.session_state["ohlcv"].columns
+                    "Label" not in st.session_state["smoothed_ohlcv"].columns
+                    and "volume_obv" not in st.session_state["smoothed_ohlcv"].columns
                 ):
                     with st.spinner("Technical indicators are created..."):
-                        st.session_state["ohlcv"] = cd.create_technical_indicators(
-                            st.session_state["ohlcv"]
+                        st.session_state[
+                            "smoothed_ohlcv"
+                        ] = cd.create_technical_indicators(
+                            st.session_state["smoothed_ohlcv"]
                         )
                     with st.spinner("True labels are created..."):
-                        st.session_state["ohlcv"] = cd.create_labels(
-                            st.session_state["ohlcv"]
+                        st.session_state["smoothed_ohlcv"] = cd.create_labels(
+                            st.session_state["smoothed_ohlcv"]
                         )
                     # with st.spinner('Train and test data are created...'):
                     # X_train, y_train, X_test, y_test = create_train_test_data(st.session_state["ohlcv"])
@@ -354,7 +373,9 @@ else:
                         ["<Select>", "AutoKeras", "Prophet"],
                     )
                 elif ai_method == "Machine Learning":
-                    models = get_ml_models(st.session_state["ohlcv"].iloc[:100, :])
+                    models = cs.get_ml_models(
+                        st.session_state["smoothed_ohlcv"].iloc[:100, :]
+                    )
                     ai_models = st.multiselect(
                         "Select the machine learning models you want to use: ",
                         models.keys(),
@@ -371,7 +392,7 @@ else:
                         if st.button("Create the predictions of the strategy."):
                             # train_data = pd.concat([pd.DataFrame(X_train[0], index=y_train[0].index), y_train[0]], axis=1)
                             # test_data = pd.DataFrame(X_test[0], index=y_test[0].index)
-                            market = st.session_state["ohlcv"]
+                            market = st.session_state["smoothed_ohlcv"]
                             train_data = market.iloc[: len(market) * 4 // 5, :]
                             test_data = market.iloc[len(market) * 4 // 5 :, :]
                             st.session_state["predictions"] = cs.ai_trading(
@@ -474,7 +495,7 @@ else:
                     st.warning("Please select the patterns for buy and sell signals.")
                 else:
                     st.session_state["predictions"] = cs.candlestick_trading(
-                        ohlcv=st.session_state["ohlcv"],
+                        ohlcv=st.session_state["smoothed_ohlcv"],
                         buy_pattern=buy_pattern,
                         sell_pattern=sell_pattern,
                     )
@@ -501,7 +522,7 @@ else:
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("Create the predictions of the strategy."):
                 st.session_state["predictions"] = cs.support_resistance_trading(
-                    ohlcv=st.session_state["ohlcv"],
+                    ohlcv=st.session_state["smoothed_ohlcv"],
                     rolling_wave_length=rolling_wave_length,
                     num_clusters=num_clusters,
                 )
@@ -518,7 +539,7 @@ else:
         if st.session_state["predictions"] is not None and strategy_type != "<Select>":
             predictions = st.session_state["predictions"]["Predictions"]
             cs.show_predictions_on_chart(
-                ohlcv=st.session_state["ohlcv"],
+                ohlcv=st.session_state["smoothed_ohlcv"],
                 predictions=np.array(predictions),
                 ticker=st.session_state["ticker"],
             )

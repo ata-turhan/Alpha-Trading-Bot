@@ -227,23 +227,23 @@ elif data_fetch_way == "Read from a file":
             st.success("Data fetched successfully")
             st.markdown("<br>", unsafe_allow_html=True)
 if st.session_state["ohlcv"] is not None:
-    if st.checkbox("Do you want to smooth the signal?"):
-        smooth_method = st.selectbox(
-            "Which way do you want to smooth the signal?",
-            [
-                "<Select>",
-                "Moving Average",
-                "Heikin-Ashi",
-                "Trend Normalization",
-            ],
-        )
-    if smooth_method != "<Select>":
-        ohlcv = cd.signal_smoothing(
-            data=ohlcv,
-            smoothing_method=smooth_method,
-            parameters={"window": 20},
-        )
-        st.session_state["ohlcv"] = ohlcv
+    # if st.checkbox("Do you want to smooth the signal?"):
+    #    smooth_method = st.selectbox(
+    #        "Which way do you want to smooth the signal?",
+    #        [
+    #            "<Select>",
+    #            "Moving Average",
+    #            "Heikin-Ashi",
+    #            "Trend Normalization",
+    #        ],
+    #    )
+    # if smooth_method != "<Select>":
+    #   ohlcv = cd.signal_smoothing(
+    #        data=ohlcv,
+    #        smoothing_method=smooth_method,
+    #        parameters={"window": 20},
+    #   )
+    #    st.session_state["ohlcv"] = ohlcv
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("Show the data in a tabular format"):
         st.dataframe(ohlcv)
