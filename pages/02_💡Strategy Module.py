@@ -1,15 +1,11 @@
 import base64
-import datetime as dt
 
 import create_data as cd
 import create_strategy as cs
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go
 import streamlit as st
-import yfinance as yf
-from plotly.subplots import make_subplots
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
     classification_report,

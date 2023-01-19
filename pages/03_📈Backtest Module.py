@@ -1,14 +1,9 @@
 import base64
-import datetime as dt
 
 import numpy as np
-import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
-import yfinance as yf
 import create_backtest as cb
 import create_data as cd
-from plotly.subplots import make_subplots
 
 
 def add_bg_from_local(background_file, sidebar_background_file):
@@ -86,8 +81,8 @@ else:
             st.session_state["backtest_configuration"][
                 "benchmark_ticker"
             ] = benchmark_ticker
-        ohlcv: pd.DataFrame = st.session_state["ohlcv"]
-        predictions: np.array = np.array(st.session_state["predictions"])
+        ohlcv = st.session_state["ohlcv"]
+        predictions = np.array(st.session_state["predictions"])
         st.markdown("<br>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1, 1, 1])
         with col1:

@@ -4,10 +4,8 @@ import re
 
 import create_data as cd
 import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
 import yfinance as yf
-from plotly.subplots import make_subplots
 
 
 def add_bg_from_local(background_file, sidebar_background_file):
