@@ -12,6 +12,15 @@ from plotly.subplots import make_subplots
 from pycaret import classification
 from sklearn.cluster import AgglomerativeClustering
 from ta.volatility import BollingerBands
+import autokeras as ak
+import keras
+from keras.callbacks import (
+    Callback,
+    ModelCheckpoint,
+    EarlyStopping,
+    CSVLogger,
+    ReduceLROnPlateau,
+)
 
 
 @st.cache
@@ -193,7 +202,7 @@ def get_ml_models(train_data: pd.DataFrame):
 
 
 @st.cache
-def ai_trading(
+def ml_trading(
     train_data: pd.DataFrame,
     test_data: pd.DataFrame,
     selected_models: list,
@@ -226,6 +235,38 @@ def ai_trading(
     model_predictions = classification.predict_model(tuned_model, data=test_data)
     predictions = pd.DataFrame(
         index=test_data.index, data={"Predictions": model_predictions["Label"]}
+    )
+    return predictions
+
+
+def dl_trading(
+    train_data: pd.DataFrame,
+    test_data: pd.DataFrame,
+    possible_models: list,
+):
+    callback = [
+    EarlyStopping(monitor='val_loss', patience=25, mode="min"),
+    ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=15, verbose=1, min_delta=1e-3, mode='min')
+    ]
+    with st.spinner("Searching best neural network architecture..."):
+        search = ak.StructuredDataClassifier(
+        max_trials=possible_models,
+        project_name="Asset Price Classifier",
+        overwrite=True,
+    )
+    search.fit(
+        x=train_data.loc[:, :"Label"],
+        y=train_data.loc[:, "Label"],
+        epochs=30,
+        verbose=2,
+        callbacks=[callback],
+        validation_split=0.3,
+    )
+    with st.spinner("Finalizing the best model..."):
+        best_nn_model = search.export_model()
+    preds = best_nn_model.predict(test_data.loc[:, :"Label"])
+    predictions = pd.DataFrame(
+        index=test_data.index, data={"Predictions": preds}
     )
     return predictions
 
@@ -405,7 +446,6 @@ def mix_strategies(mix: set, mixing_logic: str):
             sell_evaluations.append(m["is_sell"].iat[i])
         buy_evaluation = eval(mixing_logic.format(*buy_evaluations))
         sell_evaluation = eval(mixing_logic.format(*sell_evaluations))
-        # st.write(buy_evaluation)
         if buy_evaluation:
             mix_prediction[i] = 1
         if sell_evaluation:

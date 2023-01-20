@@ -368,6 +368,21 @@ else:
                         "Select the deep learning model you want to use: ",
                         ["<Select>", "AutoKeras", "Prophet"],
                     )
+                    if dl_method == "AutoKeras":
+                        possible_models  = st.number_input(
+                        "Select the number of the possible models to try",
+                        value=5,
+                        step=5,
+                        )
+                        if st.button("Create the predictions of the strategy."):
+                            market = st.session_state["smoothed_ohlcv"]
+                            train_data = market.iloc[: len(market) * 4 // 5, :]
+                            test_data = market.iloc[len(market) * 4 // 5 :, :]
+                            st.session_state["predictions"] = cs.dl_trading(
+                                train_data=train_data,
+                                test_data=test_data,
+                                possible_models=possible_models,
+                            )
                 elif ai_method == "Machine Learning":
                     models = cs.get_ml_models(
                         st.session_state["smoothed_ohlcv"].iloc[:100, :]
@@ -391,7 +406,7 @@ else:
                             market = st.session_state["smoothed_ohlcv"]
                             train_data = market.iloc[: len(market) * 4 // 5, :]
                             test_data = market.iloc[len(market) * 4 // 5 :, :]
-                            st.session_state["predictions"] = cs.ai_trading(
+                            st.session_state["predictions"] = cs.ml_trading(
                                 train_data=train_data,
                                 test_data=test_data,
                                 selected_models=selected_models,
