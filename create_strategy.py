@@ -233,10 +233,9 @@ def ml_trading(
         final_model = classification.finalize_model(tuned_model)
     # default model
     model_predictions = classification.predict_model(tuned_model, data=test_data)
-    predictions = pd.DataFrame(
+    return pd.DataFrame(
         index=test_data.index, data={"Predictions": model_predictions["Label"]}
     )
-    return predictions
 
 
 def dl_trading(
@@ -254,21 +253,21 @@ def dl_trading(
         project_name="Asset Price Classifier",
         overwrite=True,
     )
-    search.fit(
-        x=train_data.loc[:, :"Label"],
-        y=train_data.loc[:, "Label"],
-        epochs=30,
-        verbose=2,
-        callbacks=[callback],
-        validation_split=0.3,
-    )
+        search.fit(
+            x=train_data.loc[:, :"Label"],
+            y=train_data.loc[:, "Label"],
+            epochs=30,
+            verbose=2,
+            callbacks=[callback],
+            validation_split=0.3,
+        )
     with st.spinner("Finalizing the best model..."):
         best_nn_model = search.export_model()
     preds = best_nn_model.predict(test_data.loc[:, :"Label"])
-    predictions = pd.DataFrame(
-        index=test_data.index, data={"Predictions": preds}
+    predictions = np.argmax(preds, axis=1)
+    return pd.DataFrame(
+        index=test_data.index, data={"Predictions": predictions}
     )
-    return predictions
 
 
 @st.cache
