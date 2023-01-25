@@ -1,14 +1,9 @@
 import base64
-import datetime as dt
 
 import numpy as np
-import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
-import yfinance as yf
 import create_backtest as cb
 import create_data as cd
-from plotly.subplots import make_subplots
 
 
 def add_bg_from_local(background_file, sidebar_background_file):

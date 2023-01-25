@@ -1,6 +1,5 @@
 # Import the required Libraries
 import base64
-
 import streamlit as st
 
 
@@ -9,21 +8,21 @@ def add_bg_from_local(background_file, sidebar_background_file):
         encoded_string = base64.b64encode(image_file.read())
     with open(sidebar_background_file, "rb") as image_file:
         sidebar_encoded_string = base64.b64encode(image_file.read())
-    st.markdown(
-        f"""
-    <style>
-    .stApp {{
-        background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
-        background-size: cover
-    }}
-    section[data-testid="stSidebar"] div[class="css-6qob1r e1fqkh3o3"]
-    {{
-        background-image: url(data:image/{"png"};base64,{sidebar_encoded_string.decode()});
-        background-size: 400px 800px
-    }}
-    """,
-        unsafe_allow_html=True,
-    )
+
+    page = f"""<style>
+        .stApp {{
+            background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
+            background-size: cover;
+        }}
+
+        section[data-testid="stSidebar"] div[class="css-6qob1r e1fqkh3o3"] {{
+            background-image: url(data:image/{"png"};base64,{sidebar_encoded_string.decode()});
+            background-size: 400px 800px;
+        }}
+
+    </style>"""
+
+    st.markdown(page, unsafe_allow_html=True)
 
 
 def main():
@@ -33,28 +32,24 @@ def main():
         layout="wide",
         initial_sidebar_state="expanded",
         menu_items={
-            "Get Help": "https://github.com/fotino21",
-            "Report a bug": None,
-            "About": "This is a trading bot which can be used for retrival of financial data, \
-                                creating trading strategies, backtesting the strategies and optimizing the strategies. \
-                                Please, give us all the helpful feedbacks!",
-        },
+            "Get Help": "https://github.com/fotino21", 
+            "Report a bug": None, 
+            "About": "This is a trading bot which can be used for retrival of financial data, creating trading strategies, backtesting the strategies and optimizing the strategies. Please, give us all the helpful feedbacks!", 
+        }, 
     )
 
     add_bg_from_local("data/background.png", "data/bot.png")
 
-    for _ in range(18):
-        st.sidebar.text("\n")
-    st.sidebar.write("Developed by Ata Turhan")
-    st.sidebar.write("Contact at ataturhan21@gmail.com")
+    st.sidebar.text("\n" * 18) # Added to separate contact info from other sidebar elements 
 
-    """
-    [![Follow](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ata-turhan-555b5b160/)
-    """
+    st.sidebar.write("Developed by Ata Turhan") # Moved contact info to the top of the sidebar  
 
-    st.markdown(
-        "<h1 style='text-align: center; color: black;'> 🤖 Fully-Fledged Trading  Bot </h1> <br> <br>",
-        unsafe_allow_html=True,
+    st.sidebar.write("Contact at ataturhan21@gmail.com") # Moved contact info to the top of the sidebar  
+
+    """  [![Follow](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ata-turhan-555b5b160/) """
+
+    st.markdown( # Combined text and styling into one line for readability 
+        "<h1 style='text-align: center; color: black;'> 🤖 Fully-Fledged Trading Bot </h1> <br> <br>", unsafe_allow_html=True, 
     )
 
     welcome_message = '<p style="font-family:Arial; font-size: 26px;"> \

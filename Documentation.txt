@@ -1,0 +1,3 @@
+Welcome Page
+
+# This code imports the required libraries, sets the page configuration for a trading bot web app, adds background images from local files, and adds a welcome message to the web app. The libraries imported are base64 and streamlit. The page configuration sets the page title, icon, layout, initial sidebar state, and menu items. The add_bg_from_local() function takes two parameters (background_file and sidebar_background_file) which are used to set the background image for the main page and sidebar respectively. Finally, a welcome message is added to the web app using markdown.
