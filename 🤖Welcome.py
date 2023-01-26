@@ -32,24 +32,31 @@ def main():
         layout="wide",
         initial_sidebar_state="expanded",
         menu_items={
-            "Get Help": "https://github.com/fotino21", 
-            "Report a bug": None, 
-            "About": "This is a trading bot which can be used for retrival of financial data, creating trading strategies, backtesting the strategies and optimizing the strategies. Please, give us all the helpful feedbacks!", 
-        }, 
+            "Get Help": "https://github.com/fotino21",
+            "Report a bug": None,
+            "About": "This is a trading bot which can be used for retrival of financial data, creating trading strategies, backtesting the strategies and optimizing the strategies. Please, give us all the helpful feedbacks!",
+        },
     )
 
     add_bg_from_local("data/background.png", "data/bot.png")
 
-    st.sidebar.text("\n" * 18) # Added to separate contact info from other sidebar elements 
+    st.sidebar.text(
+        "\n" * 18
+    )  # Added to separate contact info from other sidebar elements
 
-    st.sidebar.write("Developed by Ata Turhan") # Moved contact info to the top of the sidebar  
+    st.sidebar.write(
+        "Developed by Ata Turhan"
+    )  # Moved contact info to the top of the sidebar
 
-    st.sidebar.write("Contact at ataturhan21@gmail.com") # Moved contact info to the top of the sidebar  
+    st.sidebar.write(
+        "Contact at ataturhan21@gmail.com"
+    )  # Moved contact info to the top of the sidebar
 
     """  [![Follow](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ata-turhan-555b5b160/) """
 
-    st.markdown( # Combined text and styling into one line for readability 
-        "<h1 style='text-align: center; color: black;'> 🤖 Fully-Fledged Trading Bot </h1> <br> <br>", unsafe_allow_html=True, 
+    st.markdown(  # Combined text and styling into one line for readability
+        "<h1 style='text-align: center; color: black;'> 🤖 Fully-Fledged Trading Bot </h1> <br> <br>",
+        unsafe_allow_html=True,
     )
 
     welcome_message = '<p style="font-family:Arial; font-size: 26px;"> \
