@@ -1,5 +1,5 @@
-autokeras==1.1.0
-keras==2.11.0
+autokeras
+keras
 matplotlib==3.5.3
 numpy==1.19.5
 pandas==1.3.5
@@ -7,5 +7,6 @@ Pattern==3.6
 plotly==5.11.0
 pycaret==2.3.5
 scikit_learn==1.2.1
+streamlit
 ta==0.10.2
 yfinance==0.1.90
