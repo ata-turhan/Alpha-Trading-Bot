@@ -330,18 +330,22 @@ else:
                         "Predictions of the strategy created and saved successfully"
                     )
         elif strategy_type == "AI Trading":
-            analysis_type = st.selectbox(
-                "Select the analyse type you want to apply ai for: ",
-                ["<Select>", "Technical Analysis", "Sentiment Analysis"],
+            data_types = st.multiselect(
+                "Select the data types you want to include for ai modeling: ",
+                ["<Select>", "Fundamental Data", "Technical Data", "Sentiment Data"],
+                help="Fundamental Data: CPI, DXY, Fed Rate.\nTechnical Data: Technical Indicators\nSentiment Data: \
+                Sentiment of tweets of last 24 hours."
             )
-            if analysis_type == "Sentiment Analysis":
+            if "Sentiment Data" in data_types:
                 transformer_type = st.selectbox(
                     "Select the tranformer model you want to use: ",
                     ["<Select>", "Vader"],
                 )
                 if transformer_type == "Vader":
                     pass
-            if analysis_type == "Technical Analysis":
+            if "Fundamental Data" in data_types:
+                pass
+            if "Technical Data" in data_types:
                 if (
                     "Label" not in st.session_state["smoothed_ohlcv"].columns
                     and "volume_obv" not in st.session_state["smoothed_ohlcv"].columns
