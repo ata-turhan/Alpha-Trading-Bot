@@ -17,12 +17,12 @@ def add_bg_from_local(background_file, sidebar_background_file):
         f"""
     <style>
     .stApp {{
-        background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
+        background-image: url(data:image/png;base64,{encoded_string.decode()});
         background-size: cover
     }}
     section[data-testid="stSidebar"] div[class="css-6qob1r e1fqkh3o3"]
     {{
-        background-image: url(data:image/{"png"};base64,{sidebar_encoded_string.decode()});
+        background-image: url(data:image/png;base64,{sidebar_encoded_string.decode()});
         background-size: 400px 800px
     }}
     """,
@@ -78,7 +78,7 @@ if "ohlcv" not in st.session_state:
 if "ticker" not in st.session_state:
     st.session_state["ticker"] = ""
 if "assets" not in st.session_state:
-    st.session_state["assets"] = dict()
+    st.session_state["assets"] = {}
 smooth_method = "<Select>"
 
 stocks_and_etfs = {
@@ -175,7 +175,7 @@ if data_fetch_way == "Fetch over the internet":
             adjust_situation = st.selectbox(
                 "Do you want to adjust the prices: ", ["<Select>", "Yes", "No"]
             )
-            auto_adjust = True if adjust_situation == "Yes" else False
+            auto_adjust = adjust_situation == "Yes"
 
             st.session_state["all_areas_filled"] = (
                 market != "<Select>"
@@ -215,7 +215,7 @@ elif data_fetch_way == "Read from a file":
                 st.session_state["ohlcv"] = pd.read_excel(
                     uploaded_file, index_col="Date"
                 )
-        except:
+        except Exception:
             st.error("you need to upload a csv or excel file.")
         else:
             st.session_state["ohlcv"].index = pd.to_datetime(

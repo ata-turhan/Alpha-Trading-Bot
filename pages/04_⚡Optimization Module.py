@@ -15,12 +15,12 @@ def add_bg_from_local(background_file, sidebar_background_file):
         f"""
     <style>
     .stApp {{
-        background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
+        background-image: url(data:image/png;base64,{encoded_string.decode()});
         background-size: cover
     }}
     section[data-testid="stSidebar"] div[class="css-6qob1r e1fqkh3o3"]
     {{
-        background-image: url(data:image/{"png"};base64,{sidebar_encoded_string.decode()});
+        background-image: url(data:image/png;base64,{sidebar_encoded_string.decode()});
         background-size: 400px 800px
     }}
     """,
@@ -41,7 +41,7 @@ if "ticker" not in st.session_state:
 if "backtest_configuration_ready" not in st.session_state:
     st.session_state["backtest_configuration_ready"] = False
 if "backtest_configuration" not in st.session_state:
-    st.session_state["backtest_configuration"] = dict()
+    st.session_state["backtest_configuration"] = {}
 
 
 for _ in range(22):
@@ -101,19 +101,19 @@ else:
     with col2:
         show_results = st.checkbox("Show results")
 
-    if metric_optimized != "<Select>" and iteration != 0 and best_n != 0:
-        if st.button("Run the optimization"):
-            cb.optimize_backtest(
-                metric_optimized=metric_optimized,
-                take_profit_values=take_profit_values,
-                stop_loss_values=stop_loss_values,
-                leverage_values=leverage_values,
-                iteration=iteration,
-                best_n=best_n,
-                verbose=verbose,
-                show_results=show_results,
-            )
-            st.success("Optimization is successful!")
-            st.balloons()
-    else:
+    if metric_optimized == "<Select>" or iteration == 0 or best_n == 0:
         st.error("Please fill all the required fields.")
+
+    elif st.button("Run the optimization"):
+        cb.optimize_backtest(
+            metric_optimized=metric_optimized,
+            take_profit_values=take_profit_values,
+            stop_loss_values=stop_loss_values,
+            leverage_values=leverage_values,
+            iteration=iteration,
+            best_n=best_n,
+            verbose=verbose,
+            show_results=show_results,
+        )
+        st.success("Optimization is successful!")
+        st.balloons()

@@ -22,12 +22,12 @@ def add_bg_from_local(background_file, sidebar_background_file):
         f"""
     <style>
     .stApp {{
-        background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
+        background-image: url(data:image/png;base64,{encoded_string.decode()});
         background-size: cover
     }}
     section[data-testid="stSidebar"] div[class="css-6qob1r e1fqkh3o3"]
     {{
-        background-image: url(data:image/{"png"};base64,{sidebar_encoded_string.decode()});
+        background-image: url(data:image/png;base64,{sidebar_encoded_string.decode()});
         background-size: 400px 800px
     }}
     """,
@@ -53,7 +53,7 @@ if "ohlcv" not in st.session_state:
 if "smoothed_ohlcv" not in st.session_state:
     st.session_state["smoothed_ohlcv"] = None
 if "strategies" not in st.session_state:
-    st.session_state.strategies = dict()
+    st.session_state.strategies = {}
 if "predictions" not in st.session_state:
     st.session_state["predictions"] = None
 if "ticker" not in st.session_state:
@@ -341,10 +341,6 @@ else:
                     "Select the tranformer model you want to use: ",
                     ["<Select>", "Vader"],
                 )
-                if transformer_type == "Vader":
-                    pass
-            if "Fundamental Data" in data_types:
-                pass
             if "Technical Data" in data_types:
                 if (
                     "Label" not in st.session_state["smoothed_ohlcv"].columns

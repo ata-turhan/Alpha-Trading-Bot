@@ -11,12 +11,12 @@ def add_bg_from_local(background_file, sidebar_background_file):
 
     page = f"""<style>
         .stApp {{
-            background-image: url(data:image/{"png"};base64,{encoded_string.decode()});
+            background-image: url(data:image/png;base64,{encoded_string.decode()});
             background-size: cover;
         }}
 
         section[data-testid="stSidebar"] div[class="css-6qob1r e1fqkh3o3"] {{
-            background-image: url(data:image/{"png"};base64,{sidebar_encoded_string.decode()});
+            background-image: url(data:image/png;base64,{sidebar_encoded_string.decode()});
             background-size: 400px 800px;
         }}
 
