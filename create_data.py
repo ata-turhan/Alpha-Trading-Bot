@@ -168,7 +168,7 @@ def create_ohlcv_alike(ohlcv: pd.DataFrame, new_asset: str):
     interval = (
         "1d" if str(ohlcv.index[1] - ohlcv.index[0]).startswith("1 days") else "1m"
     )
-    auto_adjust = False if "Adj Close" in ohlcv.columns else True
+    auto_adjust = "Adj Close" not in ohlcv.columns
     st.write(ohlcv)
     st.write(
         get_financial_data(
@@ -211,8 +211,6 @@ def create_labels(df: pd.DataFrame) -> None:
 
 
 def create_train_test_data(market: pd.DataFrame):
-    X_train = []
-    X_test = []
     split_point = int(len(market) * 0.8)
     selected_feature_count = 30
     select = SelectKBest(score_func=f_classif, k=selected_feature_count)
@@ -220,29 +218,28 @@ def create_train_test_data(market: pd.DataFrame):
         market[:split_point].iloc[:, :-1], market[:split_point].iloc[:, -1]
     )
     features = fitted.transform(market[:split_point].iloc[:, :-1])
-    X_train.append(features.astype("float32"))
+    X_train = [features.astype("float32")]
     selected_features_boolean = select.get_support()
     features = list(market.columns[:-1])
-    selected_features = []
-    for j in range(len(features)):
-        if selected_features_boolean[j]:
-            selected_features.append(features[j])
+    selected_features = [
+        features[j]
+        for j in range(len(features))
+        if selected_features_boolean[j]
+    ]
     print(f"Selected best {selected_feature_count} features:")
     print(selected_features)
-    X_test.append(market[split_point:][selected_features].values.astype("float32"))
-    y_train = []
-    y_test = []
-    y_train.append(market[:split_point]["Label"])
-    y_test.append(market[split_point:]["Label"])
-
+    X_test = [market[split_point:][selected_features].values.astype("float32")]
+    y_train = [market[:split_point]["Label"]]
+    y_test = [market[split_point:]["Label"]]
     random_forest_model = RandomForestClassifier(
         n_estimators=500, random_state=42, n_jobs=-1
     )
     sfm = SelectFromModel(random_forest_model, threshold=0.01)
     sfm.fit(X_train[0], y_train[0])
-    features = []
-    for feature_list_index in sfm.get_support(indices=True):
-        features.append(selected_features[feature_list_index])
+    features = [
+        selected_features[feature_list_index]
+        for feature_list_index in sfm.get_support(indices=True)
+    ]
     print("Selected features by random forest model: ", features)
     X_train[0] = sfm.transform(X_train[0])
     X_test[0] = sfm.transform(X_test[0])
@@ -286,26 +283,25 @@ def plot_confusion_matrix(cm, labels, title):
     data = go.Heatmap(z=cm, y=labels, x=labels)
     annotations = []
     for i, row in enumerate(cm):
-        for j, value in enumerate(row):
-            annotations.append(
-                {
-                    "x": labels[i],
-                    "y": labels[j],
-                    "font": {"color": "white"},
-                    "text": str(value),
-                    "xref": "x1",
-                    "yref": "y1",
-                    "showarrow": False,
-                }
-            )
+        annotations.extend(
+            {
+                "x": labels[i],
+                "y": labels[j],
+                "font": {"color": "white"},
+                "text": str(value),
+                "xref": "x1",
+                "yref": "y1",
+                "showarrow": False,
+            }
+            for j, value in enumerate(row)
+        )
     layout = {
         "title": title,
         "xaxis": {"title": "Predicted value"},
         "yaxis": {"title": "Real value"},
         "annotations": annotations,
     }
-    fig = go.Figure(data=data, layout=layout)
-    return fig
+    return go.Figure(data=data, layout=layout)
 
 bls_api_key = "0a2144a551614652b6bc8de8455a2e0c"
 

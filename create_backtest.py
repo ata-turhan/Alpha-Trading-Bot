@@ -293,11 +293,11 @@ def plot_init(
                         alpha,
                         threshold,
                         order,
-                        ("is used" if short == True else "is not used"),
+                        "is used" if short else "is not used",
                         short_fee,
-                        ("is used" if trailing_take_profit == True else "is not used"),
+                        "is used" if trailing_take_profit else "is not used",
                         f"%{take_profit}",
-                        ("is used" if trailing_stop_loss == True else "is not used"),
+                        "is used" if trailing_stop_loss else "is not used",
                         f"%{stop_loss}",
                         leverage,
                     ],
@@ -435,7 +435,7 @@ def plot_tables(
     peak_capital = round(portfolio_value.max(), precision_point)
     through_capital = round(portfolio_value.min(), precision_point)
 
-    if show_tables == True:
+    if show_tables:
         fig = make_subplots(
             rows=3,
             cols=2,
@@ -695,7 +695,7 @@ def plot_charts(
     portfolio_value: np.array,
     liquidated: bool,
 ) -> None:
-    if liquidated == True:
+    if liquidated:
         st.write(
             "\n----------------------------\nThis strategy is liquidated\n-------------------------------"
         )
@@ -845,9 +845,9 @@ def financial_evaluation(
     portfolio_value[0] = initial_capital
     liquidated = False
     transactions = np.zeros((len(predictions),))
-    if not short:
-        for i, value in enumerate(predictions):
-            change = 0
+    for i, value in enumerate(predictions):
+        change = 0
+        if not short:
             if long_open == True and (
                 low_prices[i] <= stop_loss_price <= high_prices[i]
                 or low_prices[i] <= take_profit_price <= high_prices[i]
@@ -894,9 +894,7 @@ def financial_evaluation(
                 stop_loss_price = close_prices[i] * (1 - stop_loss / 100)
             if long_open == True and trailing_take_profit == True:
                 take_profit_price = close_prices[i] * (1 + take_profit / 100)
-    elif short:
-        for i, value in enumerate(predictions):
-            change = 0
+        else:
             if predictions[i] != 0 and long_open == False and short_open == False:
                 if predictions[i] == buyLabel:
                     if order_type == "market":
@@ -1134,40 +1132,38 @@ def optimize_backtest(
     combinations = np.array(
         np.meshgrid(take_profit_values, stop_loss_values, leverage_values)
     ).T.reshape(-1, 3)
-    combination_count: int = 0
     my_bar = st.progress(0)
     results = {}
     t = st.empty()
     length = len(combinations)
-    for combination in combinations:
+    for combination_count, combination in enumerate(combinations, start=1):
         key = tuple(combination)
         results[key] = metric_optimization(metric_optimized, key[0], key[1], key[2])
-        for i in range(iteration - 1):
+        for _ in range(iteration - 1):
             results[key] += metric_optimization(
                 metric_optimized, key[0], key[1], key[2]
             )
         results[key] = results[key] / (iteration)
-        combination_count += 1
         my_bar.progress(combination_count / length)
-        if verbose == True:
+        if verbose:
             t.markdown(
                 f"{combination_count}/{len(combinations)} (%{round(combination_count/len(combinations)*100,2)}) of combinations were tested. {second_2_minute_converter(time.time()-start)} passed."
             )
-    sorted_dict = {
-        k: v for k, v in sorted(results.items(), key=lambda item: item[1], reverse=True)
-    }
+    sorted_dict = dict(
+        sorted(results.items(), key=lambda item: item[1], reverse=True)
+    )
     st.markdown("<br> <br>", unsafe_allow_html=True)
-    if show_results == True:
+    if show_results:
         tf = []
         sl = []
         lv = []
         om = []
         count = 0
-        for key in sorted_dict.keys():
+        for key, value in sorted_dict.items():
             tf.append(key[0])
             sl.append(key[1])
             lv.append(key[2])
-            om.append([round(sorted_dict[key], 2)])
+            om.append([round(value, 2)])
             count += 1
             if count >= best_n:
                 break
@@ -1211,11 +1207,8 @@ def optimize_backtest(
         )
         st.plotly_chart(fig, use_container_width=True)
     end = time.time()
-    if verbose == True:
+    if verbose:
         st.write(
             f"\nOptimization was completed in {second_2_minute_converter(end-start)} with {len(combinations)} combinations and {iteration} iteration for each combination.\n"
         )
-    result = {}
-    for key in list(sorted_dict.keys())[:best_n]:
-        result[key] = sorted_dict[key]
-    return result
+    return {key: sorted_dict[key] for key in list(sorted_dict.keys())[:best_n]}

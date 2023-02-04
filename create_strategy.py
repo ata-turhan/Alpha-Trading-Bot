@@ -137,22 +137,16 @@ def momentum_day_trading(
     )
     ohlcv["change"] = ohlcv["Close"].pct_change()
     for i in range(1, len(ohlcv) - up_day):
-        open_position = True
-        for j in range(up_day):
-            if ohlcv.at[ohlcv.index[i + j], "change"] <= 0:
-                open_position = False
+        open_position = all(
+            ohlcv.at[ohlcv.index[i + j], "change"] > 0 for j in range(up_day)
+        )
         if open_position:
-            predictions.at[ohlcv.index[i + up_day], "Predictions"] = (
-                1 if not reverse else 2
-            )
-        open_position = True
-        for j in range(down_day):
-            if ohlcv.at[ohlcv.index[i + j], "change"] >= 0:
-                open_position = False
+            predictions.at[ohlcv.index[i + up_day], "Predictions"] = 2 if reverse else 1
+        open_position = all(
+            ohlcv.at[ohlcv.index[i + j], "change"] < 0 for j in range(down_day)
+        )
         if open_position:
-            predictions.at[ohlcv.index[i + down_day], "Predictions"] = (
-                2 if not reverse else 1
-            )
+            predictions.at[ohlcv.index[i + down_day], "Predictions"] = 1 if reverse else 2
     return predictions
 
 
@@ -174,14 +168,14 @@ def momentum_percentage_trading(
             - ohlcv.at[ohlcv.index[i], "Close"]
         ) / ohlcv.at[ohlcv.index[i], "Close"] * 100 >= up_percentage:
             predictions.at[ohlcv.index[i + up_day + 1], "Predictions"] = (
-                1 if not reverse else 2
+                2 if reverse else 1
             )
         elif (
             ohlcv.at[ohlcv.index[i + down_day], "Close"]
             - ohlcv.at[ohlcv.index[i], "Close"]
         ) / ohlcv.at[ohlcv.index[i], "Close"] * 100 <= -down_percentage:
             predictions.at[ohlcv.index[i + down_day + 1], "Predictions"] = (
-                2 if not reverse else 1
+                1 if reverse else 2
             )
     return predictions
 
@@ -449,8 +443,7 @@ def mix_strategies(mix: set, mixing_logic: str):
             mix_prediction[i] = 1
         if sell_evaluation:
             mix_prediction[i] = 2
-    predictions = pd.DataFrame(index=mix[0].index, data={"Predictions": mix_prediction})
-    return predictions
+    return pd.DataFrame(index=mix[0].index, data={"Predictions": mix_prediction})
 
 
 def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
@@ -488,7 +481,43 @@ def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
             )
         )
         fig.update_layout(
-            title=f"<span style='font-size: 30px;'><b>Close Price with Bollinger Bands</b></span>",
+            title="<span style='font-size: 30px;'><b>Close Price with Bollinger Bands</b></span>",
+            title_x=0.5,
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    elif indicator_name == "EMA":
+        ohlcv["EMA-short"] = ohlcv["Close"].ewm(span=50).mean()
+        ohlcv["EMA-long"] = ohlcv["Close"].ewm(span=200).mean()
+        fig = go.Figure()
+        fig.add_trace(
+            go.Scatter(
+                x=ohlcv.index,
+                y=ohlcv["Close"],
+                mode="lines",
+                line=dict(color="#222266"),
+                name="Close Price",
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=ohlcv.index,
+                y=ohlcv["EMA-short"],
+                mode="lines",
+                line=dict(color="#2cc05c"),
+                name="Short SMA",
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=ohlcv.index,
+                y=ohlcv["EMA-long"],
+                mode="lines",
+                line=dict(color="#f62728"),
+                name="Long SMA",
+            )
+        )
+        fig.update_layout(
+            title="<span style='font-size: 30px;'><b>Close Price with EMAs</b></span>",
             title_x=0.5,
         )
         st.plotly_chart(fig, use_container_width=True)
@@ -502,8 +531,8 @@ def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
             shared_xaxes=False,
             vertical_spacing=0.1,
             subplot_titles=(
-                f"<span style='font-size: 30px;'><b>Close Price</b></span>",
-                f"<span style='font-size: 30px;'><b>RSI Value</b></span>",
+                "<span style='font-size: 30px;'><b>Close Price</b></span>",
+                "<span style='font-size: 30px;'><b>RSI Value</b></span>",
             ),
             row_width=[1, 1],
         )
@@ -530,7 +559,7 @@ def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
             col=1,
         )
         fig.update_layout(
-            title=f"<span style='font-size: 30px;'><b>Close Price with RSI</b></span>",
+            title="<span style='font-size: 30px;'><b>Close Price with RSI</b></span>",
             title_x=0.5,
         )
         fig.update_layout(
@@ -571,43 +600,7 @@ def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
             )
         )
         fig.update_layout(
-            title=f"<span style='font-size: 30px;'><b>Close Price with SMAs</b></span>",
-            title_x=0.5,
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    elif indicator_name == "EMA":
-        ohlcv["EMA-short"] = ohlcv["Close"].ewm(span=50).mean()
-        ohlcv["EMA-long"] = ohlcv["Close"].ewm(span=200).mean()
-        fig = go.Figure()
-        fig.add_trace(
-            go.Scatter(
-                x=ohlcv.index,
-                y=ohlcv["Close"],
-                mode="lines",
-                line=dict(color="#222266"),
-                name="Close Price",
-            )
-        )
-        fig.add_trace(
-            go.Scatter(
-                x=ohlcv.index,
-                y=ohlcv["EMA-short"],
-                mode="lines",
-                line=dict(color="#2cc05c"),
-                name="Short SMA",
-            )
-        )
-        fig.add_trace(
-            go.Scatter(
-                x=ohlcv.index,
-                y=ohlcv["EMA-long"],
-                mode="lines",
-                line=dict(color="#f62728"),
-                name="Long SMA",
-            )
-        )
-        fig.update_layout(
-            title=f"<span style='font-size: 30px;'><b>Close Price with EMAs</b></span>",
+            title="<span style='font-size: 30px;'><b>Close Price with SMAs</b></span>",
             title_x=0.5,
         )
         st.plotly_chart(fig, use_container_width=True)
