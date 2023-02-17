@@ -820,13 +820,15 @@ def financial_evaluation(
     if predictions.all() == None:
         st.write("Predictions data is empty")
         return
-    start_date = ohlcv.index[0]
-    end_date = ohlcv.index[-1]
-    benchmark_index = np.array(
-        yf.download(
+    start_date = ohlcv.index[0] - dt.timedelta(days = 5)
+    end_date = ohlcv.index[-1] + dt.timedelta(days = 5)
+    benchmark_index = yf.download(
             benchmark_ticker, start_date, end_date, progress=False, interval="1d"
         )["Adj Close"]
-    )
+    st.write(ohlcv)
+    st.write(benchmark_index)
+    benchmark_index = benchmark_index.loc[ohlcv.index]
+    benchmark_index = np.array(benchmark_index)
     # adjustPrices(ohlcv)
     open_prices = ohlcv["Open"].values
     high_prices = ohlcv["High"].values
