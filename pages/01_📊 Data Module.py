@@ -63,6 +63,11 @@ def chart_data_selectbox_click():
     st.session_state["chart_data_selectbox_clicked"] = True
 
 
+def clear_data():
+    st.session_state["ohlcv"] = None
+    st.session_state.conf_change = True
+
+
 st.markdown(
     "<h1 style='text-align: center; color: black;'> 📊 Data Module </h1> <br> <br>",
     unsafe_allow_html=True,
@@ -73,12 +78,17 @@ data_fetch_way = st.selectbox(
 )
 st.markdown("<br>", unsafe_allow_html=True)
 
+
+if "conf_change" not in st.session_state:
+    st.session_state.conf_change = False
 if "ohlcv" not in st.session_state:
     st.session_state["ohlcv"] = None
 if "ticker" not in st.session_state:
     st.session_state["ticker"] = ""
 if "assets" not in st.session_state:
     st.session_state["assets"] = {}
+
+
 smooth_method = "<Select>"
 
 stocks_and_etfs = {
@@ -123,15 +133,15 @@ if data_fetch_way == "Fetch over the internet":
         st.session_state["chart_data_selectbox_clicked"] = False
 
     market = st.selectbox(
-        "Select the market: ", ["<Select>", "Stocks & ETFs", "Forex", "Crypto"]
+        "Select the market: ", ["<Select>", "Stocks & ETFs", "Forex", "Crypto"], on_change=clear_data
     )
     if market != "<Select>":
         assets = list(st.session_state["assets"][market].keys())
         assets.insert(0, "<Select>")
-        asset = st.selectbox("Select the asset: ", assets)
+        asset = st.selectbox("Select the asset: ", assets, on_change=clear_data)
         intervals = ["1m", "1d", "5d", "1wk", "1mo", "3mo"]
         intervals.insert(0, "<Select>")
-        interval = st.selectbox("Select the time frame: ", intervals)
+        interval = st.selectbox("Select the time frame: ", intervals, on_change=clear_data)
         if asset != "<Select>" and interval != "<Select>":
             tickers = st.session_state["assets"][market][asset]
             st.session_state["ticker"] = tickers
@@ -146,6 +156,7 @@ if data_fetch_way == "Fetch over the internet":
                     options=full_data.index,
                     value=(val1, val2),
                     format_func=lambda date: date.strftime("%d-%m-%Y"),
+                    on_change=clear_data
                 )
             else:
                 start, end = st.select_slider(
@@ -153,6 +164,7 @@ if data_fetch_way == "Fetch over the internet":
                     options=full_data.index,
                     value=(val1, val2),
                     format_func=lambda date: date.strftime("%d-%m-%Y %H:%M:%S"),
+                    on_change=clear_data
                 )
             adjust_situation = st.selectbox(
                 "Do you want to adjust the prices: ", ["<Select>", "Yes", "No"]
@@ -175,9 +187,9 @@ if data_fetch_way == "Fetch over the internet":
             st.error("Please fill all the areas.")
         else:
             ohlcv = st.session_state["ohlcv"]
-            if ohlcv is None:
+            if ohlcv is None and st.session_state.conf_change == False:
                 st.error("Data could not be downloaded.")
-            else:
+            elif ohlcv is not None:
                 st.success("Data fetched successfully")
                 st.markdown("<br>", unsafe_allow_html=True)
 elif data_fetch_way == "Read from a file":
