@@ -32,7 +32,7 @@ def main():
         layout="wide",
         initial_sidebar_state="expanded",
         menu_items={
-            "Get Help": "https://github.com/fotino21",
+            "Get Help": "https://github.com/olympian-21",
             "Report a bug": None,
             "About": "This is a trading bot which can be used for retrival of financial data, creating trading strategies, backtesting the strategies and optimizing the strategies. Please, give us all the helpful feedbacks!",
         },
@@ -40,9 +40,8 @@ def main():
 
     add_bg_from_local("data/background.png", "data/bot.png")
 
-    st.sidebar.text(
-        "\n" * 18
-    )  # Added to separate contact info from other sidebar elements
+    st.sidebar.markdown("<br> " * 18, unsafe_allow_html=True)
+      # Added to separate contact info from other sidebar elements
 
     st.sidebar.write(
         "Developed by Ata Turhan"
