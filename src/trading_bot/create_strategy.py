@@ -9,18 +9,13 @@ import ta
 import yfinance as yf
 from Pattern import *
 from plotly.subplots import make_subplots
-from pycaret import classification
+#from pycaret import classification
 from sklearn.cluster import AgglomerativeClustering
 from ta.volatility import BollingerBands
-import autokeras as ak
-import keras
-from keras.callbacks import (
-    Callback,
-    ModelCheckpoint,
-    EarlyStopping,
-    CSVLogger,
-    ReduceLROnPlateau,
-)
+#import autokeras as ak
+#import tensorflow as tf
+#import keras
+#from keras.callbacks import (Callback,ModelCheckpoint,EarlyStopping,CSVLogger,ReduceLROnPlateau,)
 
 
 @st.cache
