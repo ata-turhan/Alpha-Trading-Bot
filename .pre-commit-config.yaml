@@ -1,0 +1,25 @@
+repos:
+    - repo: https://github.com/sourcery-ai/sourcery
+      rev: v1.0.7
+      hooks:
+        - id: sourcery
+          args: [--fix, --summary]
+    - repo: https://github.com/psf/black
+      rev: 23.1.0
+      hooks:
+        - id: black
+          language_version: python3.10.9
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v2.5.0
+      hooks:
+        - id: check-yaml
+        - id: check-toml
+        - id: check-json
+        - id: check-xml
+        - id: end-of-file-fixer
+        - id: trailing-whitespace
+        - id: check-added-large-files
+          args: [— maxkb=2000]
+        - id: check-merge-conflict
+        - id: requirements-txt-fixer
+        - id: check-ast

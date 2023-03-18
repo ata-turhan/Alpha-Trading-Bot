@@ -1861,6 +1861,19 @@ files = [
 ]
 
 [[package]]
+name = "sourcery"
+version = "1.0.9"
+description = "Magically refactor Python"
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "sourcery-1.0.9-py2.py3-none-macosx_10_9_universal2.whl", hash = "sha256:4fd4d9d040b1c98c15b3a872071072a2a5c7fdf2eea4075176788a840bd427e3"},
+    {file = "sourcery-1.0.9-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:d3e17ebefbf72bb2887b4931ef2ea9712c58add96c41ad712bc70e427db3781b"},
+    {file = "sourcery-1.0.9-py2.py3-none-win_amd64.whl", hash = "sha256:ae4a2f1f157181d3be27cb9524b3e19baedafbdb5db836a24bf39532c5b7ab29"},
+]
+
+[[package]]
 name = "streamlit"
 version = "1.20.0"
 description = "The fastest way to build data apps in Python"
@@ -2195,4 +2208,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "edd1ea122ff9790aa5aee7a9a88aa3b4834b6dedb1c213aa4623241d9f9de3ae"
+content-hash = "988160a344e8ddd60b4d9c3d52805e749bc2ded0c05b449934161c0d4a1e1138"
