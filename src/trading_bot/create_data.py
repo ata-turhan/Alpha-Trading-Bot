@@ -1,5 +1,4 @@
 import datetime as dt
-
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -222,9 +221,7 @@ def create_train_test_data(market: pd.DataFrame):
     selected_features_boolean = select.get_support()
     features = list(market.columns[:-1])
     selected_features = [
-        features[j]
-        for j in range(len(features))
-        if selected_features_boolean[j]
+        features[j] for j in range(len(features)) if selected_features_boolean[j]
     ]
     print(f"Selected best {selected_feature_count} features:")
     print(selected_features)
@@ -303,39 +300,48 @@ def plot_confusion_matrix(cm, labels, title):
     }
     return go.Figure(data=data, layout=layout)
 
+
 bls_api_key = "0a2144a551614652b6bc8de8455a2e0c"
+
 
 def fetch_cpi_data(data_series_id, start_year, end_year):
     try:
-        bls_data_api_url = 'https://api.bls.gov/publicAPI/v2/timeseries/data/'
-        headers = {'Content-type': 'application/json'}
-        data = json.dumps({"registrationkey": bls_api_key, "seriesid": [data_series_id], "startyear": start_year, 
-                        "endyear": end_year})
+        bls_data_api_url = "https://api.bls.gov/publicAPI/v2/timeseries/data/"
+        headers = {"Content-type": "application/json"}
+        data = json.dumps(
+            {
+                "registrationkey": bls_api_key,
+                "seriesid": [data_series_id],
+                "startyear": start_year,
+                "endyear": end_year,
+            }
+        )
         response = requests.post(bls_data_api_url, data=data, headers=headers)
         if response.status_code != 200:
             raise Exception(f"Error retrieving data: {response.text}")
         #  Parse JSON
         json_data = json.loads(response.text)
-        if json_data['status'] != 'REQUEST_SUCCEEDED':
+        if json_data["status"] != "REQUEST_SUCCEEDED":
             raise Exception(f"Error retrieving data: {response.text}")
         results_df = pd.DataFrame()
-        for series in json_data['Results']['series']:
-            series_id = series['seriesID']
-            for item in series['data']:
-                year = int(item['year'])
-                period = item['period']
-                period = item['period']
+        for series in json_data["Results"]["series"]:
+            series_id = series["seriesID"]
+            for item in series["data"]:
+                year = int(item["year"])
+                period = item["period"]
+                period = item["period"]
                 year_mon = f"{year}-{int(period.replace('M',''))}"
                 date = dt.datetime.strptime(year_mon, "%Y-%m")
-                value = float(item['value'])
-                row_df = pd.DataFrame({'date': [date], 'CPI': [value]})
+                value = float(item["value"])
+                row_df = pd.DataFrame({"date": [date], "CPI": [value]})
                 results_df = pd.concat([results_df, row_df], ignore_index=True)
         #  Sort ascending
-        results_df = results_df.sort_values(by=['date'], ascending=True)
-        results_df.set_index(['date'], inplace=True)
+        results_df = results_df.sort_values(by=["date"], ascending=True)
+        results_df.set_index(["date"], inplace=True)
         return results_df
     except Exception as ex:
         print(f"Failed to fetch data: {ex}")
+
 
 def add_cpi(data):
     #  Set date range
@@ -344,15 +350,20 @@ def add_cpi(data):
     start_year_str = str(start.year)
     end_year_str = str(end.year)
     #  Fetch CPI
-    data_series_id = 'CUUR0000SA0'
+    data_series_id = "CUUR0000SA0"
     cpi_data_df = fetch_cpi_data(data_series_id, start_year_str, end_year_str)
     print(cpi_data_df)
 
     data.index = data.index - pd.DateOffset(months=1)
 
-    data['merg_col'] = data.index.strftime("%Y%m")
-    cpi_data_df['merg_col'] = cpi_data_df.index.strftime("%Y%m")
-    f_data = data.reset_index().merge(cpi_data_df, on='merg_col', how="left").set_index("Date").drop(columns="merg_col")
+    data["merg_col"] = data.index.strftime("%Y%m")
+    cpi_data_df["merg_col"] = cpi_data_df.index.strftime("%Y%m")
+    f_data = (
+        data.reset_index()
+        .merge(cpi_data_df, on="merg_col", how="left")
+        .set_index("Date")
+        .drop(columns="merg_col")
+    )
 
     f_data.index = f_data.index + pd.DateOffset(months=1)
     return f_data

@@ -19,7 +19,6 @@ def add_bg_from_local(background_file, sidebar_background_file):
             background-image: url(data:image/png;base64,{sidebar_encoded_string.decode()});
             background-size: 400px 800px;
         }}
-
     </style>"""
 
     st.markdown(page, unsafe_allow_html=True)
@@ -41,7 +40,7 @@ def main():
     add_bg_from_local("data/background.png", "data/bot.png")
 
     st.sidebar.markdown("<br> " * 18, unsafe_allow_html=True)
-      # Added to separate contact info from other sidebar elements
+    # Added to separate contact info from other sidebar elements
 
     st.sidebar.write(
         "Developed by Ata Turhan"

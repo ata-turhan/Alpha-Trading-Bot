@@ -2,7 +2,6 @@ import datetime as dt
 import math
 import random
 import time
-
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -817,14 +816,14 @@ def financial_evaluation(
     if ohlcv.empty:
         st.write("OHLCV data is empty")
         return
-    if predictions.all() == None:
+    if predictions.all() is None:
         st.write("Predictions data is empty")
         return
-    start_date = ohlcv.index[0] - dt.timedelta(days = 5)
-    end_date = ohlcv.index[-1] + dt.timedelta(days = 5)
+    start_date = ohlcv.index[0] - dt.timedelta(days=5)
+    end_date = ohlcv.index[-1] + dt.timedelta(days=5)
     benchmark_index = yf.download(
-            benchmark_ticker, start_date, end_date, progress=False, interval="1d"
-        )["Adj Close"]
+        benchmark_ticker, start_date, end_date, progress=False, interval="1d"
+    )["Adj Close"]
     st.write(ohlcv)
     st.write(benchmark_index)
     benchmark_index = benchmark_index.loc[ohlcv.index]
@@ -892,9 +891,9 @@ def financial_evaluation(
             if long_open == True:
                 total_day_position_open += 1
             portfolio_value[i + 1] = capital
-            if long_open == True and trailing_stop_loss == True:
+            if long_open == True and trailing_stop_loss:
                 stop_loss_price = close_prices[i] * (1 - stop_loss / 100)
-            if long_open == True and trailing_take_profit == True:
+            if long_open == True and trailing_take_profit:
                 take_profit_price = close_prices[i] * (1 + take_profit / 100)
         else:
             if predictions[i] != 0 and long_open == False and short_open == False:
@@ -987,21 +986,13 @@ def financial_evaluation(
             if long_open == True or short_open == True:
                 total_day_position_open += 1
             portfolio_value[i + 1] = capital
-            if trailing_stop_loss == True and short_open == False and long_open == True:
+            if trailing_stop_loss and short_open == False and long_open == True:
                 stop_loss_price = close_prices[i] * (1 - stop_loss / 100)
-            if trailing_stop_loss == True and short_open == True and long_open == False:
+            if trailing_stop_loss and short_open == True and long_open == False:
                 stop_loss_price = close_prices[i] * (1 + stop_loss / 100)
-            if (
-                trailing_take_profit == True
-                and short_open == False
-                and long_open == True
-            ):
+            if trailing_take_profit and short_open == False and long_open == True:
                 take_profit_price = close_prices[i] * (1 + take_profit / 100)
-            if (
-                trailing_take_profit == True
-                and short_open == True
-                and long_open == False
-            ):
+            if trailing_take_profit and short_open == True and long_open == False:
                 take_profit_price = close_prices[i] * (1 - take_profit / 100)
     if total_trade_made == 0:
         st.write("No trade executed")
@@ -1151,9 +1142,7 @@ def optimize_backtest(
             t.markdown(
                 f"{combination_count}/{len(combinations)} (%{round(combination_count/len(combinations)*100,2)}) of combinations were tested. {second_2_minute_converter(time.time()-start)} passed."
             )
-    sorted_dict = dict(
-        sorted(results.items(), key=lambda item: item[1], reverse=True)
-    )
+    sorted_dict = dict(sorted(results.items(), key=lambda item: item[1], reverse=True))
     st.markdown("<br> <br>", unsafe_allow_html=True)
     if show_results:
         tf = []

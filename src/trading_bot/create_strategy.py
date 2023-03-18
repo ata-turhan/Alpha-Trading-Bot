@@ -9,13 +9,15 @@ import ta
 import yfinance as yf
 from Pattern import *
 from plotly.subplots import make_subplots
-#from pycaret import classification
+
+# from pycaret import classification
 from sklearn.cluster import AgglomerativeClustering
 from ta.volatility import BollingerBands
-#import autokeras as ak
-#import tensorflow as tf
-#import keras
-#from keras.callbacks import (Callback,ModelCheckpoint,EarlyStopping,CSVLogger,ReduceLROnPlateau,)
+
+# import autokeras as ak
+# import tensorflow as tf
+# import keras
+# from keras.callbacks import (Callback,ModelCheckpoint,EarlyStopping,CSVLogger,ReduceLROnPlateau,)
 
 
 @st.cache
@@ -141,7 +143,9 @@ def momentum_day_trading(
             ohlcv.at[ohlcv.index[i + j], "change"] < 0 for j in range(down_day)
         )
         if open_position:
-            predictions.at[ohlcv.index[i + down_day], "Predictions"] = 1 if reverse else 2
+            predictions.at[ohlcv.index[i + down_day], "Predictions"] = (
+                1 if reverse else 2
+            )
     return predictions
 
 
@@ -233,15 +237,22 @@ def dl_trading(
     possible_models: list,
 ):
     callback = [
-    EarlyStopping(monitor='val_loss', patience=25, mode="min"),
-    ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=15, verbose=1, min_delta=1e-3, mode='min')
+        EarlyStopping(monitor="val_loss", patience=25, mode="min"),
+        ReduceLROnPlateau(
+            monitor="val_loss",
+            factor=0.1,
+            patience=15,
+            verbose=1,
+            min_delta=1e-3,
+            mode="min",
+        ),
     ]
     with st.spinner("Searching best neural network architecture..."):
         search = ak.StructuredDataClassifier(
-        max_trials=possible_models,
-        project_name="Asset Price Classifier",
-        overwrite=True,
-    )
+            max_trials=possible_models,
+            project_name="Asset Price Classifier",
+            overwrite=True,
+        )
         search.fit(
             x=train_data.loc[:, :"Label"],
             y=train_data.loc[:, "Label"],
@@ -254,9 +265,7 @@ def dl_trading(
         best_nn_model = search.export_model()
     preds = best_nn_model.predict(test_data.loc[:, :"Label"])
     predictions = np.argmax(preds, axis=1)
-    return pd.DataFrame(
-        index=test_data.index, data={"Predictions": predictions}
-    )
+    return pd.DataFrame(index=test_data.index, data={"Predictions": predictions})
 
 
 @st.cache

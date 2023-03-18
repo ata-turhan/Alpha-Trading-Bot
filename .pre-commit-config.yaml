@@ -1,9 +1,4 @@
 repos:
-    - repo: https://github.com/sourcery-ai/sourcery
-      rev: v1.0.7
-      hooks:
-        - id: sourcery
-          args: [--fix, --summary]
     - repo: https://github.com/psf/black
       rev: 23.1.0
       hooks:

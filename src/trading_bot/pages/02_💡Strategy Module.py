@@ -334,7 +334,7 @@ else:
                 "Select the data types you want to include for ai modeling: ",
                 ["<Select>", "Fundamental Data", "Technical Data", "Sentiment Data"],
                 help="Fundamental Data: CPI, DXY, Fed Rate.\nTechnical Data: Technical Indicators\nSentiment Data: \
-                Sentiment of tweets of last 24 hours."
+                Sentiment of tweets of last 24 hours.",
             )
             if "Sentiment Data" in data_types:
                 transformer_type = st.selectbox(
@@ -369,10 +369,10 @@ else:
                         ["<Select>", "AutoKeras", "Prophet"],
                     )
                     if dl_method == "AutoKeras":
-                        possible_models  = st.number_input(
-                        "Select the number of the possible models to try",
-                        value=5,
-                        step=5,
+                        possible_models = st.number_input(
+                            "Select the number of the possible models to try",
+                            value=5,
+                            step=5,
                         )
                         if st.button("Create the predictions of the strategy."):
                             market = st.session_state["smoothed_ohlcv"]

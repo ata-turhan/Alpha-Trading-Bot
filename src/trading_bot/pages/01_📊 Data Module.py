@@ -1,7 +1,6 @@
 import base64
 import datetime as dt
 import re
-
 import create_data as cd
 import pandas as pd
 import streamlit as st
@@ -133,7 +132,9 @@ if data_fetch_way == "Fetch over the internet":
         st.session_state["chart_data_selectbox_clicked"] = False
 
     market = st.selectbox(
-        "Select the market: ", ["<Select>", "Stocks & ETFs", "Forex", "Crypto"], on_change=clear_data
+        "Select the market: ",
+        ["<Select>", "Stocks & ETFs", "Forex", "Crypto"],
+        on_change=clear_data,
     )
     if market != "<Select>":
         assets = list(st.session_state["assets"][market].keys())
@@ -141,22 +142,24 @@ if data_fetch_way == "Fetch over the internet":
         asset = st.selectbox("Select the asset: ", assets, on_change=clear_data)
         intervals = ["1m", "1d", "5d", "1wk", "1mo", "3mo"]
         intervals.insert(0, "<Select>")
-        interval = st.selectbox("Select the time frame: ", intervals, on_change=clear_data)
+        interval = st.selectbox(
+            "Select the time frame: ", intervals, on_change=clear_data
+        )
         if asset != "<Select>" and interval != "<Select>":
             tickers = st.session_state["assets"][market][asset]
             st.session_state["ticker"] = tickers
             full_data = yf.download(tickers=tickers, interval=interval)
             start = full_data.index[0]
             end = full_data.index[-1]
-            val1=full_data.index[(len(full_data)// 3)]
-            val2=full_data.index[(len(full_data) * 2 // 3)]
+            val1 = full_data.index[(len(full_data) // 3)]
+            val2 = full_data.index[(len(full_data) * 2 // 3)]
             if interval in ["1d", "5d", "1wk", "1mo", "3mo"]:
                 start, end = st.select_slider(
                     "Please select the start and end dates:",
                     options=full_data.index,
                     value=(val1, val2),
                     format_func=lambda date: date.strftime("%d-%m-%Y"),
-                    on_change=clear_data
+                    on_change=clear_data,
                 )
             else:
                 start, end = st.select_slider(
@@ -164,7 +167,7 @@ if data_fetch_way == "Fetch over the internet":
                     options=full_data.index,
                     value=(val1, val2),
                     format_func=lambda date: date.strftime("%d-%m-%Y %H:%M:%S"),
-                    on_change=clear_data
+                    on_change=clear_data,
                 )
             adjust_situation = st.selectbox(
                 "Do you want to adjust the prices: ", ["<Select>", "Yes", "No"]
