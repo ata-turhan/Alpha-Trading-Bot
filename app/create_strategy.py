@@ -118,16 +118,25 @@ def bb_trading(ohlcv: pd.DataFrame, window: int = 20, window_dev: int = 2):
     ohlcv["bb_bbh"] = indicator_bb.bollinger_hband()
     ohlcv["bb_bbl"] = indicator_bb.bollinger_lband()
     for i in range(len(ohlcv) - 1):
-        if ohlcv.at[ohlcv.index[i], "Close"] <= ohlcv.at[ohlcv.index[i], "bb_bbl"]:
+        if (
+            ohlcv.at[ohlcv.index[i], "Close"]
+            <= ohlcv.at[ohlcv.index[i], "bb_bbl"]
+        ):
             predictions.at[ohlcv.index[i + 1], "Predictions"] = 1
-        elif ohlcv.at[ohlcv.index[i], "Close"] >= ohlcv.at[ohlcv.index[i], "bb_bbh"]:
+        elif (
+            ohlcv.at[ohlcv.index[i], "Close"]
+            >= ohlcv.at[ohlcv.index[i], "bb_bbh"]
+        ):
             predictions.at[ohlcv.index[i + 1], "Predictions"] = 2
     return predictions
 
 
 @st.cache
 def momentum_day_trading(
-    ohlcv: pd.DataFrame, up_day: int = 3, down_day: int = 3, reverse: bool = False
+    ohlcv: pd.DataFrame,
+    up_day: int = 3,
+    down_day: int = 3,
+    reverse: bool = False,
 ):
     predictions = pd.DataFrame(
         index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
@@ -138,7 +147,9 @@ def momentum_day_trading(
             ohlcv.at[ohlcv.index[i + j], "change"] > 0 for j in range(up_day)
         )
         if open_position:
-            predictions.at[ohlcv.index[i + up_day], "Predictions"] = 2 if reverse else 1
+            predictions.at[ohlcv.index[i + up_day], "Predictions"] = (
+                2 if reverse else 1
+            )
         open_position = all(
             ohlcv.at[ohlcv.index[i + j], "change"] < 0 for j in range(down_day)
         )
@@ -225,7 +236,9 @@ def ml_trading(
     with st.spinner("Finalizing the best model..."):
         final_model = classification.finalize_model(tuned_model)
     # default model
-    model_predictions = classification.predict_model(tuned_model, data=test_data)
+    model_predictions = classification.predict_model(
+        tuned_model, data=test_data
+    )
     return pd.DataFrame(
         index=test_data.index, data={"Predictions": model_predictions["Label"]}
     )
@@ -265,11 +278,15 @@ def dl_trading(
         best_nn_model = search.export_model()
     preds = best_nn_model.predict(test_data.loc[:, :"Label"])
     predictions = np.argmax(preds, axis=1)
-    return pd.DataFrame(index=test_data.index, data={"Predictions": predictions})
+    return pd.DataFrame(
+        index=test_data.index, data={"Predictions": predictions}
+    )
 
 
 @st.cache
-def candlestick_trading(ohlcv: pd.DataFrame, buy_pattern: str, sell_pattern: str):
+def candlestick_trading(
+    ohlcv: pd.DataFrame, buy_pattern: str, sell_pattern: str
+):
     candlestick_func_dict = {
         "Doji": doji,
         "Gravestone Doji": gravestone_doji,
@@ -310,9 +327,15 @@ def candlestick_trading(ohlcv: pd.DataFrame, buy_pattern: str, sell_pattern: str
         index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
     )
     for i in range(len(ohlcv) - 1):
-        if ohlcv.at[ohlcv.index[i], candlestick_column_dict[buy_pattern]] == True:
+        if (
+            ohlcv.at[ohlcv.index[i], candlestick_column_dict[buy_pattern]]
+            == True
+        ):
             predictions.at[ohlcv.index[i + 1], "Predictions"] = 1
-        elif ohlcv.at[ohlcv.index[i], candlestick_column_dict[sell_pattern]] == True:
+        elif (
+            ohlcv.at[ohlcv.index[i], candlestick_column_dict[sell_pattern]]
+            == True
+        ):
             predictions.at[ohlcv.index[i + 1], "Predictions"] = 2
     return predictions
 
@@ -340,7 +363,10 @@ def calculate_support_resistance(df, rolling_wave_length, num_clusters, area):
     # Find Support/Resistance with clustering using the rolling stats
     # Create [x,y] array where y is always 1
     x = np.concatenate(
-        (waves.waves.values.reshape(-1, 1), (np.zeros(len(waves)) + 1).reshape(-1, 1)),
+        (
+            waves.waves.values.reshape(-1, 1),
+            (np.zeros(len(waves)) + 1).reshape(-1, 1),
+        ),
         axis=1,
     )
     # Initialize Agglomerative Clustering
@@ -390,7 +416,9 @@ def support_resistance_trading(
     return predictions
 
 
-def show_predictions_on_chart(ohlcv: pd.DataFrame, predictions: np.array, ticker: str):
+def show_predictions_on_chart(
+    ohlcv: pd.DataFrame, predictions: np.array, ticker: str
+):
     fig = go.Figure()
     buy_labels = predictions == 1
     sell_labels = predictions == 2
@@ -447,12 +475,16 @@ def mix_strategies(mix: set, mixing_logic: str):
             mix_prediction[i] = 1
         if sell_evaluation:
             mix_prediction[i] = 2
-    return pd.DataFrame(index=mix[0].index, data={"Predictions": mix_prediction})
+    return pd.DataFrame(
+        index=mix[0].index, data={"Predictions": mix_prediction}
+    )
 
 
 def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
     if indicator_name == "Bollinger Bands":
-        indicator_bb = BollingerBands(close=ohlcv["Close"], window=20, window_dev=2)
+        indicator_bb = BollingerBands(
+            close=ohlcv["Close"], window=20, window_dev=2
+        )
         ohlcv["bb_bbh"] = indicator_bb.bollinger_hband()
         ohlcv["bb_bbl"] = indicator_bb.bollinger_lband()
 

@@ -20,9 +20,10 @@ matplotlib = "^3.7.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
+sourcery = "^1.0.9"
 isort = "^5.12.0"
 pre-commit = "^3.2.0"
-sourcery = "^1.0.9"
+pytest = "^7.2.2"
 
 [build-system]
 requires = ["poetry-core"]

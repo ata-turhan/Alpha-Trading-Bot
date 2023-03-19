@@ -1,6 +1,7 @@
 import base64
 import datetime as dt
 import re
+
 import create_data as cd
 import pandas as pd
 import streamlit as st
@@ -139,7 +140,9 @@ if data_fetch_way == "Fetch over the internet":
     if market != "<Select>":
         assets = list(st.session_state["assets"][market].keys())
         assets.insert(0, "<Select>")
-        asset = st.selectbox("Select the asset: ", assets, on_change=clear_data)
+        asset = st.selectbox(
+            "Select the asset: ", assets, on_change=clear_data
+        )
         intervals = ["1m", "1d", "5d", "1wk", "1mo", "3mo"]
         intervals.insert(0, "<Select>")
         interval = st.selectbox(
@@ -166,7 +169,9 @@ if data_fetch_way == "Fetch over the internet":
                     "Please select the start and end dates:",
                     options=full_data.index,
                     value=(val1, val2),
-                    format_func=lambda date: date.strftime("%d-%m-%Y %H:%M:%S"),
+                    format_func=lambda date: date.strftime(
+                        "%d-%m-%Y %H:%M:%S"
+                    ),
                     on_change=clear_data,
                 )
             adjust_situation = st.selectbox(
@@ -205,10 +210,12 @@ elif data_fetch_way == "Read from a file":
         st.session_state["ticker"] = tickers
         try:
             if uploaded_file.name.endswith(".csv"):
-                st.session_state["ohlcv"] = pd.read_csv(uploaded_file, index_col="Date")
-            elif uploaded_file.name.endswith(".xlx") or uploaded_file.name.endswith(
-                ".xlsx"
-            ):
+                st.session_state["ohlcv"] = pd.read_csv(
+                    uploaded_file, index_col="Date"
+                )
+            elif uploaded_file.name.endswith(
+                ".xlx"
+            ) or uploaded_file.name.endswith(".xlsx"):
                 st.session_state["ohlcv"] = pd.read_excel(
                     uploaded_file, index_col="Date"
                 )
@@ -269,7 +276,9 @@ if (
         if smooth_method == "None":
             file_name = f"{st.session_state['ticker']}-ohlcv.csv"
         else:
-            file_name = f"{st.session_state['ticker']}-ohlcv-{smooth_method}.csv"
+            file_name = (
+                f"{st.session_state['ticker']}-ohlcv-{smooth_method}.csv"
+            )
         if st.download_button(
             label="Download data as CSV",
             data=st.session_state["ohlcv"].to_csv().encode("utf-8"),

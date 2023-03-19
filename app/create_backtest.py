@@ -2,6 +2,7 @@ import datetime as dt
 import math
 import random
 import time
+
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -37,7 +38,9 @@ def beta(portfolio_returns: np.array, benchmark_returns: np.array) -> float:
 # Higher and Lower Partial Moments
 
 
-def hpm(portfolio_returns: np.array, threshold: float = 0, order: int = 1) -> float:
+def hpm(
+    portfolio_returns: np.array, threshold: float = 0, order: int = 1
+) -> float:
     threshold_array = np.empty(len(portfolio_returns))
     threshold_array.fill(threshold)
     diff = portfolio_returns - threshold_array
@@ -45,7 +48,9 @@ def hpm(portfolio_returns: np.array, threshold: float = 0, order: int = 1) -> fl
     return np.sum(diff**order) / len(portfolio_returns)
 
 
-def lpm(portfolio_returns: np.array, threshold: float = 0, order: int = 1) -> float:
+def lpm(
+    portfolio_returns: np.array, threshold: float = 0, order: int = 1
+) -> float:
     threshold_array = np.empty(len(portfolio_returns))
     threshold_array.fill(threshold)
     diff = threshold_array - portfolio_returns
@@ -74,7 +79,9 @@ def cVaR(portfolio_returns: np.array, alpha: float = 0.05) -> float:
 # DrawDown Measures
 
 
-def max_drawdown(portfolio_returns: pd.Series, risk_free_rate: float = 0.01) -> float:
+def max_drawdown(
+    portfolio_returns: pd.Series, risk_free_rate: float = 0.01
+) -> float:
     wealth_index = (1 + portfolio_returns).cumprod()
     previous_peaks = wealth_index.cummax()
     drawdown = (wealth_index - previous_peaks) / previous_peaks
@@ -95,7 +102,9 @@ def average_drawdown_squared(
 ) -> float:
     wealth_index = (1 + portfolio_returns).cumprod()
     previous_peaks = wealth_index.cummax()
-    drawdown_squared = ((wealth_index - previous_peaks) / previous_peaks).pow(2)
+    drawdown_squared = ((wealth_index - previous_peaks) / previous_peaks).pow(
+        2
+    )
     return drawdown_squared.mean()
 
 
@@ -114,7 +123,9 @@ def treynor_ratio(
     )
 
 
-def sharpe_ratio(portfolio_returns: np.array, risk_free_rate: float = 0.01) -> float:
+def sharpe_ratio(
+    portfolio_returns: np.array, risk_free_rate: float = 0.01
+) -> float:
     return (
         (portfolio_returns.mean() - risk_free_rate)
         / volatility(portfolio_returns)
@@ -147,7 +158,9 @@ def modigliani_ratio(
 
 
 def excess_var(
-    portfolio_returns: np.array, risk_free_rate: float = 0.01, alpha: float = 0.05
+    portfolio_returns: np.array,
+    risk_free_rate: float = 0.01,
+    alpha: float = 0.05,
 ) -> float:
     VaR_val = VaR(portfolio_returns, alpha)
     return (portfolio_returns.mean() - risk_free_rate) / (
@@ -156,7 +169,9 @@ def excess_var(
 
 
 def conditional_sharpe_ratio(
-    portfolio_returns: np.array, risk_free_rate: float = 0.01, alpha: float = 0.05
+    portfolio_returns: np.array,
+    risk_free_rate: float = 0.01,
+    alpha: float = 0.05,
 ) -> float:
     cVaR_val = cVaR(portfolio_returns, alpha)
     return (portfolio_returns.mean() - risk_free_rate) / (
@@ -168,7 +183,9 @@ def conditional_sharpe_ratio(
 
 
 def omega_ratio(
-    portfolio_returns: np.array, risk_free_rate: float = 0.01, threshold: float = 0
+    portfolio_returns: np.array,
+    risk_free_rate: float = 0.01,
+    threshold: float = 0,
 ) -> float:
     return (portfolio_returns.mean() - risk_free_rate) / lpm(
         portfolio_returns, threshold, 1
@@ -176,7 +193,9 @@ def omega_ratio(
 
 
 def sortino_ratio(
-    portfolio_returns: np.array, risk_free_rate: float = 0.01, threshold: float = 0
+    portfolio_returns: np.array,
+    risk_free_rate: float = 0.01,
+    threshold: float = 0,
 ) -> float:
     return (portfolio_returns.mean() - risk_free_rate) / math.sqrt(
         lpm(portfolio_returns, threshold, 2)
@@ -184,18 +203,26 @@ def sortino_ratio(
 
 
 def kappa_three_ratio(
-    portfolio_returns: np.array, risk_free_rate: float = 0.01, threshold: float = 0
+    portfolio_returns: np.array,
+    risk_free_rate: float = 0.01,
+    threshold: float = 0,
 ) -> float:
     return (portfolio_returns.mean() - risk_free_rate) / math.pow(
         lpm(portfolio_returns, threshold, 3), 1 / 3
     )
 
 
-def gain_loss_ratio(portfolio_returns: np.array, threshold: float = 0) -> float:
-    return hpm(portfolio_returns, threshold, 1) / lpm(portfolio_returns, threshold, 1)
+def gain_loss_ratio(
+    portfolio_returns: np.array, threshold: float = 0
+) -> float:
+    return hpm(portfolio_returns, threshold, 1) / lpm(
+        portfolio_returns, threshold, 1
+    )
 
 
-def upside_potential_ratio(portfolio_returns: np.array, threshold: float = 0) -> float:
+def upside_potential_ratio(
+    portfolio_returns: np.array, threshold: float = 0
+) -> float:
     return hpm(portfolio_returns, threshold, 1) / math.sqrt(
         lpm(portfolio_returns, threshold, 2)
     )
@@ -204,7 +231,9 @@ def upside_potential_ratio(portfolio_returns: np.array, threshold: float = 0) ->
 # Measures Of Risk-Adjusted Return Based On Drawdown Risk
 
 
-def calmar_ratio(portfolio_returns: pd.Series, risk_free_rate: float = 0.01) -> float:
+def calmar_ratio(
+    portfolio_returns: pd.Series, risk_free_rate: float = 0.01
+) -> float:
     return (
         (np.array(portfolio_returns).mean() - risk_free_rate)
         / abs(max_drawdown(portfolio_returns))
@@ -212,15 +241,21 @@ def calmar_ratio(portfolio_returns: pd.Series, risk_free_rate: float = 0.01) -> 
     )
 
 
-def sterling_ratio(portfolio_returns: pd.Series, risk_free_rate: float = 0.01) -> float:
+def sterling_ratio(
+    portfolio_returns: pd.Series, risk_free_rate: float = 0.01
+) -> float:
     return (portfolio_returns.mean() - risk_free_rate) / average_drawdown(
         pd.Series(portfolio_returns), risk_free_rate=0.01
     )
 
 
-def burke_ratio(portfolio_returns: pd.Series, risk_free_rate: float = 0.01) -> float:
+def burke_ratio(
+    portfolio_returns: pd.Series, risk_free_rate: float = 0.01
+) -> float:
     return (portfolio_returns.mean() - risk_free_rate) / math.sqrt(
-        average_drawdown_squared(pd.Series(portfolio_returns), risk_free_rate=0.01)
+        average_drawdown_squared(
+            pd.Series(portfolio_returns), risk_free_rate=0.01
+        )
     )
 
 
@@ -339,7 +374,8 @@ def plot_tables(
         precision_point,
     )
     buy_hold_return = round(
-        (close_prices[-1] - close_prices[0]) / close_prices[0] * 100, precision_point
+        (close_prices[-1] - close_prices[0]) / close_prices[0] * 100,
+        precision_point,
     )
     total_return_value = round(
         (portfolio_value[-1] - portfolio_value[0]) / portfolio_value[0] * 100,
@@ -351,12 +387,15 @@ def plot_tables(
         precision_point,
     )
     daily_return_value = round(
-        (math.pow(total_return_value / 100 + 1, 1 / (year_count * 365)) - 1) * 100,
+        (math.pow(total_return_value / 100 + 1, 1 / (year_count * 365)) - 1)
+        * 100,
         precision_point,
     )
     profit_trade = (portfolio_returns > 0).sum()
     loss_trade = (portfolio_returns < 0).sum() - total_trade_made
-    average_return_value = round(total_return_value / (profit_trade + loss_trade), 2)
+    average_return_value = round(
+        total_return_value / (profit_trade + loss_trade), 2
+    )
 
     treynor_ratio_value = round(
         treynor_ratio(portfolio_returns, benchmark_returns, risk_free_rate),
@@ -366,7 +405,8 @@ def plot_tables(
         sharpe_ratio(portfolio_returns, risk_free_rate), precision_point
     )
     information_ratio_value = round(
-        information_ratio(portfolio_returns, benchmark_returns), precision_point
+        information_ratio(portfolio_returns, benchmark_returns),
+        precision_point,
     )
     modigliani_ratio_value = round(
         modigliani_ratio(portfolio_returns, benchmark_returns, risk_free_rate),
@@ -380,13 +420,16 @@ def plot_tables(
         precision_point,
     )
     omega_ratio_value = round(
-        omega_ratio(portfolio_returns, risk_free_rate, threshold), precision_point
+        omega_ratio(portfolio_returns, risk_free_rate, threshold),
+        precision_point,
     )
     sortino_ratio_value = round(
-        sortino_ratio(portfolio_returns, risk_free_rate, threshold), precision_point
+        sortino_ratio(portfolio_returns, risk_free_rate, threshold),
+        precision_point,
     )
     kappa_3_ratio_value = round(
-        kappa_three_ratio(portfolio_returns, risk_free_rate, threshold), precision_point
+        kappa_three_ratio(portfolio_returns, risk_free_rate, threshold),
+        precision_point,
     )
     gain_loss_ratio_value = round(
         gain_loss_ratio(portfolio_returns, threshold), precision_point
@@ -395,30 +438,41 @@ def plot_tables(
         upside_potential_ratio(portfolio_returns, threshold), precision_point
     )
     calmar_ratio_value = round(
-        calmar_ratio(pd.Series(portfolio_returns), risk_free_rate), precision_point
+        calmar_ratio(pd.Series(portfolio_returns), risk_free_rate),
+        precision_point,
     )
     sterling_ratio_value = round(
-        sterling_ratio(pd.Series(portfolio_returns), risk_free_rate), precision_point
+        sterling_ratio(pd.Series(portfolio_returns), risk_free_rate),
+        precision_point,
     )
     burke_ratio_value = round(
-        burke_ratio(pd.Series(portfolio_returns), risk_free_rate), precision_point
+        burke_ratio(pd.Series(portfolio_returns), risk_free_rate),
+        precision_point,
     )
 
     volatility_value = round(volatility(portfolio_returns), precision_point)
-    beta_value = round(beta(portfolio_returns, benchmark_returns), precision_point)
-    hpm_value = round(hpm(portfolio_returns, threshold, order=1), precision_point)
-    lpm_value = round(lpm(portfolio_returns, threshold, order=1), precision_point)
+    beta_value = round(
+        beta(portfolio_returns, benchmark_returns), precision_point
+    )
+    hpm_value = round(
+        hpm(portfolio_returns, threshold, order=1), precision_point
+    )
+    lpm_value = round(
+        lpm(portfolio_returns, threshold, order=1), precision_point
+    )
     var_value = round(VaR(portfolio_returns, alpha), precision_point)
     cvar_value = round(cVaR(portfolio_returns, alpha), precision_point)
     average_dd_value = round(
-        average_drawdown(pd.Series(portfolio_returns), risk_free_rate), precision_point
+        average_drawdown(pd.Series(portfolio_returns), risk_free_rate),
+        precision_point,
     )
     average_dd_2_value = round(
         average_drawdown_squared(pd.Series(portfolio_returns), risk_free_rate),
         precision_point,
     )
     max_dd_value = round(
-        max_drawdown(pd.Series(portfolio_returns), risk_free_rate), precision_point
+        max_drawdown(pd.Series(portfolio_returns), risk_free_rate),
+        precision_point,
     )
 
     total_trade_count = round(profit_trade + loss_trade, precision_point)
@@ -721,7 +775,9 @@ def plot_charts(
         row=1,
         col=1,
     )
-    fig.add_trace(go.Bar(x=ohlcv.index, y=ohlcv["Volume"], name="Volume"), row=2, col=1)
+    fig.add_trace(
+        go.Bar(x=ohlcv.index, y=ohlcv["Volume"], name="Volume"), row=2, col=1
+    )
     fig.update(layout_xaxis_rangeslider_visible=False)
     fig.update_layout(
         autosize=True,
@@ -857,8 +913,12 @@ def financial_evaluation(
             if predictions[i] == buyLabel and long_open == False:
                 if order_type == "market":
                     long_open = True
-                    long_price = round(random.uniform(low_prices[i], high_prices[i]), 6)
-                elif order_type == "limit" and random.randint(1, miss_rate) != 1:
+                    long_price = round(
+                        random.uniform(low_prices[i], high_prices[i]), 6
+                    )
+                elif (
+                    order_type == "limit" and random.randint(1, miss_rate) != 1
+                ):
                     long_open = True
                     long_price = open_prices[i]
                 if long_open == True:
@@ -871,15 +931,22 @@ def financial_evaluation(
                     long_open = False
                     change = (
                         (
-                            round(random.uniform(low_prices[i], high_prices[i]), 6)
+                            round(
+                                random.uniform(low_prices[i], high_prices[i]),
+                                6,
+                            )
                             - long_price
                         )
                         / long_price
                         * leverage
                     )
-                elif order_type == "limit" and random.randint(1, miss_rate) != 1:
+                elif (
+                    order_type == "limit" and random.randint(1, miss_rate) != 1
+                ):
                     long_open = False
-                    change = (open_prices[i] - long_price) / long_price * leverage
+                    change = (
+                        (open_prices[i] - long_price) / long_price * leverage
+                    )
                 if long_open == False:
                     capital *= 1 + change
                     capital -= commission
@@ -896,35 +963,49 @@ def financial_evaluation(
             if long_open == True and trailing_take_profit:
                 take_profit_price = close_prices[i] * (1 + take_profit / 100)
         else:
-            if predictions[i] != 0 and long_open == False and short_open == False:
+            if (
+                predictions[i] != 0
+                and long_open == False
+                and short_open == False
+            ):
                 if predictions[i] == buyLabel:
                     if order_type == "market":
                         long_open = True
                         long_price = round(
                             random.uniform(low_prices[i], high_prices[i]), 6
                         )
-                    elif order_type == "limit" and random.randint(1, miss_rate) != 1:
+                    elif (
+                        order_type == "limit"
+                        and random.randint(1, miss_rate) != 1
+                    ):
                         long_open = True
                         long_price = open_prices[i]
                     if long_open == True:
                         capital -= commission
                         total_trade_made += 1
                         stop_loss_price = long_price * (1 - stop_loss / 100)
-                        take_profit_price = long_price * (1 + take_profit / 100)
+                        take_profit_price = long_price * (
+                            1 + take_profit / 100
+                        )
                 elif predictions[i] == sellLabel:
                     if order_type == "market":
                         short_open = True
                         short_price = round(
                             random.uniform(low_prices[i], high_prices[i]), 6
                         )
-                    elif order_type == "limit" and random.randint(1, miss_rate) != 1:
+                    elif (
+                        order_type == "limit"
+                        and random.randint(1, miss_rate) != 1
+                    ):
                         short_open = True
                         short_price = open_prices[i]
                     if short_open == True:
                         capital -= commission + short_fee
                         total_trade_made += 1
                         stop_loss_price = short_price * (1 + stop_loss / 100)
-                        take_profit_price = short_price * (1 - take_profit / 100)
+                        take_profit_price = short_price * (
+                            1 - take_profit / 100
+                        )
             if long_open == True and (
                 low_prices[i] <= stop_loss_price <= high_prices[i]
                 or low_prices[i] <= take_profit_price <= high_prices[i]
@@ -947,7 +1028,9 @@ def financial_evaluation(
                         random.uniform(low_prices[i], high_prices[i]), 6
                     )
                     change = (short_price - long_price) / long_price * leverage
-                elif order_type == "limit" and random.randint(1, miss_rate) != 1:
+                elif (
+                    order_type == "limit" and random.randint(1, miss_rate) != 1
+                ):
                     long_open = False
                     short_open = True
                     short_price = open_prices[i]
@@ -962,18 +1045,28 @@ def financial_evaluation(
                     stop_loss_price = short_price * (1 + stop_loss / 100)
                     take_profit_price = short_price * (1 - take_profit / 100)
             elif (
-                predictions[i] == buyLabel and long_open == False and short_open == True
+                predictions[i] == buyLabel
+                and long_open == False
+                and short_open == True
             ):
                 if order_type == "market":
                     long_open = True
                     short_open = False
-                    long_price = round(random.uniform(low_prices[i], high_prices[i]), 6)
-                    change = (short_price - long_price) / short_price * leverage
-                elif order_type == "limit" and random.randint(1, miss_rate) != 1:
+                    long_price = round(
+                        random.uniform(low_prices[i], high_prices[i]), 6
+                    )
+                    change = (
+                        (short_price - long_price) / short_price * leverage
+                    )
+                elif (
+                    order_type == "limit" and random.randint(1, miss_rate) != 1
+                ):
                     long_open = True
                     short_open = False
                     long_price = open_prices[i]
-                    change = (short_price - long_price) / short_price * leverage
+                    change = (
+                        (short_price - long_price) / short_price * leverage
+                    )
                 if long_open == True and short_open == False:
                     capital *= 1 + change
                     capital -= commission
@@ -986,19 +1079,35 @@ def financial_evaluation(
             if long_open == True or short_open == True:
                 total_day_position_open += 1
             portfolio_value[i + 1] = capital
-            if trailing_stop_loss and short_open == False and long_open == True:
+            if (
+                trailing_stop_loss
+                and short_open == False
+                and long_open == True
+            ):
                 stop_loss_price = close_prices[i] * (1 - stop_loss / 100)
-            if trailing_stop_loss and short_open == True and long_open == False:
+            if (
+                trailing_stop_loss
+                and short_open == True
+                and long_open == False
+            ):
                 stop_loss_price = close_prices[i] * (1 + stop_loss / 100)
-            if trailing_take_profit and short_open == False and long_open == True:
+            if (
+                trailing_take_profit
+                and short_open == False
+                and long_open == True
+            ):
                 take_profit_price = close_prices[i] * (1 + take_profit / 100)
-            if trailing_take_profit and short_open == True and long_open == False:
+            if (
+                trailing_take_profit
+                and short_open == True
+                and long_open == False
+            ):
                 take_profit_price = close_prices[i] * (1 - take_profit / 100)
     if total_trade_made == 0:
         st.write("No trade executed")
         return
     end = time.time()
-    if show_time == True:
+    if show_time:
         st.write(
             f"\nBacktest was completed in {second_2_minute_converter(end-start)}.\n"
         )
@@ -1036,12 +1145,17 @@ def financial_evaluation(
         show_tables,
     )
     if show_charts:
-        plot_charts("SPY", ohlcv[:i], transactions[:i], portfolio_value[:i], liquidated)
+        plot_charts(
+            "SPY", ohlcv[:i], transactions[:i], portfolio_value[:i], liquidated
+        )
     return metrics
 
 
 def metric_optimization(
-    metric: str, take_profit_value: float, stop_loss_value: float, leverage_value: float
+    metric: str,
+    take_profit_value: float,
+    stop_loss_value: float,
+    leverage_value: float,
 ):
     holdLabel: int = st.session_state["backtest_configuration"]["hold_label"]
     buyLabel: int = st.session_state["backtest_configuration"]["buy_label"]
@@ -1052,11 +1166,15 @@ def metric_optimization(
     ]
     ohlcv: pd.DataFrame = st.session_state["ohlcv"]
     predictions: np.array = np.array(st.session_state["predictions"])
-    risk_free_rate: float = st.session_state["backtest_configuration"]["risk_free_rate"]
+    risk_free_rate: float = st.session_state["backtest_configuration"][
+        "risk_free_rate"
+    ]
     initial_capital: float = st.session_state["backtest_configuration"][
         "initial_capital"
     ]
-    commission: float = st.session_state["backtest_configuration"]["commission"]
+    commission: float = st.session_state["backtest_configuration"][
+        "commission"
+    ]
     alpha: float = st.session_state["backtest_configuration"]["alpha"]
     threshold: float = st.session_state["backtest_configuration"]["threshold"]
     order: int = st.session_state["backtest_configuration"]["order"]
@@ -1077,7 +1195,9 @@ def metric_optimization(
     show_tables: bool = False
     show_charts: bool = False
     show_time: bool = False
-    precision_point = st.session_state["backtest_configuration"]["precision_point"]
+    precision_point = st.session_state["backtest_configuration"][
+        "precision_point"
+    ]
 
     metrics = financial_evaluation(
         holdLabel,
@@ -1131,7 +1251,9 @@ def optimize_backtest(
     length = len(combinations)
     for combination_count, combination in enumerate(combinations, start=1):
         key = tuple(combination)
-        results[key] = metric_optimization(metric_optimized, key[0], key[1], key[2])
+        results[key] = metric_optimization(
+            metric_optimized, key[0], key[1], key[2]
+        )
         for _ in range(iteration - 1):
             results[key] += metric_optimization(
                 metric_optimized, key[0], key[1], key[2]
@@ -1142,7 +1264,9 @@ def optimize_backtest(
             t.markdown(
                 f"{combination_count}/{len(combinations)} (%{round(combination_count/len(combinations)*100,2)}) of combinations were tested. {second_2_minute_converter(time.time()-start)} passed."
             )
-    sorted_dict = dict(sorted(results.items(), key=lambda item: item[1], reverse=True))
+    sorted_dict = dict(
+        sorted(results.items(), key=lambda item: item[1], reverse=True)
+    )
     st.markdown("<br> <br>", unsafe_allow_html=True)
     if show_results:
         tf = []

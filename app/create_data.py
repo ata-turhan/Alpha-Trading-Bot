@@ -1,17 +1,23 @@
 import datetime as dt
+import json
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import requests
 import streamlit as st
 import yfinance as yf
 from plotly.subplots import make_subplots
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import RFE, SelectFromModel, SelectKBest, f_classif
+from sklearn.feature_selection import (
+    RFE,
+    SelectFromModel,
+    SelectKBest,
+    f_classif,
+)
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from ta import add_all_ta_features
 from ta.utils import dropna
-import requests
-import json
 
 if "ohlcv" not in st.session_state:
     st.session_state["ohlcv"] = None
@@ -31,7 +37,9 @@ def get_financial_data(
     )
 
 
-def show_prices(data: pd.DataFrame, ticker: str, show_which_price: str = "All") -> None:
+def show_prices(
+    data: pd.DataFrame, ticker: str, show_which_price: str = "All"
+) -> None:
     fig = make_subplots(
         rows=2,
         cols=1,
@@ -65,7 +73,9 @@ def show_prices(data: pd.DataFrame, ticker: str, show_which_price: str = "All") 
             row=1,
             col=1,
         )
-    fig.add_trace(go.Bar(x=data.index, y=data["Volume"], name="Volume"), row=2, col=1)
+    fig.add_trace(
+        go.Bar(x=data.index, y=data["Volume"], name="Volume"), row=2, col=1
+    )
     fig.update(layout_xaxis_rangeslider_visible=False)
     fig.update_layout(
         autosize=True,
@@ -134,7 +144,9 @@ def signal_smoothing(
         for i in range(29, len(data)):
             model = LinearRegression()
             model.fit(
-                np.array(data["rowNumber"].iloc[i - 29 : i + 1]).reshape(-1, 1),
+                np.array(data["rowNumber"].iloc[i - 29 : i + 1]).reshape(
+                    -1, 1
+                ),
                 np.array(data["Close"].iloc[i - 29 : i + 1]),
             )
             prediction = model.predict(
@@ -165,7 +177,9 @@ def create_ohlcv_alike(ohlcv: pd.DataFrame, new_asset: str):
     start = ohlcv.index[0] + dt.timedelta(days=1)
     end = ohlcv.index[-1] + dt.timedelta(days=1)
     interval = (
-        "1d" if str(ohlcv.index[1] - ohlcv.index[0]).startswith("1 days") else "1m"
+        "1d"
+        if str(ohlcv.index[1] - ohlcv.index[0]).startswith("1 days")
+        else "1m"
     )
     auto_adjust = "Adj Close" not in ohlcv.columns
     st.write(ohlcv)
@@ -189,7 +203,12 @@ def create_ohlcv_alike(ohlcv: pd.DataFrame, new_asset: str):
 
 def create_technical_indicators(market: pd.DataFrame) -> pd.DataFrame:
     market = add_all_ta_features(
-        market, open="Open", high="High", low="Low", close="Close", volume="Volume"
+        market,
+        open="Open",
+        high="High",
+        low="Low",
+        close="Close",
+        volume="Volume",
     )
     return market
 
@@ -221,7 +240,9 @@ def create_train_test_data(market: pd.DataFrame):
     selected_features_boolean = select.get_support()
     features = list(market.columns[:-1])
     selected_features = [
-        features[j] for j in range(len(features)) if selected_features_boolean[j]
+        features[j]
+        for j in range(len(features))
+        if selected_features_boolean[j]
     ]
     print(f"Selected best {selected_feature_count} features:")
     print(selected_features)
@@ -267,7 +288,8 @@ def create_train_test_data(market: pd.DataFrame):
     st.write(y_train[0])
     st.write(
         pd.concat(
-            [pd.DataFrame(X_train[0], index=y_train[0].index), y_train[0]], axis=1
+            [pd.DataFrame(X_train[0], index=y_train[0].index), y_train[0]],
+            axis=1,
         )
     )
     return X_train, y_train, X_test, y_test

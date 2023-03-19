@@ -3,8 +3,8 @@ import base64
 import create_data as cd
 import create_strategy as cs
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
 import streamlit as st
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
@@ -83,14 +83,18 @@ else:
         uploaded_file = st.file_uploader("Choose a csv file to upload")
         if uploaded_file is not None:
             try:
-                st.session_state["predictions"] = np.array(pd.read_csv(uploaded_file))
+                st.session_state["predictions"] = np.array(
+                    pd.read_csv(uploaded_file)
+                )
             except FileNotFoundError as exception:
                 st.error("you need to upload a csv or excel file.")
             else:
                 predictions = st.session_state["predictions"]
                 if predictions is not None:
                     st.markdown("<br>", unsafe_allow_html=True)
-                    st.success("The predictions of strategy fetched successfully")
+                    st.success(
+                        "The predictions of strategy fetched successfully"
+                    )
     elif strategy_fetch_way == "Create a strategy":
         smooth_method = st.selectbox(
             "Which way do you want to use the price data with smoothing?",
@@ -127,11 +131,18 @@ else:
             if market != "<Select>":
                 assets = list(st.session_state["assets"][market].keys())
                 assets.insert(0, "<Select>")
-                correlated_asset = st.selectbox("Select the correlated asset: ", assets)
-                if correlated_asset is not None and correlated_asset != "<Select>":
+                correlated_asset = st.selectbox(
+                    "Select the correlated asset: ", assets
+                )
+                if (
+                    correlated_asset is not None
+                    and correlated_asset != "<Select>"
+                ):
                     correlated_asset_ohclv = cd.create_ohlcv_alike(
                         ohlcv=st.session_state["smoothed_ohlcv"],
-                        new_asset=st.session_state["assets"][market][correlated_asset],
+                        new_asset=st.session_state["assets"][market][
+                            correlated_asset
+                        ],
                     )
                     try:
                         downward_movement = st.number_input(
@@ -141,8 +152,12 @@ else:
                         st.write("Please write a number.")
                     if downward_movement != 0:
                         st.markdown("<br>", unsafe_allow_html=True)
-                        if st.button("Create the predictions of the strategy."):
-                            st.session_state["predictions"] = cs.correlation_trading(
+                        if st.button(
+                            "Create the predictions of the strategy."
+                        ):
+                            st.session_state[
+                                "predictions"
+                            ] = cs.correlation_trading(
                                 ohlcv1=correlated_asset_ohclv,
                                 ohlcv2=st.session_state["smoothed_ohlcv"],
                                 downward_movement=downward_movement,
@@ -187,11 +202,13 @@ else:
                     col1, col2 = st.columns([1, 1])
                     with col1:
                         short_smo = st.number_input(
-                            "Please enter the short moving average value", value=50
+                            "Please enter the short moving average value",
+                            value=50,
                         )
                     with col2:
                         long_smo = st.number_input(
-                            "Please enter the long moving average value", value=200
+                            "Please enter the long moving average value",
+                            value=200,
                         )
                     strategy_created = st.button(
                         "Create the predictions of the strategy."
@@ -206,11 +223,13 @@ else:
                     col1, col2 = st.columns([1, 1])
                     with col1:
                         short_emo = st.number_input(
-                            "Please enter the short moving average value", value=50
+                            "Please enter the short moving average value",
+                            value=50,
                         )
                     with col2:
                         long_emo = st.number_input(
-                            "Please enter the long moving average value", value=200
+                            "Please enter the long moving average value",
+                            value=200,
                         )
                     strategy_created = st.button(
                         "Create the predictions of the strategy."
@@ -241,7 +260,10 @@ else:
                             window=window,
                             window_dev=window_dev,
                         )
-                if st.session_state["predictions"] is not None and strategy_created:
+                if (
+                    st.session_state["predictions"] is not None
+                    and strategy_created
+                ):
                     st.session_state["predictions"].to_csv(
                         f"Predictions of the {strategy_type}.csv"
                     )
@@ -258,7 +280,11 @@ else:
         elif strategy_type == "Momentum Trading":
             indicator = st.selectbox(
                 "Select the momentum strategy you want to use: ",
-                ["<Select>", "Momentum Day Trading", "Momentum Percentage Trading"],
+                [
+                    "<Select>",
+                    "Momentum Day Trading",
+                    "Momentum Percentage Trading",
+                ],
             )
             if indicator != "<Select>":
                 if indicator == "Momentum Day Trading":
@@ -272,12 +298,16 @@ else:
                             "Please enter the down day number", value=3
                         )
                     with col3:
-                        reverse = st.checkbox("Reverse the logic of the strategy")
+                        reverse = st.checkbox(
+                            "Reverse the logic of the strategy"
+                        )
                     strategy_created = st.button(
                         "Create the predictions of the strategy."
                     )
                     if strategy_created:
-                        st.session_state["predictions"] = cs.momentum_day_trading(
+                        st.session_state[
+                            "predictions"
+                        ] = cs.momentum_day_trading(
                             ohlcv=st.session_state["smoothed_ohlcv"],
                             up_day=up_day,
                             down_day=down_day,
@@ -302,7 +332,9 @@ else:
                             "Please enter the down percentage number", value=3
                         )
                     with col5:
-                        reverse = st.checkbox("Reverse the logic of the strategy")
+                        reverse = st.checkbox(
+                            "Reverse the logic of the strategy"
+                        )
                     st.markdown("<br>", unsafe_allow_html=True)
                     strategy_created = st.button(
                         "Create the predictions of the strategy."
@@ -318,7 +350,10 @@ else:
                             down_day=down_day,
                             reverse=reverse,
                         )
-                if st.session_state["predictions"] is not None and strategy_created:
+                if (
+                    st.session_state["predictions"] is not None
+                    and strategy_created
+                ):
                     st.session_state["predictions"].to_csv(
                         f"Predictions of the {strategy_type}.csv"
                     )
@@ -332,7 +367,12 @@ else:
         elif strategy_type == "AI Trading":
             data_types = st.multiselect(
                 "Select the data types you want to include for ai modeling: ",
-                ["<Select>", "Fundamental Data", "Technical Data", "Sentiment Data"],
+                [
+                    "<Select>",
+                    "Fundamental Data",
+                    "Technical Data",
+                    "Sentiment Data",
+                ],
                 help="Fundamental Data: CPI, DXY, Fed Rate.\nTechnical Data: Technical Indicators\nSentiment Data: \
                 Sentiment of tweets of last 24 hours.",
             )
@@ -344,7 +384,8 @@ else:
             if "Technical Data" in data_types:
                 if (
                     "Label" not in st.session_state["smoothed_ohlcv"].columns
-                    and "volume_obv" not in st.session_state["smoothed_ohlcv"].columns
+                    and "volume_obv"
+                    not in st.session_state["smoothed_ohlcv"].columns
                 ):
                     with st.spinner("Technical indicators are created..."):
                         st.session_state[
@@ -374,7 +415,9 @@ else:
                             value=5,
                             step=5,
                         )
-                        if st.button("Create the predictions of the strategy."):
+                        if st.button(
+                            "Create the predictions of the strategy."
+                        ):
                             market = st.session_state["smoothed_ohlcv"]
                             train_data = market.iloc[: len(market) * 4 // 5, :]
                             test_data = market.iloc[len(market) * 4 // 5 :, :]
@@ -400,7 +443,9 @@ else:
                         selected_models = [models[key] for key in ai_models]
                         # st.write(type(selected_models))
                         st.markdown("<br>", unsafe_allow_html=True)
-                        if st.button("Create the predictions of the strategy."):
+                        if st.button(
+                            "Create the predictions of the strategy."
+                        ):
                             # train_data = pd.concat([pd.DataFrame(X_train[0], index=y_train[0].index), y_train[0]], axis=1)
                             # test_data = pd.DataFrame(X_test[0], index=y_test[0].index)
                             market = st.session_state["smoothed_ohlcv"]
@@ -425,11 +470,14 @@ else:
                                 target_names = ["Hold", "Buy", "Sell"]
                                 cm = confusion_matrix(
                                     test_data["Label"],
-                                    st.session_state["predictions"]["Predictions"],
+                                    st.session_state["predictions"][
+                                        "Predictions"
+                                    ],
                                 )
                                 plt.grid(False)
                                 disp = ConfusionMatrixDisplay(
-                                    confusion_matrix=cm, display_labels=target_names
+                                    confusion_matrix=cm,
+                                    display_labels=target_names,
                                 )
                                 disp.plot(cmap=plt.cm.Blues)
                                 disp.ax_.grid(False)
@@ -437,7 +485,9 @@ else:
                                 fig.set_size_inches(5, 5)
                                 col1, col2 = st.columns([1, 1])
                                 with col1:
-                                    st.subheader("Confusion matrix of the AI Model")
+                                    st.subheader(
+                                        "Confusion matrix of the AI Model"
+                                    )
                                     st.pyplot(fig)
                                 with col2:
                                     st.subheader(
@@ -445,20 +495,31 @@ else:
                                     )
                                     report = classification_report(
                                         test_data["Label"],
-                                        st.session_state["predictions"]["Predictions"],
+                                        st.session_state["predictions"][
+                                            "Predictions"
+                                        ],
                                         target_names=target_names,
                                         output_dict=True,
                                     )
-                                    df_report = pd.DataFrame(report).transpose()
+                                    df_report = pd.DataFrame(
+                                        report
+                                    ).transpose()
                                     st.dataframe(df_report)
                                     train_period = pd.DataFrame(
                                         index=train_data.index,
                                         data={
-                                            "Predictions": np.zeros((len(train_data),))
+                                            "Predictions": np.zeros(
+                                                (len(train_data),)
+                                            )
                                         },
                                     )
-                                    st.session_state["predictions"] = pd.concat(
-                                        [train_period, st.session_state["predictions"]]
+                                    st.session_state[
+                                        "predictions"
+                                    ] = pd.concat(
+                                        [
+                                            train_period,
+                                            st.session_state["predictions"],
+                                        ]
                                     )
         elif strategy_type == "Candlestick Pattern Trading":
             col1, col2 = st.columns([1, 1])
@@ -503,7 +564,9 @@ else:
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("Create the predictions of the strategy."):
                 if buy_pattern == "<Select>" or sell_pattern == "<Select>":
-                    st.warning("Please select the patterns for buy and sell signals.")
+                    st.warning(
+                        "Please select the patterns for buy and sell signals."
+                    )
                 else:
                     st.session_state["predictions"] = cs.candlestick_trading(
                         ohlcv=st.session_state["smoothed_ohlcv"],
@@ -532,7 +595,9 @@ else:
                 )
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("Create the predictions of the strategy."):
-                st.session_state["predictions"] = cs.support_resistance_trading(
+                st.session_state[
+                    "predictions"
+                ] = cs.support_resistance_trading(
                     ohlcv=st.session_state["smoothed_ohlcv"],
                     rolling_wave_length=rolling_wave_length,
                     num_clusters=num_clusters,
@@ -547,7 +612,10 @@ else:
                     st.success(
                         "Predictions of the strategy created and saved successfully"
                     )
-        if st.session_state["predictions"] is not None and strategy_type != "<Select>":
+        if (
+            st.session_state["predictions"] is not None
+            and strategy_type != "<Select>"
+        ):
             predictions = st.session_state["predictions"]["Predictions"]
             cs.show_predictions_on_chart(
                 ohlcv=st.session_state["smoothed_ohlcv"],

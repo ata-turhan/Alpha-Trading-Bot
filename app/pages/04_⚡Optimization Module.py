@@ -1,8 +1,9 @@
 import base64
-import numpy as np
-import streamlit as st
+
 import create_backtest as cb
 import create_data as cd
+import numpy as np
+import streamlit as st
 
 
 def add_bg_from_local(background_file, sidebar_background_file):
@@ -69,18 +70,30 @@ else:
     st.markdown("<br>", unsafe_allow_html=True)
     metric_optimized = st.selectbox(
         "Please select the backtest metrics to optimize:",
-        ["<Select>", "Total Return", "Sharpe Ratio", "Sortino Ratio", "Omega Ratio"],
+        [
+            "<Select>",
+            "Total Return",
+            "Sharpe Ratio",
+            "Sortino Ratio",
+            "Omega Ratio",
+        ],
     )
     st.markdown("<br>", unsafe_allow_html=True)
     take_profit_ranges = st.slider(
         "Select a range for take profit values", 0, 50, (5, 25)
     )
-    take_profit_values = list(range(take_profit_ranges[0], take_profit_ranges[1]))
+    take_profit_values = list(
+        range(take_profit_ranges[0], take_profit_ranges[1])
+    )
     st.markdown("<br>", unsafe_allow_html=True)
-    stop_loss_ranges = st.slider("Select a range for stop loss values", 0, 50, (5, 25))
+    stop_loss_ranges = st.slider(
+        "Select a range for stop loss values", 0, 50, (5, 25)
+    )
     stop_loss_values = list(range(stop_loss_ranges[0], stop_loss_ranges[1]))
     st.markdown("<br>", unsafe_allow_html=True)
-    leverage_ranges = st.slider("Select a range for leverage values", 1, 20, (1, 5))
+    leverage_ranges = st.slider(
+        "Select a range for leverage values", 1, 20, (1, 5)
+    )
     leverage_values = list(range(leverage_ranges[0], leverage_ranges[1]))
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2 = st.columns([1, 1])
@@ -92,7 +105,9 @@ else:
         )
     with col2:
         best_n = int(
-            st.number_input("Choose the number of best combinations to see.", value=0)
+            st.number_input(
+                "Choose the number of best combinations to see.", value=0
+            )
         )
     col1, col2 = st.columns([1, 1])
     with col1:
