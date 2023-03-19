@@ -4,6 +4,11 @@ repos:
       hooks:
         - id: black
           language_version: python3.10.9
+    - repo: https://github.com/sourcery-ai/sourcery
+      rev: v1.0.7
+      hooks:
+        - id: sourcery
+          args: [--fix, --summary]
     - repo: https://github.com/pre-commit/pre-commit-hooks
       rev: v2.5.0
       hooks:
