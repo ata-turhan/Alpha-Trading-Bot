@@ -14,6 +14,14 @@ repos:
     rev: v2.0.2
     hooks:
       - id: autoflake
+        args:
+          [
+            "--in-place",
+            "--remove-all-unused-imports",
+            "--remove-unused-variables",
+            "--expand-star-imports",
+            "--ignore-init-module-imports",
+          ]
   - repo: https://github.com/PyCQA/flake8
     rev: 6.0.0
     hooks:
