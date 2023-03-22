@@ -43,6 +43,7 @@ def fetch_data_button_click():
     if st.session_state["all_areas_filled"]:
         if st.session_state["fetch_data_button_clicked"] == True:
             st.session_state["show_data_button_clicked"] = False
+            st.session_state["show_chart_button_clicked"] = False
             st.session_state["chart_data_selectbox_clicked"] = False
         st.session_state["fetch_data_button_clicked"] = True
         st.session_state["ohlcv"] = cd.get_financial_data(
@@ -58,6 +59,10 @@ def show_data_button_click():
     st.session_state["show_data_button_clicked"] = True
 
 
+def show_chart_button_click():
+    st.session_state["show_chart_button_clicked"] = True
+
+
 def chart_data_selectbox_click():
     st.session_state["chart_data_selectbox_clicked"] = True
 
@@ -66,6 +71,7 @@ def clear_data():
     st.session_state["ohlcv"] = None
     st.session_state.conf_change = True
     st.session_state["show_data_button_clicked"] = False
+    st.session_state["show_chart_button_clicked"] = False
 
 
 st.markdown(
@@ -89,7 +95,9 @@ if "ticker" not in st.session_state:
 if "assets" not in st.session_state:
     st.session_state["assets"] = {}
 if "show_data_button_clicked" not in st.session_state:
-    st.session_state["show_data_button_clicked"] = True
+    st.session_state["show_data_button_clicked"] = False
+if "show_chart_button_clicked" not in st.session_state:
+    st.session_state["show_chart_button_clicked"] = False
 
 
 smooth_method = "<Select>"
@@ -132,6 +140,8 @@ if data_fetch_way == "Fetch over the internet":
         st.session_state["fetch_data_button_clicked"] = False
     if "show_data_button_clicked" not in st.session_state:
         st.session_state["show_data_button_clicked"] = False
+    if "show_chart_button_clicked" not in st.session_state:
+        st.session_state["show_chart_button_clicked"] = False
     if "chart_data_selectbox_clicked" not in st.session_state:
         st.session_state["chart_data_selectbox_clicked"] = False
 
@@ -250,30 +260,41 @@ if st.session_state["ohlcv"] is not None:
     #   )
     #    st.session_state["ohlcv"] = ohlcv
     st.markdown("<br>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns(3)
+    with col2:
+        center_tabular_button = st.button("Show the data in a tabular format")
     if (
-        st.markdown(
-            f"<div align='center'> {st.button('Show the data in a tabular format')} </div>",
-            unsafe_allow_html=True,
-        )
+        center_tabular_button
         or st.session_state["show_data_button_clicked"] == True
     ):
-        st.dataframe(ohlcv)
+        st.dataframe(ohlcv, width=1000)
         st.session_state["show_data_button_clicked"] = True
+
     st.markdown("<br> <br>", unsafe_allow_html=True)
-    display_format = st.selectbox(
-        "Select the price to show in the chart: ",
-        ["<Select>", "All", "Open", "High", "Low", "Close"],
-        on_change=chart_data_selectbox_click,
-    )
+    col1, col2, col3 = st.columns(3)
+    with col2:
+        center_chart_button = st.button("Show the data in a chart")
     if (
-        display_format != "<Select>"
-        and st.session_state["chart_data_selectbox_clicked"]
+        center_chart_button
+        or st.session_state["show_chart_button_clicked"] == True
     ):
-        cd.show_prices(
-            data=st.session_state["ohlcv"],
-            ticker=tickers,
-            show_which_price=display_format,
-        )
+        st.session_state["show_chart_button_clicked"] = True
+        with col2:
+            display_format = st.selectbox(
+                "Select the price to show in the chart: ",
+                ["<Select>", "All", "Open", "High", "Low", "Close"],
+                on_change=chart_data_selectbox_click,
+            )
+        if (
+            display_format
+            != "<Select>"
+            # and st.session_state["chart_data_selectbox_clicked"]
+        ):
+            cd.show_prices(
+                data=st.session_state["ohlcv"],
+                ticker=tickers,
+                show_which_price=display_format,
+            )
     st.markdown("<br>", unsafe_allow_html=True)
 if (
     data_fetch_way != "<Select>"
