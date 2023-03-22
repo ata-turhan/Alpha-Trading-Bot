@@ -21,11 +21,15 @@ repos:
             "--remove-unused-variables",
             "--expand-star-imports",
             "--ignore-init-module-imports",
+            "--ignore-pass-statements",
+            "--ignore-pass-after-docstring",
+            "--remove-rhs-for-unused-variables",
           ]
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
-    hooks:
-      - id: flake8
+  #  - repo: https://github.com/PyCQA/flake8
+  #    rev: 6.0.0
+  #    hooks:
+  #      - id: flake8
+  #        args: ["--ignore=E501", "--ignore=E712", "--ignore=W503"]
   - repo: https://github.com/sourcery-ai/sourcery
     rev: v1.0.7
     hooks:

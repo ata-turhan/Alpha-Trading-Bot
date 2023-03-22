@@ -1,5 +1,4 @@
 import base64
-import datetime as dt
 import re
 
 import create_data as cd
@@ -75,6 +74,7 @@ st.markdown(
 data_fetch_way = st.selectbox(
     "Which way do you want to get the prices: ",
     ["<Select>", "Fetch over the internet", "Read from a file"],
+    on_change=clear_data,
 )
 st.markdown("<br>", unsafe_allow_html=True)
 
