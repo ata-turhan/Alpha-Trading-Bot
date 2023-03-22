@@ -65,6 +65,7 @@ def chart_data_selectbox_click():
 def clear_data():
     st.session_state["ohlcv"] = None
     st.session_state.conf_change = True
+    st.session_state["show_data_button_clicked"] = False
 
 
 st.markdown(
@@ -87,6 +88,8 @@ if "ticker" not in st.session_state:
     st.session_state["ticker"] = ""
 if "assets" not in st.session_state:
     st.session_state["assets"] = {}
+if "show_data_button_clicked" not in st.session_state:
+    st.session_state["show_data_button_clicked"] = True
 
 
 smooth_method = "<Select>"
@@ -247,8 +250,15 @@ if st.session_state["ohlcv"] is not None:
     #   )
     #    st.session_state["ohlcv"] = ohlcv
     st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("Show the data in a tabular format"):
+    if (
+        st.markdown(
+            f"<div align='center'> {st.button('Show the data in a tabular format')} </div>",
+            unsafe_allow_html=True,
+        )
+        or st.session_state["show_data_button_clicked"] == True
+    ):
         st.dataframe(ohlcv)
+        st.session_state["show_data_button_clicked"] = True
     st.markdown("<br> <br>", unsafe_allow_html=True)
     display_format = st.selectbox(
         "Select the price to show in the chart: ",
