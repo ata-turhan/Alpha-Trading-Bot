@@ -83,7 +83,7 @@ style = "<style>.row-widget.stButton {text-align: center;}</style>"
 st.markdown(style, unsafe_allow_html=True)
 
 
-col1, col2, col3 = st.columns([1, 1, 1])
+col1, col2, col3 = st.columns([1, 2, 1])
 data_fetch_way = col2.selectbox(
     "Which way do you want to get the prices: ",
     ["<Select>", "Fetch over the internet", "Read from a file"],
@@ -220,7 +220,7 @@ if data_fetch_way == "Fetch over the internet":
                 st.success("Data fetched successfully")
                 st.markdown("<br>", unsafe_allow_html=True)
 elif data_fetch_way == "Read from a file":
-    uploaded_file = st.file_uploader(
+    uploaded_file = col2.file_uploader(
         "Choose a csv or excel file which first word of its name equal to the ticker name to upload "
     )
     st.markdown("<br>", unsafe_allow_html=True)
@@ -266,31 +266,29 @@ if st.session_state["ohlcv"] is not None:
     #   )
     #    st.session_state["ohlcv"] = ohlcv
     st.markdown("<br>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns(3)
-    with col2:
-        center_tabular_button = st.button("Show the data in a tabular format")
+
+    center_tabular_button = st.button("Show the data in a tabular format")
     if (
         center_tabular_button
         or st.session_state["show_data_button_clicked"] == True
     ):
-        st.dataframe(ohlcv, width=1000)
+        st.dataframe(ohlcv, width=1100)
         st.session_state["show_data_button_clicked"] = True
 
     st.markdown("<br> <br>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns(3)
-    with col2:
-        center_chart_button = st.button("Show the data in a chart")
+
+    center_chart_button = st.button("Show the data in a chart")
     if (
         center_chart_button
         or st.session_state["show_chart_button_clicked"] == True
     ):
         st.session_state["show_chart_button_clicked"] = True
-        with col2:
-            display_format = st.selectbox(
-                "Select the price to show in the chart: ",
-                ["<Select>", "All", "Open", "High", "Low", "Close"],
-                on_change=chart_data_selectbox_click,
-            )
+        col1, col2, col3 = st.columns([1, 2, 1])
+        display_format = col2.selectbox(
+            "Select the price to show in the chart: ",
+            ["<Select>", "All", "Open", "High", "Low", "Close"],
+            on_change=chart_data_selectbox_click,
+        )
         if (
             display_format
             != "<Select>"
