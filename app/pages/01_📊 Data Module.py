@@ -78,7 +78,13 @@ st.markdown(
     "<h1 style='text-align: center; color: black;'> 📊 Data Module </h1> <br> <br>",
     unsafe_allow_html=True,
 )
-data_fetch_way = st.selectbox(
+
+style = "<style>.row-widget.stButton {text-align: center;}</style>"
+st.markdown(style, unsafe_allow_html=True)
+
+
+col1, col2, col3 = st.columns([1, 1, 1])
+data_fetch_way = col2.selectbox(
     "Which way do you want to get the prices: ",
     ["<Select>", "Fetch over the internet", "Read from a file"],
     on_change=clear_data,
@@ -145,7 +151,7 @@ if data_fetch_way == "Fetch over the internet":
     if "chart_data_selectbox_clicked" not in st.session_state:
         st.session_state["chart_data_selectbox_clicked"] = False
 
-    market = st.selectbox(
+    market = col2.selectbox(
         "Select the market: ",
         ["<Select>", "Stocks & ETFs", "Forex", "Crypto"],
         on_change=clear_data,
@@ -153,12 +159,12 @@ if data_fetch_way == "Fetch over the internet":
     if market != "<Select>":
         assets = list(st.session_state["assets"][market].keys())
         assets.insert(0, "<Select>")
-        asset = st.selectbox(
+        asset = col2.selectbox(
             "Select the asset: ", assets, on_change=clear_data
         )
         intervals = ["1m", "1d", "5d", "1wk", "1mo", "3mo"]
         intervals.insert(0, "<Select>")
-        interval = st.selectbox(
+        interval = col2.selectbox(
             "Select the time frame: ", intervals, on_change=clear_data
         )
         if asset != "<Select>" and interval != "<Select>":
@@ -187,7 +193,7 @@ if data_fetch_way == "Fetch over the internet":
                     ),
                     on_change=clear_data,
                 )
-            adjust_situation = st.selectbox(
+            adjust_situation = col2.selectbox(
                 "Do you want to adjust the prices: ", ["<Select>", "Yes", "No"]
             )
             auto_adjust = adjust_situation == "Yes"
