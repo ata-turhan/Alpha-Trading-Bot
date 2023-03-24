@@ -220,8 +220,10 @@ if data_fetch_way == "Fetch over the internet":
                 st.success("Data fetched successfully")
                 st.markdown("<br>", unsafe_allow_html=True)
 elif data_fetch_way == "Read from a file":
+    col2.markdown("<br><br>", unsafe_allow_html=True)
     uploaded_file = col2.file_uploader(
-        "Choose a csv or excel file which first word of its name equal to the ticker name to upload "
+        "To upload, select a csv or excel file with the first word of its name matching the ticker name.",
+        on_change=clear_data,
     )
     st.markdown("<br>", unsafe_allow_html=True)
     if uploaded_file is not None:
