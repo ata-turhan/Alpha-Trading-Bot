@@ -207,7 +207,7 @@ if data_fetch_way == "Fetch over the internet":
             )
 
     if (
-        st.button("Fetch the Data", on_click=fetch_data_button_click)
+        st.button("Fetch the data", on_click=fetch_data_button_click)
         or st.session_state["fetch_data_button_clicked"]
     ):
         if st.session_state["all_areas_filled"] == False:
@@ -241,7 +241,7 @@ elif data_fetch_way == "Read from a file":
                     uploaded_file, index_col="Date"
                 )
         except Exception:
-            st.error("you need to upload a csv or excel file.")
+            st.error("You need to upload a csv or excel file.")
         else:
             st.session_state["ohlcv"].index = pd.to_datetime(
                 st.session_state["ohlcv"].index
