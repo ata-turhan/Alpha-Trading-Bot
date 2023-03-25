@@ -6,6 +6,19 @@ import pandas as pd
 import streamlit as st
 import yfinance as yf
 
+if "conf_change" not in st.session_state:
+    st.session_state.conf_change = False
+if "ohlcv" not in st.session_state:
+    st.session_state["ohlcv"] = None
+if "ticker" not in st.session_state:
+    st.session_state["ticker"] = ""
+if "assets" not in st.session_state:
+    st.session_state["assets"] = {}
+if "show_data_button_clicked" not in st.session_state:
+    st.session_state["show_data_button_clicked"] = False
+if "show_chart_button_clicked" not in st.session_state:
+    st.session_state["show_chart_button_clicked"] = False
+
 
 def add_bg_from_local(background_file, sidebar_background_file):
     with open(background_file, "rb") as image_file:
@@ -27,16 +40,6 @@ def add_bg_from_local(background_file, sidebar_background_file):
     """,
         unsafe_allow_html=True,
     )
-
-
-st.set_page_config(page_title="Trading Bot", page_icon="🤖", layout="wide")
-
-add_bg_from_local("data/background.png", "data/bot.png")
-
-for _ in range(18):
-    st.sidebar.text("\n")
-st.sidebar.write("Developed by Ata Turhan")
-st.sidebar.write("Contact at ataturhan21@gmail.com")
 
 
 def fetch_data_button_click():
@@ -74,40 +77,6 @@ def clear_data():
     st.session_state["show_chart_button_clicked"] = False
 
 
-st.markdown(
-    "<h1 style='text-align: center; color: black;'> 📊 Data Module </h1> <br> <br>",
-    unsafe_allow_html=True,
-)
-
-style = "<style>.row-widget.stButton {text-align: center;}</style>"
-st.markdown(style, unsafe_allow_html=True)
-
-
-col1, col2, col3 = st.columns([1, 2, 1])
-data_fetch_way = col2.selectbox(
-    "Which way do you want to get the prices: ",
-    ["<Select>", "Fetch over the internet", "Read from a file"],
-    on_change=clear_data,
-)
-st.markdown("<br>", unsafe_allow_html=True)
-
-
-if "conf_change" not in st.session_state:
-    st.session_state.conf_change = False
-if "ohlcv" not in st.session_state:
-    st.session_state["ohlcv"] = None
-if "ticker" not in st.session_state:
-    st.session_state["ticker"] = ""
-if "assets" not in st.session_state:
-    st.session_state["assets"] = {}
-if "show_data_button_clicked" not in st.session_state:
-    st.session_state["show_data_button_clicked"] = False
-if "show_chart_button_clicked" not in st.session_state:
-    st.session_state["show_chart_button_clicked"] = False
-
-
-smooth_method = "<Select>"
-
 stocks_and_etfs = {
     "Microsoft": "MSFT",
     "Apple": "AAPL",
@@ -137,6 +106,36 @@ crypto = {
 st.session_state["assets"]["Stocks & ETFs"] = stocks_and_etfs
 st.session_state["assets"]["Forex"] = forex
 st.session_state["assets"]["Crypto"] = crypto
+
+
+st.set_page_config(page_title="Trading Bot", page_icon="🤖", layout="wide")
+
+add_bg_from_local("data/background.png", "data/bot.png")
+
+for _ in range(18):
+    st.sidebar.text("\n")
+st.sidebar.write("Developed by Ata Turhan")
+st.sidebar.write("Contact at ataturhan21@gmail.com")
+
+
+st.markdown(
+    "<h1 style='text-align: center; color: black;'> 📊 Data Module </h1> <br> <br>",
+    unsafe_allow_html=True,
+)
+
+style = "<style>.row-widget.stButton {text-align: center;}</style>"
+st.markdown(style, unsafe_allow_html=True)
+
+
+col1, col2, col3 = st.columns([1, 2, 1])
+data_fetch_way = col2.selectbox(
+    "Which way do you want to get the prices: ",
+    ["<Select>", "Fetch over the internet", "Read from a file"],
+    on_change=clear_data,
+)
+st.markdown("<br>", unsafe_allow_html=True)
+
+smooth_method = "<Select>"
 
 
 if data_fetch_way == "Fetch over the internet":
