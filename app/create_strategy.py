@@ -6,8 +6,20 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 import ta
-import yfinance as yf
-from Pattern import *
+from Pattern import (
+    DarkCloudCover,
+    Engulf,
+    Hammer_Hanging_Man,
+    Harami,
+    Inv_Hammer,
+    Marubozu,
+    PiercingPattern,
+    Spinning_Top,
+    doji,
+    dragonfly_doji,
+    gravestone_doji,
+    longleg_doji,
+)
 from plotly.subplots import make_subplots
 
 # from pycaret import classification
@@ -20,7 +32,6 @@ from ta.volatility import BollingerBands
 # from keras.callbacks import (Callback,ModelCheckpoint,EarlyStopping,CSVLogger,ReduceLROnPlateau,)
 
 
-@st.cache
 def correlation_trading(
     ohlcv1: pd.DataFrame,
     ohlcv2: pd.DataFrame,
@@ -39,7 +50,6 @@ def correlation_trading(
     return predictions
 
 
-@st.cache
 def rsi_trading(ohlcv: pd.DataFrame, oversold: int = 30, overbought: int = 70):
     predictions = pd.DataFrame(
         index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
@@ -55,7 +65,6 @@ def rsi_trading(ohlcv: pd.DataFrame, oversold: int = 30, overbought: int = 70):
     return predictions
 
 
-@st.cache
 def sma_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
     predictions = pd.DataFrame(
         index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
@@ -81,7 +90,6 @@ def sma_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
     return predictions
 
 
-@st.cache
 def ema_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
     predictions = pd.DataFrame(
         index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
@@ -107,7 +115,6 @@ def ema_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
     return predictions
 
 
-@st.cache
 def bb_trading(ohlcv: pd.DataFrame, window: int = 20, window_dev: int = 2):
     predictions = pd.DataFrame(
         index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
@@ -131,7 +138,6 @@ def bb_trading(ohlcv: pd.DataFrame, window: int = 20, window_dev: int = 2):
     return predictions
 
 
-@st.cache
 def momentum_day_trading(
     ohlcv: pd.DataFrame,
     up_day: int = 3,
@@ -143,24 +149,24 @@ def momentum_day_trading(
     )
     ohlcv["change"] = ohlcv["Close"].pct_change()
     for i in range(1, len(ohlcv) - up_day):
-        open_position = all(
+        long_position = all(
             ohlcv.at[ohlcv.index[i + j], "change"] > 0 for j in range(up_day)
         )
-        if open_position:
+        if long_position:
             predictions.at[ohlcv.index[i + up_day], "Predictions"] = (
                 2 if reverse else 1
             )
-        open_position = all(
+        short_position = all(
             ohlcv.at[ohlcv.index[i + j], "change"] < 0 for j in range(down_day)
         )
-        if open_position:
+        if short_position:
             predictions.at[ohlcv.index[i + down_day], "Predictions"] = (
                 1 if reverse else 2
             )
+    st.write(predictions)
     return predictions
 
 
-@st.cache
 def momentum_percentage_trading(
     ohlcv: pd.DataFrame,
     up_percentage: int = 5,
@@ -190,7 +196,7 @@ def momentum_percentage_trading(
     return predictions
 
 
-@st.cache
+"""
 def get_ml_models(train_data: pd.DataFrame):
     s = classification.setup(
         data=train_data,
@@ -234,7 +240,6 @@ def ml_trading(
             model, optimize="F1", n_iter=tune_number, choose_better=True
         )
     with st.spinner("Finalizing the best model..."):
-        final_model = classification.finalize_model(tuned_model)
     # default model
     model_predictions = classification.predict_model(
         tuned_model, data=test_data
@@ -242,8 +247,9 @@ def ml_trading(
     return pd.DataFrame(
         index=test_data.index, data={"Predictions": model_predictions["Label"]}
     )
+"""
 
-
+"""
 def dl_trading(
     train_data: pd.DataFrame,
     test_data: pd.DataFrame,
@@ -281,9 +287,9 @@ def dl_trading(
     return pd.DataFrame(
         index=test_data.index, data={"Predictions": predictions}
     )
+"""
 
 
-@st.cache
 def candlestick_trading(
     ohlcv: pd.DataFrame, buy_pattern: str, sell_pattern: str
 ):
@@ -419,6 +425,8 @@ def support_resistance_trading(
 def show_predictions_on_chart(
     ohlcv: pd.DataFrame, predictions: np.array, ticker: str
 ):
+    st.write(ohlcv)
+    st.write(predictions)
     fig = go.Figure()
     buy_labels = predictions == 1
     sell_labels = predictions == 2

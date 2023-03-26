@@ -357,7 +357,7 @@ else:
                     st.session_state["predictions"].to_csv(
                         f"Predictions of the {strategy_type}.csv"
                     )
-                    st.write(type(st.session_state["strategies"]))
+                    # st.write(type(st.session_state["strategies"]))
                     st.session_state["strategies"][
                         f"Momentum Trading-{len(st.session_state['strategies'])}"
                     ] = st.session_state["predictions"]
@@ -616,10 +616,11 @@ else:
             st.session_state["predictions"] is not None
             and strategy_type != "<Select>"
         ):
-            predictions = st.session_state["predictions"]["Predictions"]
+            st.write(st.session_state["predictions"])
+            predictions = st.session_state["predictions"]
             cs.show_predictions_on_chart(
                 ohlcv=st.session_state["smoothed_ohlcv"],
-                predictions=np.array(predictions),
+                predictions=predictions,
                 ticker=st.session_state["ticker"],
             )
 if len(st.session_state["strategies"]) != 0:
