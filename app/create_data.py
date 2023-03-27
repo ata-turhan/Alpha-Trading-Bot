@@ -17,7 +17,6 @@ from sklearn.feature_selection import (
 )
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from ta import add_all_ta_features
-from ta.utils import dropna
 
 if "ohlcv" not in st.session_state:
     st.session_state["ohlcv"] = None
@@ -86,8 +85,9 @@ def show_prices(
 
 
 def signal_smoothing(
-    data: pd.DataFrame, smoothing_method: str = "None", parameters: dict = None
+    df: pd.DataFrame, smoothing_method: str = "None", parameters: dict = None
 ):
+    data = df.copy(deep=True)
     if smoothing_method == "None":
         return data
     elif smoothing_method == "Moving Average":
@@ -340,14 +340,13 @@ def fetch_cpi_data(data_series_id, start_year, end_year):
         )
         response = requests.post(bls_data_api_url, data=data, headers=headers)
         if response.status_code != 200:
-            raise Exception(f"Error retrieving data: {response.text}")
+            raise IOError(f"Error retrieving data: {response.text}")
         #  Parse JSON
         json_data = json.loads(response.text)
         if json_data["status"] != "REQUEST_SUCCEEDED":
-            raise Exception(f"Error retrieving data: {response.text}")
+            raise IOError(f"Error retrieving data: {response.text}")
         results_df = pd.DataFrame()
         for series in json_data["Results"]["series"]:
-            series_id = series["seriesID"]
             for item in series["data"]:
                 year = int(item["year"])
                 period = item["period"]
