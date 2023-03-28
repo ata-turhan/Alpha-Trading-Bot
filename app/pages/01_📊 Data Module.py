@@ -246,8 +246,10 @@ elif data_fetch_way == "Read from a file":
                 st.session_state["ohlcv"] = pd.read_excel(
                     uploaded_file, index_col="Date"
                 )
-        except Exception:
+        except IOError:
             st.error("You need to upload a csv or excel file.")
+        except Exception:
+            st.error("An unknown error occurred.")
         else:
             st.session_state["ohlcv"].index = pd.to_datetime(
                 st.session_state["ohlcv"].index
@@ -256,26 +258,8 @@ elif data_fetch_way == "Read from a file":
             st.success("Data fetched successfully")
             st.markdown("<br>", unsafe_allow_html=True)
 if st.session_state["ohlcv"] is not None:
-    # if st.checkbox("Do you want to smooth the signal?"):
-    #    smooth_method = st.selectbox(
-    #        "Which way do you want to smooth the signal?",
-    #        [
-    #            "<Select>",
-    #            "Moving Average",
-    #            "Heikin-Ashi",
-    #            "Trend Normalization",
-    #        ],
-    #    )
-    # if smooth_method != "<Select>":
-    #   ohlcv = cd.signal_smoothing(
-    #        data=ohlcv,
-    #        smoothing_method=smooth_method,
-    #        parameters={"window": 20},
-    #   )
-    #    st.session_state["ohlcv"] = ohlcv
     st.markdown("<br>", unsafe_allow_html=True)
     st.session_state["data_to_show"] = st.session_state["ohlcv"]
-
     smooth_button = st.button("Smooth the data")
     if smooth_button or st.session_state["smooth_data_button_clicked"] == True:
         st.session_state["smooth_data_button_clicked"] = True
@@ -302,7 +286,6 @@ if st.session_state["ohlcv"] is not None:
                 parameters={"window": 20},
             )
     st.markdown("<br> <br>", unsafe_allow_html=True)
-
     center_tabular_button = st.button("Show the data in a tabular format")
     if (
         center_tabular_button
@@ -335,15 +318,10 @@ if st.session_state["ohlcv"] is not None:
                 ticker=tickers,
                 show_which_price=display_format,
             )
-    st.markdown("<br>", unsafe_allow_html=True)
-if (
-    data_fetch_way != "<Select>"
-    and st.session_state["ohlcv"] is not None
-    and st.session_state["ticker"] != "Type Here ..."
-    and smooth_method != "<Select>"
-):
-    col1, col2, col3 = st.columns([5, 6, 1])
-    if smooth_method == "None":
+    st.markdown("<br><br>", unsafe_allow_html=True)
+if data_fetch_way != "<Select>" and st.session_state["ohlcv"] is not None:
+    col1, col2, col3 = st.columns([2.25, 1, 2.25])
+    if smooth_method == "<Select>" or smooth_method == "None":
         file_name = f"{st.session_state['ticker']}-ohlcv.csv"
     else:
         file_name = f"{st.session_state['ticker']}-ohlcv-{smooth_method}.csv"
@@ -354,5 +332,3 @@ if (
         mime="text/csv",
     ):
         st.success("Data was saved successfully")
-
-st.markdown("<br> <br> <br>", unsafe_allow_html=True)

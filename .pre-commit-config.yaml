@@ -30,11 +30,11 @@ repos:
   #    hooks:
   #      - id: flake8
   #        args: ["--ignore=E501", "--ignore=E712", "--ignore=W503"]
-  - repo: https://github.com/sourcery-ai/sourcery
-    rev: v1.0.7
-    hooks:
-      - id: sourcery
-        args: [--fix, --summary]
+  #  - repo: https://github.com/sourcery-ai/sourcery
+  #    rev: v1.0.7
+  #    hooks:
+  #      - id: sourcery
+  #        args: [--fix, --summary]
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.5.1
     hooks:
