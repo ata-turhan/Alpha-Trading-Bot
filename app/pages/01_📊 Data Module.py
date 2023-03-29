@@ -1,4 +1,5 @@
 import base64
+import io
 import re
 
 import create_data as cd
@@ -8,8 +9,8 @@ import yfinance as yf
 
 if "conf_change" not in st.session_state:
     st.session_state.conf_change = False
-if "ohlcv" not in st.session_state:
-    st.session_state["ohlcv"] = None
+if "data" not in st.session_state:
+    st.session_state["data"] = None
 if "ticker" not in st.session_state:
     st.session_state["ticker"] = ""
 if "assets" not in st.session_state:
@@ -53,7 +54,7 @@ def fetch_data_button_click():
             st.session_state["show_chart_button_clicked"] = False
             st.session_state["chart_data_selectbox_clicked"] = False
         st.session_state["fetch_data_button_clicked"] = True
-        st.session_state["ohlcv"] = cd.get_financial_data(
+        st.session_state["data"] = cd.get_financial_data(
             tickers=tickers,
             start=start,
             end=end,
@@ -83,7 +84,7 @@ def chart_data_selectbox_click():
 
 
 def clear_data():
-    st.session_state["ohlcv"] = None
+    st.session_state["data"] = None
     st.session_state.conf_change = True
     st.session_state["smooth_data_button_clicked"] = False
     st.session_state["show_data_button_clicked"] = False
@@ -219,10 +220,10 @@ if data_fetch_way == "Fetch over the internet":
         if st.session_state["all_areas_filled"] == False:
             st.error("Please fill all the areas.")
         else:
-            ohlcv = st.session_state["ohlcv"]
-            if ohlcv is None and st.session_state.conf_change == False:
+            data = st.session_state["data"]
+            if data is None and st.session_state.conf_change == False:
                 st.error("Data could not be downloaded.")
-            elif ohlcv is not None:
+            elif data is not None:
                 st.success("Data fetched successfully")
                 st.markdown("<br>", unsafe_allow_html=True)
 elif data_fetch_way == "Read from a file":
@@ -237,13 +238,13 @@ elif data_fetch_way == "Read from a file":
         st.session_state["ticker"] = tickers
         try:
             if uploaded_file.name.endswith(".csv"):
-                st.session_state["ohlcv"] = pd.read_csv(
+                st.session_state["data"] = pd.read_csv(
                     uploaded_file, index_col="Date"
                 )
             elif uploaded_file.name.endswith(
                 ".xlx"
             ) or uploaded_file.name.endswith(".xlsx"):
-                st.session_state["ohlcv"] = pd.read_excel(
+                st.session_state["data"] = pd.read_excel(
                     uploaded_file, index_col="Date"
                 )
         except IOError:
@@ -251,15 +252,15 @@ elif data_fetch_way == "Read from a file":
         except Exception:
             st.error("An unknown error occurred.")
         else:
-            st.session_state["ohlcv"].index = pd.to_datetime(
-                st.session_state["ohlcv"].index
+            st.session_state["data"].index = pd.to_datetime(
+                st.session_state["data"].index
             )
-            ohlcv = st.session_state["ohlcv"]
+            data = st.session_state["data"]
             st.success("Data fetched successfully")
             st.markdown("<br>", unsafe_allow_html=True)
-if st.session_state["ohlcv"] is not None:
+if st.session_state["data"] is not None:
     st.markdown("<br>", unsafe_allow_html=True)
-    st.session_state["data_to_show"] = st.session_state["ohlcv"]
+    st.session_state["data_to_show"] = st.session_state["data"]
     smooth_button = st.button("Smooth the data")
     if smooth_button or st.session_state["smooth_data_button_clicked"] == True:
         st.session_state["smooth_data_button_clicked"] = True
@@ -281,7 +282,7 @@ if st.session_state["ohlcv"] is not None:
             # and st.session_state["chart_data_selectbox_clicked"]
         ):
             st.session_state["data_to_show"] = cd.signal_smoothing(
-                df=st.session_state["ohlcv"],
+                df=st.session_state["data"],
                 smoothing_method=smooth_method,
                 parameters={"window": 20},
             )
@@ -319,16 +320,29 @@ if st.session_state["ohlcv"] is not None:
                 show_which_price=display_format,
             )
     st.markdown("<br><br>", unsafe_allow_html=True)
-if data_fetch_way != "<Select>" and st.session_state["ohlcv"] is not None:
-    col1, col2, col3 = st.columns([2.25, 1, 2.25])
+if data_fetch_way != "<Select>" and st.session_state["data"] is not None:
+    col1, col2, col3, col4, col5, col6, col7 = st.columns(
+        [1, 2, 1, 1, 1, 2, 1]
+    )
     if smooth_method == "<Select>" or smooth_method == "None":
-        file_name = f"{st.session_state['ticker']}-ohlcv.csv"
+        file_name = f"{st.session_state['ticker']}-data"
     else:
-        file_name = f"{st.session_state['ticker']}-ohlcv-{smooth_method}.csv"
+        file_name = f"{st.session_state['ticker']}-data-{smooth_method}"
     if col2.download_button(
         label="Download data as CSV",
-        data=st.session_state["ohlcv"].to_csv().encode("utf-8"),
-        file_name=file_name,
+        data=st.session_state["data"].to_csv().encode("utf-8"),
+        file_name=file_name + ".csv",
         mime="text/csv",
     ):
-        st.success("Data was saved successfully")
+        col2.success("Data was saved successfully")
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+        st.session_state["data"].to_excel(writer, sheet_name="Data")
+        writer.save()
+        if col6.download_button(
+            label="Download data as Excel",
+            data=buffer,
+            file_name=file_name + ".xlsx",
+            mime="application/vnd.ms-excel",
+        ):
+            col6.success("Data was saved successfully")

@@ -16,6 +16,8 @@ streamlit = "^1.20.0"
 ta = "^0.10.2"
 yfinance = "^0.2.12"
 matplotlib = "^3.7.1"
+openpyxl = "^3.1.2"
+xlsxwriter = "^3.0.9"
 
 
 [tool.poetry.group.dev.dependencies]
