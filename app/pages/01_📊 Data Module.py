@@ -23,6 +23,14 @@ if "show_chart_button_clicked" not in st.session_state:
     st.session_state["show_chart_button_clicked"] = False
 if "data_to_show" not in st.session_state:
     st.session_state["data_to_show"] = None
+if "start" not in st.session_state:
+    st.session_state["start"] = None
+if "end" not in st.session_state:
+    st.session_state["end"] = None
+if "interval" not in st.session_state:
+    st.session_state["interval"] = None
+if "auto_adjust" not in st.session_state:
+    st.session_state["auto_adjust"] = None
 
 
 def add_bg_from_local(background_file, sidebar_background_file):
@@ -47,14 +55,14 @@ def add_bg_from_local(background_file, sidebar_background_file):
     )
 
 
-def fetch_data_button_click():
+def fetch_data_button_click(tickers, start, end, interval, auto_adjust):
     if st.session_state["all_areas_filled"]:
         if st.session_state["fetch_data_button_clicked"] == True:
             st.session_state["show_data_button_clicked"] = False
             st.session_state["show_chart_button_clicked"] = False
             st.session_state["chart_data_selectbox_clicked"] = False
         st.session_state["fetch_data_button_clicked"] = True
-        st.session_state["data"] = cd.get_financial_data(
+        return cd.get_financial_data(
             tickers=tickers,
             start=start,
             end=end,
@@ -174,6 +182,7 @@ def main():
             interval = col2.selectbox(
                 "Select the time frame: ", intervals, on_change=clear_data
             )
+            st.session_state["interval"] = interval
             if asset != "<Select>" and interval != "<Select>":
                 tickers = st.session_state["assets"][market][asset]
                 st.session_state["ticker"] = tickers
@@ -183,7 +192,10 @@ def main():
                 val1 = full_data.index[(len(full_data) // 3)]
                 val2 = full_data.index[(len(full_data) * 2 // 3)]
                 if interval in ["1d", "5d", "1wk", "1mo", "3mo"]:
-                    start, end = st.select_slider(
+                    (
+                        st.session_state["start"],
+                        st.session_state["end"],
+                    ) = st.select_slider(
                         "Please select the start and end dates:",
                         options=full_data.index,
                         value=(val1, val2),
@@ -191,7 +203,10 @@ def main():
                         on_change=clear_data,
                     )
                 else:
-                    start, end = st.select_slider(
+                    (
+                        st.session_state["start"],
+                        st.session_state["end"],
+                    ) = st.select_slider(
                         "Please select the start and end dates:",
                         options=full_data.index,
                         value=(val1, val2),
@@ -204,7 +219,7 @@ def main():
                     "Do you want to adjust the prices: ",
                     ["<Select>", "Yes", "No"],
                 )
-                auto_adjust = adjust_situation == "Yes"
+                st.session_state["auto_adjust"] = adjust_situation == "Yes"
 
                 st.session_state["all_areas_filled"] = (
                     market != "<Select>"
@@ -215,9 +230,17 @@ def main():
                 )
 
         if (
-            st.button("Fetch the data", on_click=fetch_data_button_click)
+            st.button("Fetch the data")
             or st.session_state["fetch_data_button_clicked"]
         ):
+            if st.session_state["all_areas_filled"] == True:
+                st.session_state["data"] = fetch_data_button_click(
+                    st.session_state["ticker"],
+                    st.session_state["start"],
+                    st.session_state["end"],
+                    st.session_state["interval"],
+                    st.session_state["auto_adjust"],
+                )
             if st.session_state["all_areas_filled"] == False:
                 st.error("Please fill all the areas.")
             else:
