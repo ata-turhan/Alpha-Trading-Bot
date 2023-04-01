@@ -22,7 +22,6 @@ if "ohlcv" not in st.session_state:
     st.session_state["ohlcv"] = None
 
 
-@st.cache
 def get_financial_data(
     tickers: str, start: str, end: str, interval: str, auto_adjust: bool
 ) -> pd.DataFrame:
