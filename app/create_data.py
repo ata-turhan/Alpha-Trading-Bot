@@ -3,6 +3,7 @@ import json
 
 import numpy as np
 import pandas as pd
+import pandas_datareader as pdr
 import plotly.graph_objects as go
 import requests
 import streamlit as st
@@ -323,6 +324,40 @@ def plot_confusion_matrix(cm, labels, title):
 
 
 bls_api_key = "0a2144a551614652b6bc8de8455a2e0c"
+
+
+def fetch_fed_data(start_date: str) -> pd.DataFrame:
+    data_source = "fred"
+    two_year_treasury_code = "DGS2"
+    ten_year_treasury_code = "DGS10"
+
+    two_year_yield_df = pdr.DataReader(
+        two_year_treasury_code, data_source, start_date
+    )
+    ten_year_df = pdr.DataReader(
+        ten_year_treasury_code, data_source, start_date
+    )
+
+    combined_yield_df = pd.merge(
+        two_year_yield_df,
+        ten_year_df,
+        how="inner",
+        left_index=True,
+        right_index=True,
+    )
+    combined_yield_df.dropna(inplace=True)
+
+    combined_yield_df["Yield Difference"] = (
+        combined_yield_df["DGS10"] - combined_yield_df["DGS2"]
+    )
+    combined_yield_df.rename(
+        columns={
+            "DGS2": "FED 2Y Interest Rate",
+            "DGS10": "FED 10Y Interest Rate",
+        },
+        inplace=True,
+    )
+    return combined_yield_df
 
 
 def fetch_cpi_data(data_series_id, start_year, end_year):

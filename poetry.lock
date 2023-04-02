@@ -1301,6 +1301,23 @@ pytz = ">=2020.1"
 test = ["hypothesis (>=5.5.3)", "pytest (>=6.0)", "pytest-xdist (>=1.31)"]
 
 [[package]]
+name = "pandas-datareader"
+version = "0.10.0"
+description = "Data readers extracted from the pandas codebase,should be compatible with recent pandas versions"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "pandas-datareader-0.10.0.tar.gz", hash = "sha256:9fc3c63d39bc0c10c2683f1c6d503ff625020383e38f6cbe14134826b454d5a6"},
+    {file = "pandas_datareader-0.10.0-py3-none-any.whl", hash = "sha256:0b95ff3635bc3ee1a6073521b557ab0e3c39d219f4a3b720b6b0bc6e8cdb4bb7"},
+]
+
+[package.dependencies]
+lxml = "*"
+pandas = ">=0.23"
+requests = ">=2.19.0"
+
+[[package]]
 name = "pathspec"
 version = "0.11.1"
 description = "Utility library for gitignore style pattern matching of file paths."
@@ -2314,4 +2331,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "e8d64f8134d7c7fbd8cceac53c459331c7353b845962f77ae337fd5df2cfe34d"
+content-hash = "7f19a3b2f0f18b5918d1dd432b27e15339bb6ad74fe672845b3577099047944c"

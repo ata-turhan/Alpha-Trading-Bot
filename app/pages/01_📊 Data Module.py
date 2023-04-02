@@ -45,6 +45,17 @@ def fetch_data_button_click(
             interval=interval,
             auto_adjust=auto_adjust,
         )
+        if len(st.session_state["fundamentals"]) > 0:
+            fundamentals = cd.fetch_fed_data(
+                st.session_state["data"].index[0]
+            )[st.session_state["fundamentals"]]
+            st.session_state["data"] = pd.merge(
+                st.session_state["data"],
+                fundamentals,
+                how="left",
+                left_index=True,
+                right_index=True,
+            )
 
 
 def smooth_data_button_click():
@@ -103,6 +114,8 @@ def main():
         st.session_state["interval"] = None
     if "auto_adjust" not in st.session_state:
         st.session_state["auto_adjust"] = None
+    if "fundamentals" not in st.session_state:
+        st.session_state["fundamentals"] = None
 
     stocks_and_etfs = {
         "Microsoft": "MSFT",
@@ -220,7 +233,14 @@ def main():
                     ["<Select>", "Yes", "No"],
                 )
                 st.session_state["auto_adjust"] = adjust_situation == "Yes"
-
+                st.session_state["fundamentals"] = col2.multiselect(
+                    "Besides the price data, which fundamental data do you want to add?",
+                    [
+                        "FED 2Y Interest Rate",
+                        "FED 10Y Interest Rate",
+                        "Yield Difference",
+                    ],
+                )
                 st.session_state["all_areas_filled"] = (
                     market != "<Select>"
                     and start != "Type Here ..."
