@@ -31,31 +31,24 @@ def add_bg_from_local(background_file, sidebar_background_file):
 
 
 def fetch_data_button_click(
-    tickers, start, end, interval, auto_adjust
+    tickers, start, end, interval, auto_adjust, fundamentals
 ) -> None:
     if st.session_state["all_areas_filled"]:
         st.session_state["fetch_data_button_clicked"] = True
         st.session_state["show_data_button_clicked"] = False
         st.session_state["show_chart_button_clicked"] = False
         st.session_state["chart_data_selectbox_clicked"] = False
-        st.session_state["data"] = cd.get_financial_data(
+        data = cd.get_financial_data(
             tickers=tickers,
             start=start,
             end=end,
             interval=interval,
             auto_adjust=auto_adjust,
         )
-        if len(st.session_state["fundamentals"]) > 0:
-            fundamentals = cd.fetch_fed_data(
-                st.session_state["data"].index[0]
-            )[st.session_state["fundamentals"]]
-            st.session_state["data"] = pd.merge(
-                st.session_state["data"],
-                fundamentals,
-                how="left",
-                left_index=True,
-                right_index=True,
-            )
+    data = cd.fetch_fundamental_data(data, start, end)
+    chosen_columns = ["Open", "High", "Low", "Close", "Volume"]
+    chosen_columns.extend(fundamentals)
+    st.session_state["data"] = data[chosen_columns]
 
 
 def smooth_data_button_click():
@@ -239,6 +232,7 @@ def main():
                         "FED 2Y Interest Rate",
                         "FED 10Y Interest Rate",
                         "Yield Difference",
+                        "CPI",
                     ],
                 )
                 st.session_state["all_areas_filled"] = (
@@ -259,6 +253,7 @@ def main():
                     st.session_state["end"],
                     st.session_state["interval"],
                     st.session_state["auto_adjust"],
+                    st.session_state["fundamentals"],
                 ),
             )
             or st.session_state["fetch_data_button_clicked"]

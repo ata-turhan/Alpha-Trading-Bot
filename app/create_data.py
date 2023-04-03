@@ -323,45 +323,41 @@ def plot_confusion_matrix(cm, labels, title):
     return go.Figure(data=data, layout=layout)
 
 
-bls_api_key = "0a2144a551614652b6bc8de8455a2e0c"
-
-
-def fetch_fed_data(start_date: str) -> pd.DataFrame:
+def fetch_fed_data(start_date: str, end_date: str) -> pd.DataFrame:
     data_source = "fred"
     two_year_treasury_code = "DGS2"
     ten_year_treasury_code = "DGS10"
 
     two_year_yield_df = pdr.DataReader(
-        two_year_treasury_code, data_source, start_date
+        two_year_treasury_code, data_source, start_date, end_date
     )
     ten_year_df = pdr.DataReader(
-        ten_year_treasury_code, data_source, start_date
+        ten_year_treasury_code, data_source, start_date, end_date
     )
 
-    combined_yield_df = pd.merge(
+    fed_data = pd.merge(
         two_year_yield_df,
         ten_year_df,
         how="inner",
         left_index=True,
         right_index=True,
     )
-    combined_yield_df.dropna(inplace=True)
+    fed_data.dropna(inplace=True)
 
-    combined_yield_df["Yield Difference"] = (
-        combined_yield_df["DGS10"] - combined_yield_df["DGS2"]
-    )
-    combined_yield_df.rename(
+    fed_data["Yield Difference"] = fed_data["DGS10"] - fed_data["DGS2"]
+    fed_data.rename(
         columns={
             "DGS2": "FED 2Y Interest Rate",
             "DGS10": "FED 10Y Interest Rate",
         },
         inplace=True,
     )
-    return combined_yield_df
+    return fed_data
 
 
-def fetch_cpi_data(data_series_id, start_year, end_year):
+def fetch_bls_data(data_series_id, start_year, end_year):
     try:
+        bls_api_key = "0a2144a551614652b6bc8de8455a2e0c"
         bls_data_api_url = "https://api.bls.gov/publicAPI/v2/timeseries/data/"
         headers = {"Content-type": "application/json"}
         data = json.dumps(
@@ -398,27 +394,33 @@ def fetch_cpi_data(data_series_id, start_year, end_year):
         print(f"Failed to fetch data: {ex}")
 
 
-def add_cpi(data):
-    #  Set date range
-    start = data.index[0]
-    end = data.index[-1]
-    start_year_str = str(start.year)
-    end_year_str = str(end.year)
-    #  Fetch CPI
+def fetch_cpi_data(start_date, end_date):
     data_series_id = "CUUR0000SA0"
-    cpi_data_df = fetch_cpi_data(data_series_id, start_year_str, end_year_str)
-    print(cpi_data_df)
+    return fetch_bls_data(
+        data_series_id, str(start_date)[:4], str(end_date)[:4]
+    )
 
+
+def fetch_fundamental_data(
+    data: pd.DataFrame, start_date, end_date
+) -> pd.DataFrame:
+    fed_data = fetch_fed_data(start_date, end_date)
+    cpi_data = fetch_cpi_data(start_date - pd.DateOffset(months=1), end_date)
+    data = pd.merge(
+        data,
+        fed_data,
+        how="left",
+        left_index=True,
+        right_index=True,
+    )
     data.index = data.index - pd.DateOffset(months=1)
-
     data["merg_col"] = data.index.strftime("%Y%m")
-    cpi_data_df["merg_col"] = cpi_data_df.index.strftime("%Y%m")
-    f_data = (
+    cpi_data["merg_col"] = cpi_data.index.strftime("%Y%m")
+    data = (
         data.reset_index()
-        .merge(cpi_data_df, on="merg_col", how="left")
+        .merge(cpi_data, on="merg_col", how="left")
         .set_index("Date")
         .drop(columns="merg_col")
     )
-
-    f_data.index = f_data.index + pd.DateOffset(months=1)
-    return f_data
+    data.index = data.index + pd.DateOffset(months=1)
+    return data
