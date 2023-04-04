@@ -110,6 +110,8 @@ def main():
     if "fundamentals" not in st.session_state:
         st.session_state["fundamentals"] = None
 
+    DEFAULT_CHOICE = "<Select>"
+
     stocks_and_etfs = {
         "Microsoft": "MSFT",
         "Apple": "AAPL",
@@ -156,15 +158,15 @@ def main():
 
     style = "<style>.row-widget.stButton {text-align: center;}</style>"
     st.markdown(style, unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 2, 1])
+    _, col2, _ = st.columns([1, 2, 1])
     data_fetch_way = col2.selectbox(
         "Which way do you want to get the prices: ",
-        ["<Select>", "Fetch over the internet", "Read from a file"],
+        [DEFAULT_CHOICE, "Fetch over the internet", "Read from a file"],
         on_change=clear_data,
     )
     st.markdown("<br>", unsafe_allow_html=True)
 
-    smooth_method = "<Select>"
+    smooth_method = DEFAULT_CHOICE
 
     if data_fetch_way == "Fetch over the internet":
         if "all_areas_filled" not in st.session_state:
@@ -174,22 +176,22 @@ def main():
 
         market = col2.selectbox(
             "Select the market: ",
-            ["<Select>", "Stocks & ETFs", "Forex", "Crypto"],
+            [DEFAULT_CHOICE, "Stocks & ETFs", "Forex", "Crypto"],
             on_change=clear_data,
         )
-        if market != "<Select>":
+        if market != DEFAULT_CHOICE:
             assets = list(st.session_state["assets"][market].keys())
-            assets.insert(0, "<Select>")
+            assets.insert(0, DEFAULT_CHOICE)
             asset = col2.selectbox(
                 "Select the asset: ", assets, on_change=clear_data
             )
             intervals = ["1m", "1d", "5d", "1wk", "1mo", "3mo"]
-            intervals.insert(0, "<Select>")
+            intervals.insert(0, DEFAULT_CHOICE)
             interval = col2.selectbox(
                 "Select the time frame: ", intervals, on_change=clear_data
             )
             st.session_state["interval"] = interval
-            if asset != "<Select>" and interval != "<Select>":
+            if asset != DEFAULT_CHOICE and interval != DEFAULT_CHOICE:
                 tickers = st.session_state["assets"][market][asset]
                 st.session_state["ticker"] = tickers
                 full_data = yf.download(tickers=tickers, interval=interval)
@@ -223,7 +225,7 @@ def main():
                     )
                 adjust_situation = col2.selectbox(
                     "Do you want to adjust the prices: ",
-                    ["<Select>", "Yes", "No"],
+                    [DEFAULT_CHOICE, "Yes", "No"],
                 )
                 st.session_state["auto_adjust"] = adjust_situation == "Yes"
                 st.session_state["fundamentals"] = col2.multiselect(
@@ -236,11 +238,11 @@ def main():
                     ],
                 )
                 st.session_state["all_areas_filled"] = (
-                    market != "<Select>"
+                    market != DEFAULT_CHOICE
                     and start != "Type Here ..."
                     and end != "Type Here ..."
-                    and interval != "<Select>"
-                    and adjust_situation != "<Select>"
+                    and interval != DEFAULT_CHOICE
+                    and adjust_situation != DEFAULT_CHOICE
                 )
 
         if (
@@ -309,11 +311,11 @@ def main():
             or st.session_state["smooth_data_button_clicked"] == True
         ):
             st.session_state["smooth_data_button_clicked"] = True
-            col1, col2, col3 = st.columns([1, 2, 1])
+            _, col2, _ = st.columns([1, 2, 1])
             smooth_method = col2.selectbox(
                 "Select the method to smooth the data: ",
                 [
-                    "<Select>",
+                    DEFAULT_CHOICE,
                     "None",
                     "Moving Average",
                     "Heikin Ashi",
@@ -321,7 +323,7 @@ def main():
                 ],
                 on_change=smooth_data_selectbox_click,
             )
-            if smooth_method != "<Select>":
+            if smooth_method != DEFAULT_CHOICE:
                 st.session_state["data_to_show"] = cd.signal_smoothing(
                     df=st.session_state["data"],
                     smoothing_method=smooth_method,
@@ -344,14 +346,14 @@ def main():
             or st.session_state["show_chart_button_clicked"]
         ):
             st.session_state["show_chart_button_clicked"] = True
-            col1, col2, col3 = st.columns([1, 2, 1])
+            _, col2, _ = st.columns([1, 2, 1])
             display_format = col2.selectbox(
                 "Select the price to show in the chart: ",
-                ["<Select>", "All", "Open", "High", "Low", "Close"],
+                [DEFAULT_CHOICE, "All", "Open", "High", "Low", "Close"],
                 on_change=chart_data_selectbox_click,
             )
             if (
-                display_format != "<Select>"
+                display_format != DEFAULT_CHOICE
                 and st.session_state["chart_data_selectbox_clicked"]
             ):
                 cd.show_prices(
@@ -360,11 +362,12 @@ def main():
                     show_which_price=display_format,
                 )
         st.markdown("<br><br>", unsafe_allow_html=True)
-    if data_fetch_way != "<Select>" and st.session_state["data"] is not None:
-        col1, col2, col3, col4, col5, col6, col7 = st.columns(
-            [1, 2, 1, 1, 1, 2, 1]
-        )
-        if smooth_method in ["<Select>", "None"]:
+    if (
+        data_fetch_way != DEFAULT_CHOICE
+        and st.session_state["data"] is not None
+    ):
+        _, col2, _, _, _, col6, _ = st.columns([1, 2, 1, 1, 1, 2, 1])
+        if smooth_method in [DEFAULT_CHOICE, "None"]:
             file_name = f"{st.session_state['ticker']}-data"
         else:
             file_name = f"{st.session_state['ticker']}-data-{smooth_method}"
