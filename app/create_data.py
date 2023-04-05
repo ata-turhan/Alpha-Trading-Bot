@@ -404,20 +404,14 @@ def fetch_cpi_data(start_date, end_date):
 def fetch_fundamental_data(
     data: pd.DataFrame, start_date, end_date
 ) -> pd.DataFrame:
-    fed_data = fetch_fed_data(start_date, end_date)
+    fed_data = fetch_fed_data(start_date - pd.DateOffset(months=1), end_date)
     cpi_data = fetch_cpi_data(start_date - pd.DateOffset(months=1), end_date)
     data = data.tz_localize(None)
     data.index.names = ["Date"]
-    data = pd.merge(
-        data,
-        fed_data,
-        how="left",
-        left_index=True,
-        right_index=True,
-    )
+
     data.index = data.index - pd.DateOffset(months=1)
-    data["merg_col"] = data.index.strftime("%Y%m")
-    cpi_data["merg_col"] = cpi_data.index.strftime("%Y%m")
+    data["merg_col"] = data.index.strftime("%Y-%m")
+    cpi_data["merg_col"] = cpi_data.index.strftime("%Y-%m")
     data = (
         data.reset_index()
         .merge(cpi_data, on="merg_col", how="left")
@@ -425,4 +419,13 @@ def fetch_fundamental_data(
         .drop(columns="merg_col")
     )
     data.index = data.index + pd.DateOffset(months=1)
+
+    data["merg_col"] = data.index.strftime("%Y-%m-%d")
+    fed_data["merg_col"] = fed_data.index.strftime("%Y-%m-%d")
+    data = (
+        data.reset_index()
+        .merge(fed_data, on="merg_col", how="left")
+        .set_index("Date")
+        .drop(columns="merg_col")
+    )
     return data
