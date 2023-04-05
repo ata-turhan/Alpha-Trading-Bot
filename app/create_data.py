@@ -1,5 +1,6 @@
 import datetime as dt
 import json
+import random
 
 import numpy as np
 import pandas as pd
@@ -37,8 +38,9 @@ def get_financial_data(
 
 
 def show_prices(
-    data: pd.DataFrame, ticker: str, show_which_price: str = "All"
+    data: pd.DataFrame, ticker: str, show_which_price: str
 ) -> None:
+    colors = ["red", "green", "blue", "orange", "black", "magenta", "cyan"]
     fig = make_subplots(
         rows=2,
         cols=1,
@@ -47,7 +49,8 @@ def show_prices(
         subplot_titles=(f"Price of '{ticker}'", f"Volume of '{ticker}'"),
         row_width=[1, 5],
     )
-    if show_which_price == "All":
+    if "Candlestick" in show_which_price:
+        show_which_price.remove("Candlestick")
         fig.add_trace(
             go.Candlestick(
                 x=data.index,
@@ -60,14 +63,14 @@ def show_prices(
             row=1,
             col=1,
         )
-    else:
+    for column in show_which_price:
         fig.add_trace(
             go.Scatter(
                 x=data.index,
-                y=data[show_which_price],
+                y=data[column],
                 mode="lines",
-                line=dict(color="#222266"),
-                name=f"{show_which_price} Price",
+                line=dict(color=random.choice(colors)),
+                name=f"{column}",
             ),
             row=1,
             col=1,

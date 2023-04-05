@@ -347,13 +347,24 @@ def main():
         ):
             st.session_state["show_chart_button_clicked"] = True
             _, col2, _ = st.columns([1, 2, 1])
-            display_format = col2.selectbox(
+            display_format = col2.multiselect(
                 "Select the price to show in the chart: ",
-                [DEFAULT_CHOICE, "All", "Open", "High", "Low", "Close"],
+                [
+                    DEFAULT_CHOICE,
+                    "Candlestick",
+                    "Open",
+                    "High",
+                    "Low",
+                    "Close",
+                    "FED 2Y Interest Rate",
+                    "FED 10Y Interest Rate",
+                    "Yield Difference",
+                    "CPI",
+                ],
                 on_change=chart_data_selectbox_click,
             )
             if (
-                display_format != DEFAULT_CHOICE
+                len(display_format) != 0
                 and st.session_state["chart_data_selectbox_clicked"]
             ):
                 cd.show_prices(
