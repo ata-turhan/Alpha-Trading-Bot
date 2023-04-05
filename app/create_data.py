@@ -406,6 +406,8 @@ def fetch_fundamental_data(
 ) -> pd.DataFrame:
     fed_data = fetch_fed_data(start_date, end_date)
     cpi_data = fetch_cpi_data(start_date - pd.DateOffset(months=1), end_date)
+    data = data.tz_localize(None)
+    data.index.names = ["Date"]
     data = pd.merge(
         data,
         fed_data,

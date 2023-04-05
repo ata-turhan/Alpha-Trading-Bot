@@ -45,10 +45,10 @@ def fetch_data_button_click(
             interval=interval,
             auto_adjust=auto_adjust,
         )
-    data = cd.fetch_fundamental_data(data, start, end)
-    chosen_columns = ["Open", "High", "Low", "Close", "Volume"]
-    chosen_columns.extend(fundamentals)
-    st.session_state["data"] = data[chosen_columns]
+        data = cd.fetch_fundamental_data(data, start, end)
+        chosen_columns = ["Open", "High", "Low", "Close", "Volume"]
+        chosen_columns.extend(fundamentals)
+        st.session_state["data"] = data[chosen_columns]
 
 
 def smooth_data_button_click():
