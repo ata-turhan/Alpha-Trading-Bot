@@ -165,7 +165,6 @@ def main():
             ]
             .sort_values(by="Unnamed: 1")
         )
-        st.dataframe(asset_df)
         asset_df.set_index("Unnamed: 1", inplace=True)
         asset_dict = asset_df[f"Yahoo {asset} Tickers"].to_dict()
         tickers_dict[asset] = asset_dict
