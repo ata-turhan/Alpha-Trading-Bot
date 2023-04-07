@@ -109,6 +109,12 @@ def main():
         st.session_state["auto_adjust"] = None
     if "fundamentals" not in st.session_state:
         st.session_state["fundamentals"] = None
+    if "tickers" not in st.session_state:
+        with st.spinner("Getting Tickers..."):
+            st.session_state["tickers"] = pd.read_excel(
+                "data/Yahoo Ticker Symbols - September 2017.xlsx",
+                sheet_name=None,
+            )
 
     DEFAULT_CHOICE = "<Select>"
 
@@ -138,11 +144,31 @@ def main():
         "Polygon": "MATIC-USD",
         "Polkadot": "DOT-USD",
     }
-
-    st.session_state["assets"]["Stocks & ETFs"] = stocks_and_etfs
-    st.session_state["assets"]["Forex"] = forex
-    st.session_state["assets"]["Crypto"] = crypto
     st.set_page_config(page_title="Trading Bot", page_icon="🤖", layout="wide")
+
+    assets = [
+        "Stock",
+        "ETF",
+        "Index",
+        "Currency",
+    ]
+    tickers = st.session_state["tickers"]
+    tickers_dict = {}
+    for asset in assets:
+        asset_df = (
+            tickers[f"{asset}"]
+            .loc[3:][
+                [
+                    "Unnamed: 1",
+                    f"Yahoo {asset} Tickers",
+                ]
+            ]
+            .sort_values(by="Unnamed: 1")
+        )
+        st.dataframe(asset_df)
+        asset_df.set_index("Unnamed: 1", inplace=True)
+        asset_dict = asset_df[f"Yahoo {asset} Tickers"].to_dict()
+        tickers_dict[asset] = asset_dict
 
     add_bg_from_local("data/background.png", "data/bot.png")
 
@@ -176,15 +202,22 @@ def main():
 
         market = col2.selectbox(
             "Select the market: ",
-            [DEFAULT_CHOICE, "Stocks & ETFs", "Forex", "Crypto"],
+            [DEFAULT_CHOICE, "Stock", "ETF", "Index", "Currency"],
             on_change=clear_data,
         )
         if market != DEFAULT_CHOICE:
-            assets = list(st.session_state["assets"][market].keys())
+            assets = [
+                f"{k} - ({v})"
+                for k, v in tickers_dict[market].items()
+                if k is not None
+                and k != ""
+                and type(k) == str
+                and k[0].isalpha()
+            ]
             assets.insert(0, DEFAULT_CHOICE)
             asset = col2.selectbox(
                 "Select the asset: ", assets, on_change=clear_data
-            )
+            ).split()[0]
             intervals = ["1m", "1d", "5d", "1wk", "1mo", "3mo"]
             intervals.insert(0, DEFAULT_CHOICE)
             interval = col2.selectbox(
@@ -192,7 +225,7 @@ def main():
             )
             st.session_state["interval"] = interval
             if asset != DEFAULT_CHOICE and interval != DEFAULT_CHOICE:
-                tickers = st.session_state["assets"][market][asset]
+                tickers = tickers_dict[market][asset]
                 st.session_state["ticker"] = tickers
                 full_data = yf.download(tickers=tickers, interval=interval)
                 start = full_data.index[0]
