@@ -81,6 +81,8 @@ def clear_data():
 
 
 def main():
+    st.set_page_config(page_title="Trading Bot", page_icon="🤖", layout="wide")
+
     if "conf_change" not in st.session_state:
         st.session_state.conf_change = False
     if "data" not in st.session_state:
@@ -118,22 +120,6 @@ def main():
 
     DEFAULT_CHOICE = "<Select>"
 
-    stocks_and_etfs = {
-        "Microsoft": "MSFT",
-        "Apple": "AAPL",
-        "Tesla": "TSLA",
-        "Meta": "META",
-        "Amazon": "AMZN",
-        "S&P500": "^SPX",
-    }
-    forex = {
-        "EUR/USD": "EURUSD=X",
-        "USD/JPY": "JPY=X",
-        "GBP/USD": "GBPUSD=X",
-        "AUD/USD": "AUDUSD=X",
-        "USD/CAD": "CAD=X",
-        "USD/CNY": "CNY=X",
-    }
     crypto = {
         "Bitcoin": "BTC-USD",
         "Ethereum": "ETH-USD",
@@ -144,7 +130,6 @@ def main():
         "Polygon": "MATIC-USD",
         "Polkadot": "DOT-USD",
     }
-    st.set_page_config(page_title="Trading Bot", page_icon="🤖", layout="wide")
 
     assets = [
         "Stock",
@@ -168,6 +153,13 @@ def main():
         asset_df.set_index("Unnamed: 1", inplace=True)
         asset_dict = asset_df[f"Yahoo {asset} Tickers"].to_dict()
         tickers_dict[asset] = asset_dict
+    assets.append("Crypto")
+    crypto_tickers = pd.read_html(
+        "https://finance.yahoo.com/crypto/?offset=0&count=150"
+    )[0]
+    crypto_tickers.set_index("Name", inplace=True)
+    crypto_tickers = crypto_tickers["Symbol"].to_dict()
+    tickers_dict["Crypto"] = crypto_tickers
 
     add_bg_from_local("data/background.png", "data/bot.png")
 
@@ -201,7 +193,7 @@ def main():
 
         market = col2.selectbox(
             "Select the market: ",
-            [DEFAULT_CHOICE, "Stock", "ETF", "Index", "Currency"],
+            [DEFAULT_CHOICE, "Stock", "ETF", "Index", "Currency", "Crypto"],
             on_change=clear_data,
         )
         if market != DEFAULT_CHOICE:
@@ -216,7 +208,9 @@ def main():
             assets.insert(0, DEFAULT_CHOICE)
             asset = col2.selectbox(
                 "Select the asset: ", assets, on_change=clear_data
-            ).split()[0]
+            )
+            if asset != DEFAULT_CHOICE:
+                asset = asset.split("-")[0].strip()
             intervals = ["1m", "1d", "5d", "1wk", "1mo", "3mo"]
             intervals.insert(0, DEFAULT_CHOICE)
             interval = col2.selectbox(
