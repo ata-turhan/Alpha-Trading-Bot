@@ -112,24 +112,15 @@ def main():
     if "fundamentals" not in st.session_state:
         st.session_state["fundamentals"] = None
     if "tickers" not in st.session_state:
-        with st.spinner("Getting Tickers..."):
-            st.session_state["tickers"] = pd.read_excel(
-                "data/Yahoo Ticker Symbols - September 2017.xlsx",
-                sheet_name=None,
-            )
+        _, col2, _ = st.columns([1, 1, 1])
+        with col2:
+            with st.spinner("Getting Tickers..."):
+                st.session_state["tickers"] = pd.read_excel(
+                    "data/Yahoo Ticker Symbols - September 2017.xlsx",
+                    sheet_name=None,
+                )
 
     DEFAULT_CHOICE = "<Select>"
-
-    crypto = {
-        "Bitcoin": "BTC-USD",
-        "Ethereum": "ETH-USD",
-        "BNB": "BNB-USD",
-        "XRP": "XRP-USD",
-        "Cardano": "ADA-USD",
-        "Dogecoin": "DOGE-USD",
-        "Polygon": "MATIC-USD",
-        "Polkadot": "DOT-USD",
-    }
 
     assets = [
         "Stock",
