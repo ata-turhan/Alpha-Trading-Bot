@@ -212,55 +212,57 @@ def main():
                 tickers = tickers_dict[market][asset]
                 st.session_state["ticker"] = tickers
                 full_data = yf.download(tickers=tickers, interval=interval)
-                start = full_data.index[0]
-                end = full_data.index[-1]
-                val1 = full_data.index[(len(full_data) // 3)]
-                val2 = full_data.index[(len(full_data) * 2 // 3)]
-                if interval in ["1d", "5d", "1wk", "1mo", "3mo"]:
-                    (
-                        st.session_state["start"],
-                        st.session_state["end"],
-                    ) = st.select_slider(
-                        "Please select the start and end dates:",
-                        options=full_data.index,
-                        value=(val1, val2),
-                        format_func=lambda date: date.strftime("%d-%m-%Y"),
-                        on_change=clear_data,
+                st.dataframe(full_data)
+                if len(full_data) == 0:
+                    col2.error(
+                        "Yahoo do not have this ticker data. Please try another ticker."
                     )
                 else:
-                    (
-                        st.session_state["start"],
-                        st.session_state["end"],
-                    ) = st.select_slider(
-                        "Please select the start and end dates:",
-                        options=full_data.index,
-                        value=(val1, val2),
-                        format_func=lambda date: date.strftime(
-                            "%d-%m-%Y %H:%M:%S"
-                        ),
-                        on_change=clear_data,
+                    val1 = full_data.index[(len(full_data) // 3)]
+                    val2 = full_data.index[(len(full_data) * 2 // 3)]
+                    if interval in ["1d", "5d", "1wk", "1mo", "3mo"]:
+                        (
+                            st.session_state["start"],
+                            st.session_state["end"],
+                        ) = st.select_slider(
+                            "Please select the start and end dates:",
+                            options=full_data.index,
+                            value=(val1, val2),
+                            format_func=lambda date: date.strftime("%d-%m-%Y"),
+                            on_change=clear_data,
+                        )
+                    else:
+                        (
+                            st.session_state["start"],
+                            st.session_state["end"],
+                        ) = st.select_slider(
+                            "Please select the start and end dates:",
+                            options=full_data.index,
+                            value=(val1, val2),
+                            format_func=lambda date: date.strftime(
+                                "%d-%m-%Y %H:%M:%S"
+                            ),
+                            on_change=clear_data,
+                        )
+                    adjust_situation = col2.selectbox(
+                        "Do you want to adjust the prices: ",
+                        [DEFAULT_CHOICE, "Yes", "No"],
                     )
-                adjust_situation = col2.selectbox(
-                    "Do you want to adjust the prices: ",
-                    [DEFAULT_CHOICE, "Yes", "No"],
-                )
-                st.session_state["auto_adjust"] = adjust_situation == "Yes"
-                st.session_state["fundamentals"] = col2.multiselect(
-                    "Besides the price data, which fundamental data do you want to add?",
-                    [
-                        "FED 2Y Interest Rate",
-                        "FED 10Y Interest Rate",
-                        "Yield Difference",
-                        "CPI",
-                    ],
-                )
-                st.session_state["all_areas_filled"] = (
-                    market != DEFAULT_CHOICE
-                    and start != "Type Here ..."
-                    and end != "Type Here ..."
-                    and interval != DEFAULT_CHOICE
-                    and adjust_situation != DEFAULT_CHOICE
-                )
+                    st.session_state["auto_adjust"] = adjust_situation == "Yes"
+                    st.session_state["fundamentals"] = col2.multiselect(
+                        "Besides the price data, which fundamental data do you want to add?",
+                        [
+                            "FED 2Y Interest Rate",
+                            "FED 10Y Interest Rate",
+                            "Yield Difference",
+                            "CPI",
+                        ],
+                    )
+                    st.session_state["all_areas_filled"] = (
+                        market != DEFAULT_CHOICE
+                        and interval != DEFAULT_CHOICE
+                        and adjust_situation != DEFAULT_CHOICE
+                    )
 
         if (
             st.button(
@@ -278,7 +280,7 @@ def main():
             or st.session_state["fetch_data_button_clicked"]
         ):
             if st.session_state["all_areas_filled"] == False:
-                st.error("Please fill all the areas.")
+                col2.error("Please fill all the areas.")
             else:
                 data = st.session_state["data"]
                 if data is None and st.session_state.conf_change == False:
