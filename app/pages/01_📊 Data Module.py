@@ -80,6 +80,55 @@ def clear_data():
     st.session_state["chart_data_selectbox_clicked"] = False
 
 
+def load_tickers():
+    _, col2, _ = st.columns([1, 1, 1])
+    with col2:
+        with st.spinner("Getting Tickers..."):
+            tickers = pd.read_excel(
+                "data/Yahoo Ticker Symbols - September 2017.xlsx",
+                sheet_name=None,
+            )
+            markets = [
+                "Stock",
+                "ETF",
+                "Index",
+                "Currency",
+            ]
+            tickers_dict = {}
+            for market in markets:
+                market_df = (
+                    tickers[f"{market}"]
+                    .loc[3:][
+                        [
+                            "Unnamed: 1",
+                            f"Yahoo {market} Tickers",
+                        ]
+                    ]
+                    .sort_values(by="Unnamed: 1")
+                )
+                market_df.set_index("Unnamed: 1", inplace=True)
+                market_dict = market_df[f"Yahoo {market} Tickers"].to_dict()
+                tickers_dict[market] = market_dict
+            markets.append("Crypto")
+            crypto_tickers = pd.read_html(
+                "https://finance.yahoo.com/crypto/?offset=0&count=150"
+            )[0]
+            crypto_tickers.set_index("Name", inplace=True)
+            crypto_tickers = crypto_tickers["Symbol"].to_dict()
+            tickers_dict["Crypto"] = crypto_tickers
+            tickers_list = {}
+            for market in markets:
+                tickers_list[market] = [
+                    f"{k} - ({v})"
+                    for k, v in tickers_dict[market].items()
+                    if k is not None
+                    and k != ""
+                    and type(k) == str
+                    and k[0].isalpha()
+                ]
+    return tickers_dict, tickers_list
+
+
 def main():
     st.set_page_config(page_title="Trading Bot", page_icon="🤖", layout="wide")
 
@@ -89,8 +138,10 @@ def main():
         st.session_state["data"] = None
     if "ticker" not in st.session_state:
         st.session_state["ticker"] = ""
-    if "assets" not in st.session_state:
-        st.session_state["assets"] = {}
+    if "all_areas_filled" not in st.session_state:
+        st.session_state["all_areas_filled"] = False
+    if "fetch_data_button_clicked" not in st.session_state:
+        st.session_state["fetch_data_button_clicked"] = False
     if "smooth_data_button_clicked" not in st.session_state:
         st.session_state["smooth_data_button_clicked"] = False
     if "show_data_button_clicked" not in st.session_state:
@@ -111,46 +162,18 @@ def main():
         st.session_state["auto_adjust"] = None
     if "fundamentals" not in st.session_state:
         st.session_state["fundamentals"] = None
-    if "tickers" not in st.session_state:
-        _, col2, _ = st.columns([1, 1, 1])
-        with col2:
-            with st.spinner("Getting Tickers..."):
-                st.session_state["tickers"] = pd.read_excel(
-                    "data/Yahoo Ticker Symbols - September 2017.xlsx",
-                    sheet_name=None,
-                )
+    if "assets" not in st.session_state:
+        st.session_state["assets"] = None
+    if (
+        "tickers_dict" not in st.session_state
+        and "tickers_list" not in st.session_state
+    ):
+        (
+            st.session_state["tickers_dict"],
+            st.session_state["tickers_list"],
+        ) = load_tickers()
 
     DEFAULT_CHOICE = "<Select>"
-
-    assets = [
-        "Stock",
-        "ETF",
-        "Index",
-        "Currency",
-    ]
-    tickers = st.session_state["tickers"]
-    tickers_dict = {}
-    for asset in assets:
-        asset_df = (
-            tickers[f"{asset}"]
-            .loc[3:][
-                [
-                    "Unnamed: 1",
-                    f"Yahoo {asset} Tickers",
-                ]
-            ]
-            .sort_values(by="Unnamed: 1")
-        )
-        asset_df.set_index("Unnamed: 1", inplace=True)
-        asset_dict = asset_df[f"Yahoo {asset} Tickers"].to_dict()
-        tickers_dict[asset] = asset_dict
-    assets.append("Crypto")
-    crypto_tickers = pd.read_html(
-        "https://finance.yahoo.com/crypto/?offset=0&count=150"
-    )[0]
-    crypto_tickers.set_index("Name", inplace=True)
-    crypto_tickers = crypto_tickers["Symbol"].to_dict()
-    tickers_dict["Crypto"] = crypto_tickers
 
     add_bg_from_local("data/background.png", "data/bot.png")
 
@@ -177,26 +200,15 @@ def main():
     smooth_method = DEFAULT_CHOICE
 
     if data_fetch_way == "Fetch over the internet":
-        if "all_areas_filled" not in st.session_state:
-            st.session_state["all_areas_filled"] = False
-        if "fetch_data_button_clicked" not in st.session_state:
-            st.session_state["fetch_data_button_clicked"] = False
-
+        start, end, interval, auto_adjust = [None] * 4
         market = col2.selectbox(
             "Select the market: ",
             [DEFAULT_CHOICE, "Stock", "ETF", "Index", "Currency", "Crypto"],
             on_change=clear_data,
         )
         if market != DEFAULT_CHOICE:
-            assets = [
-                f"{k} - ({v})"
-                for k, v in tickers_dict[market].items()
-                if k is not None
-                and k != ""
-                and type(k) == str
-                and k[0].isalpha()
-            ]
-            assets.insert(0, DEFAULT_CHOICE)
+            assets = st.session_state["tickers_list"][market]
+            assets = [DEFAULT_CHOICE] + assets
             asset = col2.selectbox(
                 "Select the asset: ", assets, on_change=clear_data
             )
@@ -207,12 +219,10 @@ def main():
             interval = col2.selectbox(
                 "Select the time frame: ", intervals, on_change=clear_data
             )
-            st.session_state["interval"] = interval
             if asset != DEFAULT_CHOICE and interval != DEFAULT_CHOICE:
-                tickers = tickers_dict[market][asset]
+                tickers = st.session_state["tickers_dict"][market][asset]
                 st.session_state["ticker"] = tickers
                 full_data = yf.download(tickers=tickers, interval=interval)
-                st.dataframe(full_data)
                 if len(full_data) == 0:
                     col2.error(
                         "Yahoo do not have this ticker data. Please try another ticker."
@@ -221,10 +231,7 @@ def main():
                     val1 = full_data.index[(len(full_data) // 3)]
                     val2 = full_data.index[(len(full_data) * 2 // 3)]
                     if interval in ["1d", "5d", "1wk", "1mo", "3mo"]:
-                        (
-                            st.session_state["start"],
-                            st.session_state["end"],
-                        ) = st.select_slider(
+                        (start, end) = st.select_slider(
                             "Please select the start and end dates:",
                             options=full_data.index,
                             value=(val1, val2),
@@ -232,10 +239,7 @@ def main():
                             on_change=clear_data,
                         )
                     else:
-                        (
-                            st.session_state["start"],
-                            st.session_state["end"],
-                        ) = st.select_slider(
+                        (start, end) = st.select_slider(
                             "Please select the start and end dates:",
                             options=full_data.index,
                             value=(val1, val2),
@@ -258,22 +262,23 @@ def main():
                             "CPI",
                         ],
                     )
-                    st.session_state["all_areas_filled"] = (
-                        market != DEFAULT_CHOICE
-                        and interval != DEFAULT_CHOICE
-                        and adjust_situation != DEFAULT_CHOICE
-                    )
-
+                st.session_state["all_areas_filled"] = (
+                    market != DEFAULT_CHOICE
+                    and start != None
+                    and end != None
+                    and interval != DEFAULT_CHOICE
+                    and adjust_situation != DEFAULT_CHOICE
+                )
         if (
             st.button(
                 "Fetch the data",
                 on_click=fetch_data_button_click,
                 args=(
                     st.session_state["ticker"],
-                    st.session_state["start"],
-                    st.session_state["end"],
-                    st.session_state["interval"],
-                    st.session_state["auto_adjust"],
+                    start,
+                    end,
+                    interval,
+                    auto_adjust,
                     st.session_state["fundamentals"],
                 ),
             )
