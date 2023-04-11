@@ -81,7 +81,7 @@ def clear_data():
 
 
 def load_tickers():
-    _, col2, _ = st.columns([1, 1, 1])
+    _, col2, _ = st.columns(3)
     with col2:
         with st.spinner("Getting Tickers..."):
             tickers = pd.read_excel(
@@ -214,7 +214,14 @@ def main():
             )
             if asset != DEFAULT_CHOICE:
                 asset = asset.split("-")[0].strip()
-            intervals = ["1m", "1d", "5d", "1wk", "1mo", "3mo"]
+            intervals = [
+                "1m",
+                "1d",
+                "5d",
+                "1wk",
+                "1mo",
+                "3mo",
+            ]
             intervals.insert(0, DEFAULT_CHOICE)
             interval = col2.selectbox(
                 "Select the time frame: ", intervals, on_change=clear_data
