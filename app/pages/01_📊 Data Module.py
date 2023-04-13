@@ -129,6 +129,17 @@ def load_tickers():
     return tickers_dict, tickers_list
 
 
+def fetch_over_net_selected():
+    if (
+        "tickers_dict" not in st.session_state
+        and "tickers_list" not in st.session_state
+    ):
+        (
+            st.session_state["tickers_dict"],
+            st.session_state["tickers_list"],
+        ) = load_tickers()
+
+
 def main():
     st.set_page_config(page_title="Trading Bot", page_icon="🤖", layout="wide")
 
@@ -164,14 +175,6 @@ def main():
         st.session_state["fundamentals"] = None
     if "assets" not in st.session_state:
         st.session_state["assets"] = None
-    if (
-        "tickers_dict" not in st.session_state
-        and "tickers_list" not in st.session_state
-    ):
-        (
-            st.session_state["tickers_dict"],
-            st.session_state["tickers_list"],
-        ) = load_tickers()
 
     DEFAULT_CHOICE = "<Select>"
 
@@ -200,6 +203,7 @@ def main():
     smooth_method = DEFAULT_CHOICE
 
     if data_fetch_way == "Fetch over the internet":
+        fetch_over_net_selected()
         start, end, interval, auto_adjust = [None] * 4
         market = col2.selectbox(
             "Select the market: ",
