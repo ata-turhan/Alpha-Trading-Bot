@@ -163,14 +163,6 @@ def main():
         st.session_state["chart_data_selectbox_clicked"] = False
     if "data_to_show" not in st.session_state:
         st.session_state["data_to_show"] = None
-    if "start" not in st.session_state:
-        st.session_state["start"] = None
-    if "end" not in st.session_state:
-        st.session_state["end"] = None
-    if "interval" not in st.session_state:
-        st.session_state["interval"] = None
-    if "auto_adjust" not in st.session_state:
-        st.session_state["auto_adjust"] = None
     if "fundamentals" not in st.session_state:
         st.session_state["fundamentals"] = None
     if "assets" not in st.session_state:
@@ -263,7 +255,6 @@ def main():
                         "Do you want to adjust the prices: ",
                         [DEFAULT_CHOICE, "Yes", "No"],
                     )
-                    st.session_state["auto_adjust"] = adjust_situation == "Yes"
                     st.session_state["fundamentals"] = col2.multiselect(
                         "Besides the price data, which fundamental data do you want to add?",
                         [
