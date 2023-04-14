@@ -1,9 +1,12 @@
 import base64
 
 import create_backtest as cb
-import create_data as cd
+
+pass
 import numpy as np
+import quantstats as qs
 import streamlit as st
+import yfinance as yf
 
 
 def add_bg_from_local(background_file, sidebar_background_file):
@@ -32,8 +35,8 @@ st.set_page_config(page_title="Trading Bot", page_icon="🤖", layout="wide")
 
 add_bg_from_local("data/background.png", "data/bot.png")
 
-if "ohlcv" not in st.session_state:
-    st.session_state["ohlcv"] = None
+if "data" not in st.session_state:
+    st.session_state["data"] = None
 if "predictions" not in st.session_state:
     st.session_state["predictions"] = None
 if "ticker" not in st.session_state:
@@ -55,7 +58,7 @@ st.markdown(
 )
 st.markdown("<br> <br>", unsafe_allow_html=True)
 if (
-    st.session_state["ohlcv"] is None
+    st.session_state["data"] is None
     or st.session_state["predictions"] is None
     or st.session_state["ticker"] == ""
 ):
@@ -81,7 +84,7 @@ else:
             st.session_state["backtest_configuration"][
                 "benchmark_ticker"
             ] = benchmark_ticker
-        ohlcv = st.session_state["ohlcv"]
+        data = st.session_state["data"]
         predictions = np.array(st.session_state["predictions"])
         st.markdown("<br>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1, 1, 1])
@@ -218,7 +221,6 @@ else:
             pass
 
         st.markdown("<br>", unsafe_allow_html=True)
-
     if st.button("Run the backtest"):
         st.session_state["backtest_configuration_ready"] = True
         metrics = cb.financial_evaluation(
@@ -227,7 +229,7 @@ else:
             sell_label,
             ticker,
             benchmark_ticker,
-            ohlcv,
+            data,
             predictions,
             risk_free_rate,
             initial_capital,
@@ -250,3 +252,21 @@ else:
             show_time,
             precision_point,
         )
+        bench = yf.download(
+            "SPY",
+            start=data.index[0],
+            end=data.index[-1],
+            interval="1d",
+            progress=False,
+            auto_adjust=False,
+        )
+        bench["date"] = bench.index
+        bench["date"] = bench["date"].dt.tz_localize(None)
+        bench.index = bench["date"]
+        fig = qs.plots.snapshot(
+            data["Adj Close"],
+            title=f"{st.session_state['ticker']} Performance",
+            show=False,
+            mode="full",
+        )
+        st.write(fig)
