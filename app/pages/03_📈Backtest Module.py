@@ -260,9 +260,11 @@ else:
             progress=False,
             auto_adjust=False,
         )
+        # st.dataframe(bench)
         bench["date"] = bench.index
         bench["date"] = bench["date"].dt.tz_localize(None)
         bench.index = bench["date"]
+        # st.dataframe(bench)
         snapshot = qs.plots.snapshot(
             data["Adj Close"],
             title=f"{st.session_state['ticker']} Performance",
@@ -275,3 +277,15 @@ else:
             show=False,
         )
         st.write(heatmap)
+        returns = qs.plots.returns(
+            data["Adj Close"],
+            bench["Adj Close"],
+            show=False,
+        )
+        st.write(returns)
+        log_returns = qs.plots.log_returns(
+            data["Adj Close"],
+            bench["Adj Close"],
+            show=False,
+        )
+        st.write(log_returns)
