@@ -263,10 +263,15 @@ else:
         bench["date"] = bench.index
         bench["date"] = bench["date"].dt.tz_localize(None)
         bench.index = bench["date"]
-        fig = qs.plots.snapshot(
+        snapshot = qs.plots.snapshot(
             data["Adj Close"],
             title=f"{st.session_state['ticker']} Performance",
             show=False,
             mode="full",
         )
-        st.write(fig)
+        st.write(snapshot)
+        heatmap = qs.plots.monthly_heatmap(
+            data["Adj Close"],
+            show=False,
+        )
+        st.write(heatmap)
