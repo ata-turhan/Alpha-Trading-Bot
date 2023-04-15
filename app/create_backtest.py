@@ -5,7 +5,8 @@ import time
 
 import numpy as np
 import pandas as pd
-import plotly.express as px
+
+pass
 import plotly.graph_objects as go
 import streamlit as st
 import yfinance as yf
@@ -880,8 +881,8 @@ def financial_evaluation(
     benchmark_index = yf.download(
         benchmark_ticker, start_date, end_date, progress=False, interval="1d"
     )["Adj Close"]
-    st.write(ohlcv)
-    st.write(benchmark_index)
+    # st.write(ohlcv)
+    # st.write(benchmark_index)
     benchmark_index = benchmark_index.loc[ohlcv.index]
     benchmark_index = np.array(benchmark_index)
     # adjustPrices(ohlcv)
