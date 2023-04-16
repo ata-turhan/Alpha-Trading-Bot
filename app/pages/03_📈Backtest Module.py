@@ -264,6 +264,16 @@ else:
         bench["date"] = bench.index
         bench["date"] = bench["date"].dt.tz_localize(None)
         bench.index = bench["date"]
+        metrics = qs.reports.metrics(
+            returns=data["Adj Close"],
+            benchmark=bench["Adj Close"],
+            rf=0.0,
+            display=False,
+            mode="full",
+            sep=False,
+            compounded=True,
+        )
+        st.dataframe(metrics)
         # st.dataframe(bench)
         snapshot = qs.plots.snapshot(
             data["Adj Close"],
