@@ -21,9 +21,13 @@ configure_authors()
 add_bg_from_local("data/background.png", "data/bot.png")
 
 st.markdown(
-    "<h1 style='text-align: center; color: black;'> 💡 Strategy Module </h1> <br> <br>",
+    "<h1 style='text-align: center; color: black; font-size: 65px;'> 💡 Strategy Module </h1> <br> <br>",
     unsafe_allow_html=True,
 )
+
+style = "<style>.row-widget.stButton {text-align: center;}</style>"
+st.markdown(style, unsafe_allow_html=True)
+
 
 if "data" not in st.session_state:
     st.session_state["data"] = None

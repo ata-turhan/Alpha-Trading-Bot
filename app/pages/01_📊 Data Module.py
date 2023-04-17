@@ -46,9 +46,10 @@ def add_fundamental_data(fundamentals):
     end = data.index[-1]
     data = fetch_fundamental_data(data, start, end)
     st.session_state["data"] = data
-    chosen_columns = ["Open", "High", "Low", "Close", "Volume"]
-    chosen_columns.extend(fundamentals)
-    st.session_state["data_to_show"] = data[chosen_columns]
+    columns = ["Open", "High", "Low", "Close", "Volume"]
+    if len(fundamentals) > 0:
+        columns.extend(fundamentals)
+    st.session_state["data_to_show"] = data[columns]
 
 
 def smooth_data_button_click():
@@ -109,7 +110,7 @@ def load_tickers():
                 tickers_dict[market] = market_dict
             markets.append("Crypto")
             crypto_tickers = pd.read_html(
-                "https://finance.yahoo.com/crypto/?offset=0&count=150"
+                "https://finance.yahoo.com/crypto/?offset=0&count=25"
             )[0]
             crypto_tickers.set_index("Name", inplace=True)
             crypto_tickers = crypto_tickers["Symbol"].to_dict()
@@ -117,7 +118,7 @@ def load_tickers():
             tickers_list = {}
             for market in markets:
                 tickers_list[market] = [
-                    f"{k} | ({v})"
+                    f"{k} | {v}"
                     for k, v in tickers_dict[market].items()
                     if k is not None
                     and k != ""
@@ -127,7 +128,7 @@ def load_tickers():
     return tickers_dict, tickers_list
 
 
-def fetch_over_net_selected():
+def get_tickers():
     if (
         "tickers_dict" not in st.session_state
         and "tickers_list" not in st.session_state
@@ -145,38 +146,41 @@ def main():
 
     if "conf_change" not in st.session_state:
         st.session_state.conf_change = False
-    if "data" not in st.session_state:
-        st.session_state["data"] = None
     if "ticker" not in st.session_state:
         st.session_state["ticker"] = ""
+    if "fundamentals" not in st.session_state:
+        st.session_state["fundamentals"] = None
+    if "assets" not in st.session_state:
+        st.session_state["assets"] = None
+    if "data" not in st.session_state:
+        st.session_state["data"] = None
+    if "data_to_show" not in st.session_state:
+        st.session_state["data_to_show"] = None
     if "all_areas_filled" not in st.session_state:
         st.session_state["all_areas_filled"] = False
     if "fetch_data_button_clicked" not in st.session_state:
         st.session_state["fetch_data_button_clicked"] = False
     if "smooth_data_button_clicked" not in st.session_state:
         st.session_state["smooth_data_button_clicked"] = False
+    if "smooth_data_selectbox_clicked" not in st.session_state:
+        st.session_state["smooth_data_selectbox_clicked"] = False
     if "show_data_button_clicked" not in st.session_state:
         st.session_state["show_data_button_clicked"] = False
     if "show_chart_button_clicked" not in st.session_state:
         st.session_state["show_chart_button_clicked"] = False
     if "show_chart_selectbox_clicked" not in st.session_state:
         st.session_state["show_chart_selectbox_clicked"] = False
-    if "data_to_show" not in st.session_state:
-        st.session_state["data_to_show"] = None
-    if "fundamentals" not in st.session_state:
-        st.session_state["fundamentals"] = None
-    if "assets" not in st.session_state:
-        st.session_state["assets"] = None
 
     DEFAULT_CHOICE = "<Select>"
 
     st.markdown(
-        "<h1 style='text-align: center; color: black;'> 📊 Data Module </h1> <br> <br>",
+        "<h1 style='text-align: center; color: black; font-size: 65px;'> 📊 Data Module </h1> <br> ",
         unsafe_allow_html=True,
     )
 
     style = "<style>.row-widget.stButton {text-align: center;}</style>"
     st.markdown(style, unsafe_allow_html=True)
+
     _, col2, _ = st.columns([1, 2, 1])
     data_fetch_way = col2.selectbox(
         "Which way do you want to get the prices: ",
@@ -188,7 +192,7 @@ def main():
     smooth_method = DEFAULT_CHOICE
 
     if data_fetch_way == "Fetch over the internet":
-        fetch_over_net_selected()
+        get_tickers()
         start, end, interval, auto_adjust = [None] * 4
         market = col2.selectbox(
             "Select the market: ",
@@ -216,14 +220,14 @@ def main():
                 "Select the time frame: ", intervals, on_change=clear_data
             )
             if asset != DEFAULT_CHOICE and interval != DEFAULT_CHOICE:
-                tickers = st.session_state["tickers_dict"][market].get(
+                ticker = st.session_state["tickers_dict"][market].get(
                     asset, None
                 )
-                if tickers is None:
+                if ticker is None:
                     full_data = None
                 else:
-                    st.session_state["ticker"] = tickers
-                    full_data = yf.download(tickers=tickers, interval=interval)
+                    st.session_state["ticker"] = ticker
+                    full_data = yf.download(tickers=ticker, interval=interval)
                 if full_data is None or len(full_data) == 0:
                     col2.error(
                         "Yahoo do not have this ticker data. Please try another ticker."
@@ -249,19 +253,18 @@ def main():
                             ),
                             on_change=clear_data,
                         )
-                    adjust_situation = col2.selectbox(
-                        "Do you want to adjust the prices: ",
-                        [DEFAULT_CHOICE, "Yes", "No"],
-                    )
+            adjust_situation = col2.selectbox(
+                "Do you want to adjust the prices: ",
+                [DEFAULT_CHOICE, "Yes", "No"],
+            )
 
-                st.session_state["all_areas_filled"] = (
-                    market != DEFAULT_CHOICE
-                    and start != None
-                    and end != None
-                    and interval != DEFAULT_CHOICE
-                    and adjust_situation != DEFAULT_CHOICE
-                )
-        _, col2, _ = st.columns([1, 2, 1])
+            st.session_state["all_areas_filled"] = (
+                market != DEFAULT_CHOICE
+                and start != None
+                and end != None
+                and interval != DEFAULT_CHOICE
+                and adjust_situation != DEFAULT_CHOICE
+            )
         if (
             st.button(
                 "Fetch the data",
@@ -292,8 +295,8 @@ def main():
         )
         st.markdown("<br>", unsafe_allow_html=True)
         if uploaded_file is not None:
-            tickers = re.findall(r"[\w']+", uploaded_file.name)[0]
-            st.session_state["ticker"] = tickers
+            ticker = re.findall(r"[\w']+", uploaded_file.name)[0]
+            st.session_state["ticker"] = ticker
             try:
                 if uploaded_file.name.endswith(".csv"):
                     st.session_state["data"] = pd.read_csv(
@@ -316,7 +319,6 @@ def main():
                 data = st.session_state["data"]
                 col2.success("Data fetched successfully")
     if st.session_state["data"] is not None:
-        _, col2, _ = st.columns([1, 2, 1])
         st.session_state["fundamentals"] = col2.multiselect(
             "Besides the price data, which fundamental data do you want to add?",
             [
@@ -331,10 +333,7 @@ def main():
 
         st.markdown("<br><br>", unsafe_allow_html=True)
         smooth_button = st.button("Smooth the data")
-        if (
-            smooth_button
-            or st.session_state["smooth_data_button_clicked"] == True
-        ):
+        if smooth_button or st.session_state["smooth_data_button_clicked"]:
             st.session_state["smooth_data_button_clicked"] = True
             _, col2, _ = st.columns([1, 2, 1])
             smooth_method = col2.selectbox(
@@ -355,9 +354,9 @@ def main():
                     parameters={"window": 20},
                 )
         st.markdown("<br> <br>", unsafe_allow_html=True)
-        center_tabular_button = st.button("Show the data in a tabular format")
+        show_data_button = st.button("Show the data in a tabular format")
         if (
-            center_tabular_button
+            show_data_button
             or st.session_state["show_data_button_clicked"] == True
         ):
             st.dataframe(st.session_state["data_to_show"], width=1100)
@@ -365,11 +364,8 @@ def main():
 
         st.markdown("<br> <br>", unsafe_allow_html=True)
 
-        center_chart_button = st.button("Show the data in a chart")
-        if (
-            center_chart_button
-            or st.session_state["show_chart_button_clicked"]
-        ):
+        show_chart_button = st.button("Show the data in a chart")
+        if show_chart_button or st.session_state["show_chart_button_clicked"]:
             st.session_state["show_chart_button_clicked"] = True
             _, col2, _ = st.columns([1, 2, 1])
             display_format = col2.multiselect(
@@ -394,7 +390,7 @@ def main():
             ):
                 show_prices(
                     data=st.session_state["data_to_show"],
-                    ticker=tickers,
+                    ticker=ticker,
                     show_which_price=display_format,
                 )
         st.markdown("<br><br>", unsafe_allow_html=True)

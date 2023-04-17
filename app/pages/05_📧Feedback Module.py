@@ -6,9 +6,12 @@ configure_authors()
 add_bg_from_local("data/background.png", "data/bot.png")
 
 st.markdown(
-    "<h1 style='text-align: center; color: black;'> 📧 Feedback Module </h1> <br> <br>",
+    "<h1 style='text-align: center; color: black; font-size: 65px;'> 📧 Feedback Module </h1> <br> <br>",
     unsafe_allow_html=True,
 )
+style = "<style>.row-widget.stButton {text-align: center;}</style>"
+st.markdown(style, unsafe_allow_html=True)
+
 st.markdown("<br> <br>", unsafe_allow_html=True)
 st.header(
     "You can use the text area below to send your feedback about the app to the developer. Thanks!"

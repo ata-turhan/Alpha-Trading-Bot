@@ -22,9 +22,12 @@ if "backtest_configuration" not in st.session_state:
 
 
 st.markdown(
-    "<h1 style='text-align: center; color: black;'> ⚡Optimization Module </h1> <br> <br>",
+    "<h1 style='text-align: center; color: black; font-size: 65px;'> ⚡Optimization Module </h1> <br> <br>",
     unsafe_allow_html=True,
 )
+
+style = "<style>.row-widget.stButton {text-align: center;}</style>"
+st.markdown(style, unsafe_allow_html=True)
 st.markdown("<br> <br>", unsafe_allow_html=True)
 if (
     st.session_state["ohlcv"] is None
