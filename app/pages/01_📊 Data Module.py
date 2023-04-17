@@ -40,9 +40,10 @@ def add_fundamental_data(fundamentals):
     start = data.index[0]
     end = data.index[-1]
     data = fetch_fundamental_data(data, start, end)
+    st.session_state["data"] = data
     chosen_columns = ["Open", "High", "Low", "Close", "Volume"]
     chosen_columns.extend(fundamentals)
-    st.session_state["data"] = data[chosen_columns]
+    st.session_state["data_to_show"] = data[chosen_columns]
 
 
 def smooth_data_button_click():
@@ -322,8 +323,8 @@ def main():
                 "CPI",
             ],
         )
-        add_fundamental_data(st.session_state["fundamentals"])
         st.session_state["data_to_show"] = st.session_state["data"].copy()
+        add_fundamental_data(st.session_state["fundamentals"])
 
         st.markdown("<br><br>", unsafe_allow_html=True)
         smooth_button = st.button("Smooth the data")

@@ -461,6 +461,4 @@ def fetch_fundamental_data(
             .drop(columns="merg_col")
         )
         data.index = data.index + pd.DateOffset(months=1)
-
-    st.dataframe(data)
     return data
