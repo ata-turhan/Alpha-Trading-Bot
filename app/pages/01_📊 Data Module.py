@@ -14,11 +14,7 @@ from create_data import (
 
 
 def fetch_data_button_click(
-    tickers,
-    start,
-    end,
-    interval,
-    auto_adjust,
+    tickers, start, end, interval, auto_adjust, col2
 ) -> None:
     if st.session_state["all_areas_filled"]:
         st.session_state["fetch_data_button_clicked"] = True
@@ -33,6 +29,8 @@ def fetch_data_button_click(
             auto_adjust=auto_adjust,
         )
         st.session_state["data"] = data
+    else:
+        col2.error("Please fill all the areas.")
 
 
 def add_fundamental_data(fundamentals):
@@ -258,6 +256,7 @@ def main():
                     and interval != DEFAULT_CHOICE
                     and adjust_situation != DEFAULT_CHOICE
                 )
+        _, col2, _ = st.columns([1, 2, 1])
         if (
             st.button(
                 "Fetch the data",
@@ -268,13 +267,12 @@ def main():
                     end,
                     interval,
                     auto_adjust,
+                    col2,
                 ),
             )
             or st.session_state["fetch_data_button_clicked"]
         ):
-            if st.session_state["all_areas_filled"] == False:
-                col2.error("Please fill all the areas.")
-            else:
+            if st.session_state["all_areas_filled"]:
                 data = st.session_state["data"]
                 if data is None and st.session_state.conf_change == False:
                     st.error("Data could not be downloaded.")
