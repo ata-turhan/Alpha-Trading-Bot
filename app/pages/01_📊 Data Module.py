@@ -6,6 +6,7 @@ import streamlit as st
 import yfinance as yf
 from configuration import add_bg_from_local, configure_authors, configure_page
 from create_data import (
+    create_technical_indicators,
     fetch_fundamental_data,
     get_financial_data,
     show_prices,
@@ -50,6 +51,23 @@ def add_fundamental_data(fundamentals):
     if len(fundamentals) > 0:
         columns.extend(fundamentals)
     st.session_state["data_to_show"] = data[columns]
+
+
+def add_indicator_data(indicators):
+    columns = [
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "FED 2Y Interest Rate",
+        "FED 10Y Interest Rate",
+        "Yield Difference",
+        "CPI",
+    ]
+    if len(indicators) > 0:
+        columns.extend(indicators)
+    st.session_state["data_to_show"] = st.session_state["data"][columns]
 
 
 def smooth_data_button_click():
@@ -148,6 +166,8 @@ def main():
         st.session_state.conf_change = False
     if "ticker" not in st.session_state:
         st.session_state["ticker"] = ""
+    if "indicators" not in st.session_state:
+        st.session_state["indicators"] = None
     if "fundamentals" not in st.session_state:
         st.session_state["fundamentals"] = None
     if "assets" not in st.session_state:
@@ -319,6 +339,7 @@ def main():
                 data = st.session_state["data"]
                 col2.success("Data fetched successfully")
     if st.session_state["data"] is not None:
+        st.session_state["data_to_show"] = st.session_state["data"].copy()
         st.session_state["fundamentals"] = col2.multiselect(
             "Besides the price data, which fundamental data do you want to add?",
             [
@@ -328,8 +349,16 @@ def main():
                 "CPI",
             ],
         )
-        st.session_state["data_to_show"] = st.session_state["data"].copy()
         add_fundamental_data(st.session_state["fundamentals"])
+
+        st.session_state["data"] = create_technical_indicators(
+            st.session_state["data"]
+        )
+        st.session_state["indicators"] = col2.multiselect(
+            "Besides the price data, which technical indicators data do you want to add?",
+            st.session_state["data"].columns[10:],
+        )
+        add_indicator_data(st.session_state["indicators"])
 
         st.markdown("<br><br>", unsafe_allow_html=True)
         smooth_button = st.button("Smooth the data")
@@ -368,20 +397,22 @@ def main():
         if show_chart_button or st.session_state["show_chart_button_clicked"]:
             st.session_state["show_chart_button_clicked"] = True
             _, col2, _ = st.columns([1, 2, 1])
+            columns_to_chart = [
+                DEFAULT_CHOICE,
+                "Candlestick",
+                "Open",
+                "High",
+                "Low",
+                "Close",
+                "FED 2Y Interest Rate",
+                "FED 10Y Interest Rate",
+                "Yield Difference",
+                "CPI",
+            ]
+            columns_to_chart.extend(st.session_state["indicators"])
             display_format = col2.multiselect(
-                "Select the price to show in the chart: ",
-                [
-                    DEFAULT_CHOICE,
-                    "Candlestick",
-                    "Open",
-                    "High",
-                    "Low",
-                    "Close",
-                    "FED 2Y Interest Rate",
-                    "FED 10Y Interest Rate",
-                    "Yield Difference",
-                    "CPI",
-                ],
+                "Select the data to show in the chart: ",
+                columns_to_chart,
                 on_change=chart_data_selectbox_click,
             )
             if (
