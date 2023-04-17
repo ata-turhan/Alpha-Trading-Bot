@@ -9,7 +9,11 @@ from configuration import add_bg_from_local, configure_authors
 
 
 def fetch_data_button_click(
-    tickers, start, end, interval, auto_adjust, fundamentals
+    tickers,
+    start,
+    end,
+    interval,
+    auto_adjust,
 ) -> None:
     if st.session_state["all_areas_filled"]:
         st.session_state["fetch_data_button_clicked"] = True
@@ -23,10 +27,17 @@ def fetch_data_button_click(
             interval=interval,
             auto_adjust=auto_adjust,
         )
-        data = cd.fetch_fundamental_data(data, start, end)
-        chosen_columns = ["Open", "High", "Low", "Close", "Volume"]
-        chosen_columns.extend(fundamentals)
-        st.session_state["data"] = data[chosen_columns]
+        st.session_state["data"] = data
+
+
+def fetch_fundamental_data(fundamentals):
+    data = st.session_state["data"]
+    start = data.index[0]
+    end = data.index[-1]
+    data = cd.fetch_fundamental_data(data, start, end)
+    chosen_columns = ["Open", "High", "Low", "Close", "Volume"]
+    chosen_columns.extend(fundamentals)
+    st.session_state["data"] = data[chosen_columns]
 
 
 def smooth_data_button_click():
@@ -230,15 +241,7 @@ def main():
                         "Do you want to adjust the prices: ",
                         [DEFAULT_CHOICE, "Yes", "No"],
                     )
-                    st.session_state["fundamentals"] = col2.multiselect(
-                        "Besides the price data, which fundamental data do you want to add?",
-                        [
-                            "FED 2Y Interest Rate",
-                            "FED 10Y Interest Rate",
-                            "Yield Difference",
-                            "CPI",
-                        ],
-                    )
+
                 st.session_state["all_areas_filled"] = (
                     market != DEFAULT_CHOICE
                     and start != None
@@ -256,7 +259,6 @@ def main():
                     end,
                     interval,
                     auto_adjust,
-                    st.session_state["fundamentals"],
                 ),
             )
             or st.session_state["fetch_data_button_clicked"]
@@ -273,7 +275,7 @@ def main():
     elif data_fetch_way == "Read from a file":
         col2.markdown("<br><br>", unsafe_allow_html=True)
         uploaded_file = col2.file_uploader(
-            "To upload, select a csv or excel file with the first word of its name matching the ticker name.",
+            "To upload, select a csv or excel file whose first word matches the ticker name.",
             on_change=clear_data,
         )
         st.markdown("<br>", unsafe_allow_html=True)
@@ -292,20 +294,30 @@ def main():
                         uploaded_file, index_col="Date"
                     )
             except IOError:
-                st.error("You need to upload a csv or excel file.")
+                col2.error("You need to upload a csv or excel file.")
             except Exception:
-                st.error("An unknown error occurred.")
+                col2.error("An unknown error occurred.")
             else:
                 st.session_state["data"].index = pd.to_datetime(
                     st.session_state["data"].index
                 )
                 data = st.session_state["data"]
-                st.success("Data fetched successfully")
-                st.markdown("<br>", unsafe_allow_html=True)
+                col2.success("Data fetched successfully")
     if st.session_state["data"] is not None:
-        st.markdown("<br>", unsafe_allow_html=True)
+        _, col2, _ = st.columns([1, 2, 1])
+        st.session_state["fundamentals"] = col2.multiselect(
+            "Besides the price data, which fundamental data do you want to add?",
+            [
+                "FED 2Y Interest Rate",
+                "FED 10Y Interest Rate",
+                "Yield Difference",
+                "CPI",
+            ],
+        )
+        fetch_fundamental_data(st.session_state["fundamentals"])
         st.session_state["data_to_show"] = st.session_state["data"].copy()
 
+        st.markdown("<br><br>", unsafe_allow_html=True)
         smooth_button = st.button("Smooth the data")
         if (
             smooth_button
