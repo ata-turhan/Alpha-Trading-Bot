@@ -331,7 +331,7 @@ def main():
                     DEFAULT_CHOICE,
                     "None",
                     "Moving Average",
-                    "Heikin Ashi",
+                    "Heikin-Ashi",
                     "Trend Normalization",
                 ],
                 on_change=smooth_data_selectbox_click,

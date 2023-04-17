@@ -20,8 +20,8 @@ from sklearn.feature_selection import (
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from ta import add_all_ta_features
 
-if "ohlcv" not in st.session_state:
-    st.session_state["ohlcv"] = None
+if "data" not in st.session_state:
+    st.session_state["data"] = None
 
 
 def get_financial_data(
@@ -133,11 +133,21 @@ def signal_smoothing(
                     data["HeikinAshi_Close"].iloc[i],
                 ]
             )
-        data = data.iloc[29:, :]
+        data.drop(index=data.index[:30], axis=0, inplace=True)
         data["Open"] = data["HeikinAshi_Open"]
         data["High"] = data["HeikinAshi_High"]
         data["Low"] = data["HeikinAshi_Low"]
         data["Close"] = data["HeikinAshi_Close"]
+        data.drop(
+            [
+                "HeikinAshi_Open",
+                "HeikinAshi_High",
+                "HeikinAshi_Low",
+                "HeikinAshi_Close",
+            ],
+            axis=1,
+            inplace=True,
+        )
     elif smoothing_method == "Trend Normalization":
         data["rowNumber"] = list(range(len(data)))
         data["TN_Open"] = list(range(len(data)))
@@ -172,29 +182,29 @@ def signal_smoothing(
         data["Low"] = data["TN_Low"]
         data["Close"] = data["TN_Close"]
         data.drop(index=data.index[:30], axis=0, inplace=True)
-    data = data[["Open", "High", "Low", "Close", "Volume"]]
+        data.drop(
+            [
+                "rowNumber",
+                "TN_Open",
+                "TN_High",
+                "TN_Low",
+                "TN_Close",
+            ],
+            axis=1,
+            inplace=True,
+        )
     return data
 
 
-def create_ohlcv_alike(ohlcv: pd.DataFrame, new_asset: str):
-    start = ohlcv.index[0] + dt.timedelta(days=1)
-    end = ohlcv.index[-1] + dt.timedelta(days=1)
+def create_ohlcv_alike(data: pd.DataFrame, new_asset: str):
+    start = data.index[0] + dt.timedelta(days=1)
+    end = data.index[-1] + dt.timedelta(days=1)
     interval = (
         "1d"
-        if str(ohlcv.index[1] - ohlcv.index[0]).startswith("1 days")
+        if str(data.index[1] - data.index[0]).startswith("1 days")
         else "1m"
     )
-    auto_adjust = "Adj Close" not in ohlcv.columns
-    st.write(ohlcv)
-    st.write(
-        get_financial_data(
-            tickers=new_asset,
-            start=start,
-            end=end,
-            interval=interval,
-            auto_adjust=auto_adjust,
-        )
-    )
+    auto_adjust = "Adj Close" not in data.columns
     return get_financial_data(
         tickers=new_asset,
         start=start,
