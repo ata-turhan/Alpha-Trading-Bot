@@ -1,11 +1,16 @@
-import io
 import re
+from io import BytesIO
 
-import create_data as cd
 import pandas as pd
 import streamlit as st
 import yfinance as yf
 from configuration import add_bg_from_local, configure_authors, configure_page
+from create_data import (
+    fetch_fundamental_data,
+    get_financial_data,
+    show_prices,
+    signal_smoothing,
+)
 
 
 def fetch_data_button_click(
@@ -20,7 +25,7 @@ def fetch_data_button_click(
         st.session_state["show_data_button_clicked"] = False
         st.session_state["show_chart_button_clicked"] = False
         st.session_state["chart_data_selectbox_clicked"] = False
-        data = cd.get_financial_data(
+        data = get_financial_data(
             tickers=tickers,
             start=start,
             end=end,
@@ -34,7 +39,7 @@ def fetch_fundamental_data(fundamentals):
     data = st.session_state["data"]
     start = data.index[0]
     end = data.index[-1]
-    data = cd.fetch_fundamental_data(data, start, end)
+    data = fetch_fundamental_data(data, start, end)
     chosen_columns = ["Open", "High", "Low", "Close", "Volume"]
     chosen_columns.extend(fundamentals)
     st.session_state["data"] = data[chosen_columns]
@@ -207,10 +212,15 @@ def main():
                 "Select the time frame: ", intervals, on_change=clear_data
             )
             if asset != DEFAULT_CHOICE and interval != DEFAULT_CHOICE:
-                tickers = st.session_state["tickers_dict"][market][asset]
-                st.session_state["ticker"] = tickers
-                full_data = yf.download(tickers=tickers, interval=interval)
-                if len(full_data) == 0:
+                tickers = st.session_state["tickers_dict"][market].get(
+                    asset, None
+                )
+                if tickers is None:
+                    full_data = None
+                else:
+                    st.session_state["ticker"] = tickers
+                    full_data = yf.download(tickers=tickers, interval=interval)
+                if full_data is None or len(full_data) == 0:
                     col2.error(
                         "Yahoo do not have this ticker data. Please try another ticker."
                     )
@@ -335,7 +345,7 @@ def main():
                 on_change=smooth_data_selectbox_click,
             )
             if smooth_method != DEFAULT_CHOICE:
-                st.session_state["data_to_show"] = cd.signal_smoothing(
+                st.session_state["data_to_show"] = signal_smoothing(
                     df=st.session_state["data"],
                     smoothing_method=smooth_method,
                     parameters={"window": 20},
@@ -378,7 +388,7 @@ def main():
                 len(display_format) != 0
                 and st.session_state["chart_data_selectbox_clicked"]
             ):
-                cd.show_prices(
+                show_prices(
                     data=st.session_state["data_to_show"],
                     ticker=tickers,
                     show_which_price=display_format,
@@ -400,7 +410,7 @@ def main():
             mime="text/csv",
         ):
             col2.success("Data was saved successfully")
-        buffer = io.BytesIO()
+        buffer = BytesIO()
         with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
             st.session_state["data"].to_excel(writer, sheet_name="Data")
             writer.save()
