@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import streamlit as st
-from configuration import add_bg_from_local, configure_authors
+from configuration import add_bg_from_local, configure_authors, configure_page
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
     classification_report,
@@ -16,16 +16,14 @@ def clean_predictions():
     st.session_state["predictions"] = None
 
 
-st.set_page_config(page_title="Trading Bot", page_icon="🤖", layout="wide")
+configure_page()
+configure_authors()
+add_bg_from_local("data/background.png", "data/bot.png")
+
 st.markdown(
     "<h1 style='text-align: center; color: black;'> 💡 Strategy Module </h1> <br> <br>",
     unsafe_allow_html=True,
 )
-
-add_bg_from_local("data/background.png", "data/bot.png")
-
-configure_authors()
-
 
 if "data" not in st.session_state:
     st.session_state["data"] = None

@@ -1,11 +1,9 @@
 import streamlit as st
-from configuration import add_bg_from_local, configure_authors
+from configuration import add_bg_from_local, configure_authors, configure_page
 
-st.set_page_config(page_title="Trading Bot", page_icon="🤖", layout="wide")
-
-add_bg_from_local("data/background.png", "data/bot.png")
-
+configure_page()
 configure_authors()
+add_bg_from_local("data/background.png", "data/bot.png")
 
 st.markdown(
     "<h1 style='text-align: center; color: black;'> 📧 Feedback Module </h1> <br> <br>",

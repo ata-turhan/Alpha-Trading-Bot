@@ -1,25 +1,11 @@
 import streamlit as st
-from configuration import add_bg_from_local, configure_authors
+from configuration import add_bg_from_local, configure_authors, configure_page
 
 
 def main():
-    st.set_page_config(
-        page_title="🤖 Trading Bot",
-        page_icon="🤖",
-        layout="wide",
-        initial_sidebar_state="expanded",
-        menu_items={
-            "Get Help": "https://github.com/olympian-21",
-            "Report a bug": "https://alpha-tradingbot.streamlit.app/Feedback_Module",
-            "About": "This is a trading bot that can be used for retrieving financial data, \
-            creating trading strategies, backtesting the strategies, and optimizing the backtests. \
-            Please, give us all the helpful feedback!",
-        },
-    )
-
-    add_bg_from_local("data/background.png", "data/bot.png")
-
+    configure_page()
     configure_authors()
+    add_bg_from_local("data/background.png", "data/bot.png")
 
     st.markdown(  # Combined text and styling into one line for readability
         "<h1 style='text-align: center; color: black; font-size: 75px;'> 🤖 Fully-Fledged Trading Bot </h1> \

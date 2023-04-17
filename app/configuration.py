@@ -3,6 +3,22 @@ import base64
 import streamlit as st
 
 
+def configure_page():
+    st.set_page_config(
+        page_title="🤖 Trading Bot",
+        page_icon="🤖",
+        layout="wide",
+        initial_sidebar_state="expanded",
+        menu_items={
+            "Get Help": "https://github.com/olympian-21",
+            "Report a bug": "https://alpha-tradingbot.streamlit.app/Feedback_Module",
+            "About": "This is a trading bot that can be used for retrieving financial data, \
+            creating trading strategies, backtesting the strategies, and optimizing the backtests. \
+            Please, give us all the helpful feedback!",
+        },
+    )
+
+
 def configure_authors():
     st.sidebar.markdown("<br> " * 12, unsafe_allow_html=True)
     # Added to separate contact info from other sidebar elements

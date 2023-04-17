@@ -5,7 +5,7 @@ import create_data as cd
 import pandas as pd
 import streamlit as st
 import yfinance as yf
-from configuration import add_bg_from_local, configure_authors
+from configuration import add_bg_from_local, configure_authors, configure_page
 
 
 def fetch_data_button_click(
@@ -130,7 +130,9 @@ def fetch_over_net_selected():
 
 
 def main():
-    st.set_page_config(page_title="Trading Bot", page_icon="🤖", layout="wide")
+    configure_page()
+    configure_authors()
+    add_bg_from_local("data/background.png", "data/bot.png")
 
     if "conf_change" not in st.session_state:
         st.session_state.conf_change = False
@@ -158,10 +160,6 @@ def main():
         st.session_state["assets"] = None
 
     DEFAULT_CHOICE = "<Select>"
-
-    add_bg_from_local("data/background.png", "data/bot.png")
-
-    configure_authors()
 
     st.markdown(
         "<h1 style='text-align: center; color: black;'> 📊 Data Module </h1> <br> <br>",

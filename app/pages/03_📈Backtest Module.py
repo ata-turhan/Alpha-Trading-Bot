@@ -3,13 +3,11 @@ import numpy as np
 import quantstats as qs
 import streamlit as st
 import yfinance as yf
-from configuration import add_bg_from_local, configure_authors
+from configuration import add_bg_from_local, configure_authors, configure_page
 
-st.set_page_config(page_title="Trading Bot", page_icon="🤖", layout="wide")
-
-add_bg_from_local("data/background.png", "data/bot.png")
-
+configure_page()
 configure_authors()
+add_bg_from_local("data/background.png", "data/bot.png")
 
 if "data" not in st.session_state:
     st.session_state["data"] = None
