@@ -35,7 +35,7 @@ def fetch_data_button_click(
         st.session_state["data"] = data
 
 
-def fetch_fundamental_data(fundamentals):
+def add_fundamental_data(fundamentals):
     data = st.session_state["data"]
     start = data.index[0]
     end = data.index[-1]
@@ -322,7 +322,7 @@ def main():
                 "CPI",
             ],
         )
-        fetch_fundamental_data(st.session_state["fundamentals"])
+        add_fundamental_data(st.session_state["fundamentals"])
         st.session_state["data_to_show"] = st.session_state["data"].copy()
 
         st.markdown("<br><br>", unsafe_allow_html=True)

@@ -417,28 +417,50 @@ def fetch_cpi_data(start_date, end_date):
 def fetch_fundamental_data(
     data: pd.DataFrame, start_date, end_date
 ) -> pd.DataFrame:
-    fed_data = fetch_fed_data(start_date - pd.DateOffset(months=1), end_date)
-    cpi_data = fetch_cpi_data(start_date - pd.DateOffset(months=1), end_date)
+    fed_data_exists = False
+    cpi_data_exists = False
+    fundamentals = [
+        "FED 2Y Interest Rate",
+        "FED 10Y Interest Rate",
+        "Yield Difference",
+        "CPI",
+    ]
+    for fundamental in fundamentals[:3]:
+        if fundamental in data.columns:
+            fed_data_exists = True
+    if fundamentals[-1] in data.columns:
+        cpi_data_exists = True
+
     data = data.tz_localize(None)
     data.index.names = ["Date"]
 
-    data.index = data.index - pd.DateOffset(months=1)
-    data["merg_col"] = data.index.strftime("%Y-%m")
-    cpi_data["merg_col"] = cpi_data.index.strftime("%Y-%m")
-    data = (
-        data.reset_index()
-        .merge(cpi_data, on="merg_col", how="left")
-        .set_index("Date")
-        .drop(columns="merg_col")
-    )
-    data.index = data.index + pd.DateOffset(months=1)
+    if not fed_data_exists:
+        fed_data = fetch_fed_data(
+            start_date - pd.DateOffset(months=1), end_date
+        )
+        data["merg_col"] = data.index.strftime("%Y-%m-%d")
+        fed_data["merg_col"] = fed_data.index.strftime("%Y-%m-%d")
+        data = (
+            data.reset_index()
+            .merge(fed_data, on="merg_col", how="left")
+            .set_index("Date")
+            .drop(columns="merg_col")
+        )
 
-    data["merg_col"] = data.index.strftime("%Y-%m-%d")
-    fed_data["merg_col"] = fed_data.index.strftime("%Y-%m-%d")
-    data = (
-        data.reset_index()
-        .merge(fed_data, on="merg_col", how="left")
-        .set_index("Date")
-        .drop(columns="merg_col")
-    )
+    if not cpi_data_exists:
+        cpi_data = fetch_cpi_data(
+            start_date - pd.DateOffset(months=1), end_date
+        )
+        data.index = data.index - pd.DateOffset(months=1)
+        data["merg_col"] = data.index.strftime("%Y-%m")
+        cpi_data["merg_col"] = cpi_data.index.strftime("%Y-%m")
+        data = (
+            data.reset_index()
+            .merge(cpi_data, on="merg_col", how="left")
+            .set_index("Date")
+            .drop(columns="merg_col")
+        )
+        data.index = data.index + pd.DateOffset(months=1)
+
+    st.dataframe(data)
     return data
