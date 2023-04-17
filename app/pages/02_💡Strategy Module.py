@@ -1,38 +1,15 @@
-import base64
-
 import create_data as cd
 import create_strategy as cs
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import streamlit as st
+from configuration import add_bg_from_local, configure_authors
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
     classification_report,
     confusion_matrix,
 )
-
-
-def add_bg_from_local(background_file, sidebar_background_file):
-    with open(background_file, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read())
-    with open(sidebar_background_file, "rb") as image_file:
-        sidebar_encoded_string = base64.b64encode(image_file.read())
-    st.markdown(
-        f"""
-    <style>
-    .stApp {{
-        background-image: url(data:image/png;base64,{encoded_string.decode()});
-        background-size: cover
-    }}
-    section[data-testid="stSidebar"] div[class="css-6qob1r e1fqkh3o3"]
-    {{
-        background-image: url(data:image/png;base64,{sidebar_encoded_string.decode()});
-        background-size: 400px 800px
-    }}
-    """,
-        unsafe_allow_html=True,
-    )
 
 
 def clean_predictions():
@@ -46,6 +23,8 @@ st.markdown(
 )
 
 add_bg_from_local("data/background.png", "data/bot.png")
+
+configure_authors()
 
 
 if "data" not in st.session_state:
@@ -64,11 +43,6 @@ if "added_keys" not in st.session_state:
     st.session_state.added_keys = set()
 correlated_asset = None
 
-
-for _ in range(22):
-    st.sidebar.text("\n")
-st.sidebar.write("Developed by Ata Turhan")
-st.sidebar.write("Contact at ataturhan21@gmail.com")
 
 if st.session_state["data"] is None:
     st.error("Please get the data first.")
