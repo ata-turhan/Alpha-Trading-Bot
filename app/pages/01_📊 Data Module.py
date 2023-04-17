@@ -18,9 +18,7 @@ def fetch_data_button_click(
 ) -> None:
     if st.session_state["all_areas_filled"]:
         st.session_state["fetch_data_button_clicked"] = True
-        st.session_state["show_data_button_clicked"] = False
-        st.session_state["show_chart_button_clicked"] = False
-        st.session_state["chart_data_selectbox_clicked"] = False
+        reset_click()
         data = get_financial_data(
             tickers=tickers,
             start=start,
@@ -31,6 +29,15 @@ def fetch_data_button_click(
         st.session_state["data"] = data
     else:
         col2.error("Please fill all the areas.")
+
+
+# a method to make all button and selectbox click boolean values false
+def reset_click():
+    st.session_state["smooth_data_button_clicked"] = False
+    st.session_state["smooth_data_selectbox_clicked"] = False
+    st.session_state["show_data_button_clicked"] = False
+    st.session_state["show_chart_button_clicked"] = False
+    st.session_state["show_chart_selectbox_clicked"] = False
 
 
 def add_fundamental_data(fundamentals):
@@ -61,16 +68,14 @@ def show_chart_button_click():
 
 
 def chart_data_selectbox_click():
-    st.session_state["chart_data_selectbox_clicked"] = True
+    st.session_state["show_chart_selectbox_clicked"] = True
 
 
 def clear_data():
     st.session_state["data"] = None
+    st.session_state["data_to_show"] = None
     st.session_state.conf_change = True
-    st.session_state["smooth_data_button_clicked"] = False
-    st.session_state["show_data_button_clicked"] = False
-    st.session_state["show_chart_button_clicked"] = False
-    st.session_state["chart_data_selectbox_clicked"] = False
+    reset_click()
 
 
 def load_tickers():
@@ -154,8 +159,8 @@ def main():
         st.session_state["show_data_button_clicked"] = False
     if "show_chart_button_clicked" not in st.session_state:
         st.session_state["show_chart_button_clicked"] = False
-    if "chart_data_selectbox_clicked" not in st.session_state:
-        st.session_state["chart_data_selectbox_clicked"] = False
+    if "show_chart_selectbox_clicked" not in st.session_state:
+        st.session_state["show_chart_selectbox_clicked"] = False
     if "data_to_show" not in st.session_state:
         st.session_state["data_to_show"] = None
     if "fundamentals" not in st.session_state:
@@ -385,7 +390,7 @@ def main():
             )
             if (
                 len(display_format) != 0
-                and st.session_state["chart_data_selectbox_clicked"]
+                and st.session_state["show_chart_selectbox_clicked"]
             ):
                 show_prices(
                     data=st.session_state["data_to_show"],
