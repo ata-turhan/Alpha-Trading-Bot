@@ -113,7 +113,7 @@ def load_tickers():
             tickers_list = {}
             for market in markets:
                 tickers_list[market] = [
-                    f"{k} - ({v})"
+                    f"{k} | ({v})"
                     for k, v in tickers_dict[market].items()
                     if k is not None
                     and k != ""
@@ -198,7 +198,7 @@ def main():
                 "Select the asset: ", assets, on_change=clear_data
             )
             if asset != DEFAULT_CHOICE:
-                asset = asset.split("-")[0].strip()
+                asset = asset.split("|")[0].strip()
             intervals = [
                 "1m",
                 "1d",
