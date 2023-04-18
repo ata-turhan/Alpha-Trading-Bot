@@ -307,7 +307,7 @@ def main():
                 if data is None and st.session_state.conf_change == False:
                     st.error("Data could not be downloaded.")
                 elif data is not None:
-                    st.success("Data fetched successfully")
+                    col2.success("Data fetched successfully")
                     st.markdown("<br>", unsafe_allow_html=True)
     elif data_fetch_way == "Read from a file" and st.session_state.conf_change:
         col2.markdown("<br><br>", unsafe_allow_html=True)
@@ -342,6 +342,7 @@ def main():
                 col2.success("Data fetched successfully")
                 st.session_state.conf_change = False
     if st.session_state["data"] is not None:
+        _, col2, _ = st.columns([1, 2, 1])
         st.session_state["fundamentals"] = col2.multiselect(
             "Besides the price data, which fundamental data do you want to add?",
             fred_codes.keys(),
