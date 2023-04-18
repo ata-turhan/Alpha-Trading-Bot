@@ -416,7 +416,7 @@ def main():
             ):
                 show_prices(
                     data=st.session_state["data_to_show"],
-                    ticker=ticker,
+                    ticker=st.session_state["ticker"],
                     show_which_price=display_format,
                 )
         st.markdown("<br><br>", unsafe_allow_html=True)
@@ -431,14 +431,16 @@ def main():
             file_name = f"{st.session_state['ticker']}-data-{smooth_method}"
         if col2.download_button(
             label="Download data as CSV",
-            data=st.session_state["data"].to_csv().encode("utf-8"),
+            data=st.session_state["data_to_show"].to_csv().encode("utf-8"),
             file_name=file_name + ".csv",
             mime="text/csv",
         ):
             col2.success("Data was saved successfully")
         buffer = BytesIO()
         with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-            st.session_state["data"].to_excel(writer, sheet_name="Data")
+            st.session_state["data_to_show"].to_excel(
+                writer, sheet_name="Data"
+            )
             writer.save()
             if col6.download_button(
                 label="Download data as Excel",
