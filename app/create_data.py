@@ -2,6 +2,8 @@ import datetime as dt
 import json
 import random
 
+pass
+
 import numpy as np
 import pandas as pd
 import pandas_datareader as pdr
@@ -20,8 +22,23 @@ from sklearn.feature_selection import (
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from ta import add_all_ta_features
 
-if "data" not in st.session_state:
-    st.session_state["data"] = None
+fred_codes = {
+    "FED 2Y Interest Rate": "DGS2",
+    "FED 10Y Interest Rate": "DGS10",
+    "30-Year Fixed Rate Mortgage Average in the United States": "MORTGAGE30US",
+    "Unemployment Rate": "UNRATE",
+    "Real Gross Domestic Product": "GDPC1",
+    "Gross Domestic Product": "GDP",
+    "10-Year Breakeven Inflation Rate": "T10YIE",
+    "Median Sales Price of Houses Sold for the United States": "MSPUS",
+    "Personal Saving Rate": "PSAVERT",
+    "Deposits, All Commercial Banks": "DPSACBW027SBOG",
+    "S&P 500": "SP500",
+    "Federal Debt: Total Public Debt as Percent of Gross Domestic Product": "GFDEGDQ188S",
+    "Crude Oil Prices: West Texas Intermediate (WTI) - Cushing, Oklahoma": "DCOILWTICO",
+    "Consumer Loans: Credit Cards and Other Revolving Plans, All Commercial Banks": "CCLACBW027SBOG",
+    "Consumer Price Index for All Urban Consumers: All Items Less Food and Energy in U.S. City Average": "CPILFESL",
+}
 
 
 def get_financial_data(
@@ -197,7 +214,7 @@ def signal_smoothing(
 
 
 def create_ohlcv_alike(data: pd.DataFrame, new_asset: str):
-    start = data.index[0] + dt.timedelta(days=1)
+    start = data.index[0] - dt.timedelta(days=1)
     end = data.index[-1] + dt.timedelta(days=1)
     interval = (
         "1d"
@@ -215,15 +232,19 @@ def create_ohlcv_alike(data: pd.DataFrame, new_asset: str):
 
 
 def create_technical_indicators(ohlcv: pd.DataFrame) -> pd.DataFrame:
-    data = add_all_ta_features(
-        ohlcv,
-        open="Open",
-        high="High",
-        low="Low",
-        close="Close",
-        volume="Volume",
-    )
-    return data
+    _, col2, _ = st.columns([1, 2, 1])
+    with col2:
+        with st.spinner("Fetching indicator data"):
+            data = add_all_ta_features(
+                ohlcv,
+                open="Open",
+                high="High",
+                low="Low",
+                close="Close",
+                volume="Volume",
+                colprefix="ti_",
+            )
+            return data
 
 
 def create_labels(df: pd.DataFrame) -> None:
@@ -233,9 +254,9 @@ def create_labels(df: pd.DataFrame) -> None:
         minPrice = sorted(s)[0]
         maxPrice = sorted(s)[-1]
         for j in range(i, i + 11):
-            if abs(df["Close"].iloc[j] - minPrice) == 0 and (j - i) == 5:
+            if df["Close"].iloc[j] == minPrice and (j - i) == 5:
                 df.iloc[j, df.columns.get_loc("Label")] = 1
-            elif abs(df["Close"].iloc[j] - maxPrice) == 0 and (j - i) == 5:
+            elif df["Close"].iloc[j] == maxPrice and (j - i) == 5:
                 df.iloc[j, df.columns.get_loc("Label")] = 2
     df.drop(index=df.index[-6:], axis=0, inplace=True)
     return df
@@ -336,36 +357,19 @@ def plot_confusion_matrix(cm, labels, title):
     return go.Figure(data=data, layout=layout)
 
 
-def fetch_fed_data(start_date: str, end_date: str) -> pd.DataFrame:
-    data_source = "fred"
-    two_year_treasury_code = "DGS2"
-    ten_year_treasury_code = "DGS10"
-
-    two_year_yield_df = pdr.DataReader(
-        two_year_treasury_code, data_source, start_date, end_date
+def fetch_fred_data(start_date: str, end_date: str) -> pd.DataFrame:
+    fred_data = pdr.fred.FredReader(
+        symbols=fred_codes.values(), start=start_date, end=end_date
+    ).read()
+    fred_data.fillna(method="ffill", inplace=True)
+    fred_data["10-2 Year Yield Difference"] = (
+        fred_data["DGS10"] - fred_data["DGS2"]
     )
-    ten_year_df = pdr.DataReader(
-        ten_year_treasury_code, data_source, start_date, end_date
-    )
-
-    fed_data = pd.merge(
-        two_year_yield_df,
-        ten_year_df,
-        how="inner",
-        left_index=True,
-        right_index=True,
-    )
-    fed_data.dropna(inplace=True)
-
-    fed_data["Yield Difference"] = fed_data["DGS10"] - fed_data["DGS2"]
-    fed_data.rename(
-        columns={
-            "DGS2": "FED 2Y Interest Rate",
-            "DGS10": "FED 10Y Interest Rate",
-        },
+    fred_data.rename(
+        columns={v: k for k, v in fred_codes.items()},
         inplace=True,
     )
-    return fed_data
+    return fred_data
 
 
 def fetch_bls_data(data_series_id, start_year, end_year):
@@ -418,25 +422,22 @@ def fetch_fundamental_data(
     data: pd.DataFrame, start_date, end_date
 ) -> pd.DataFrame:
     fed_data_exists = False
-    cpi_data_exists = False
+    cpi_data_exists = True
     fundamentals = [
         "FED 2Y Interest Rate",
         "FED 10Y Interest Rate",
         "Yield Difference",
-        "CPI",
     ]
     for fundamental in fundamentals[:3]:
         if fundamental in data.columns:
             fed_data_exists = True
-    if fundamentals[-1] in data.columns:
-        cpi_data_exists = True
 
     data = data.tz_localize(None)
     data.index.names = ["Date"]
 
     if not fed_data_exists:
-        fed_data = fetch_fed_data(
-            start_date - pd.DateOffset(months=1), end_date
+        fed_data = fetch_fred_data(
+            start_date - pd.DateOffset(months=6), end_date
         )
         data["merg_col"] = data.index.strftime("%Y-%m-%d")
         fed_data["merg_col"] = fed_data.index.strftime("%Y-%m-%d")

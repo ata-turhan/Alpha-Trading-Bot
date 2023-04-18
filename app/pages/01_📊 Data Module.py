@@ -8,6 +8,7 @@ from configuration import add_bg_from_local, configure_authors, configure_page
 from create_data import (
     create_technical_indicators,
     fetch_fundamental_data,
+    fred_codes,
     get_financial_data,
     show_prices,
     signal_smoothing,
@@ -45,8 +46,12 @@ def add_fundamental_data(fundamentals):
     data = st.session_state["data"]
     start = data.index[0]
     end = data.index[-1]
-    data = fetch_fundamental_data(data, start, end)
-    st.session_state["data"] = data
+    if "Gross Domestic Product" not in data.columns:
+        _, col2, _ = st.columns([1, 2, 1])
+        with col2:
+            with st.spinner("Fetching fundamental data"):
+                data = fetch_fundamental_data(data, start, end)
+                st.session_state["data"] = data
     columns = ["Open", "High", "Low", "Close", "Volume"]
     if len(fundamentals) > 0:
         columns.extend(fundamentals)
@@ -54,17 +59,7 @@ def add_fundamental_data(fundamentals):
 
 
 def add_indicator_data(indicators):
-    columns = [
-        "Open",
-        "High",
-        "Low",
-        "Close",
-        "Volume",
-        "FED 2Y Interest Rate",
-        "FED 10Y Interest Rate",
-        "Yield Difference",
-        "CPI",
-    ]
+    columns = list(st.session_state["data_to_show"].columns)
     if len(indicators) > 0:
         columns.extend(indicators)
     st.session_state["data_to_show"] = st.session_state["data"][columns]
@@ -339,24 +334,19 @@ def main():
                 data = st.session_state["data"]
                 col2.success("Data fetched successfully")
     if st.session_state["data"] is not None:
-        st.session_state["data_to_show"] = st.session_state["data"].copy()
         st.session_state["fundamentals"] = col2.multiselect(
             "Besides the price data, which fundamental data do you want to add?",
-            [
-                "FED 2Y Interest Rate",
-                "FED 10Y Interest Rate",
-                "Yield Difference",
-                "CPI",
-            ],
+            fred_codes.keys(),
         )
         add_fundamental_data(st.session_state["fundamentals"])
 
-        st.session_state["data"] = create_technical_indicators(
-            st.session_state["data"]
-        )
+        if "ti_momentum_rsi" not in st.session_state["data"].columns:
+            st.session_state["data"] = create_technical_indicators(
+                st.session_state["data"]
+            )
         st.session_state["indicators"] = col2.multiselect(
             "Besides the price data, which technical indicators data do you want to add?",
-            st.session_state["data"].columns[10:],
+            [col for col in st.session_state["data"].columns if "ti_" in col],
         )
         add_indicator_data(st.session_state["indicators"])
 
@@ -404,11 +394,8 @@ def main():
                 "High",
                 "Low",
                 "Close",
-                "FED 2Y Interest Rate",
-                "FED 10Y Interest Rate",
-                "Yield Difference",
-                "CPI",
             ]
+            columns_to_chart.extend(fred_codes.keys())
             columns_to_chart.extend(st.session_state["indicators"])
             display_format = col2.multiselect(
                 "Select the data to show in the chart: ",
