@@ -18,17 +18,24 @@ from create_data import (
 def fetch_data_button_click(
     tickers, start, end, interval, auto_adjust, col2
 ) -> None:
-    if st.session_state["all_areas_filled"]:
+    if (
+        st.session_state["all_areas_filled"]
+        and st.session_state.conf_change == True
+    ):
         st.session_state["fetch_data_button_clicked"] = True
         reset_click()
-        data = get_financial_data(
-            tickers=tickers,
-            start=start,
-            end=end,
-            interval=interval,
-            auto_adjust=auto_adjust,
-        )
-        st.session_state["data"] = data
+        _, col2, _ = st.columns([1, 2, 1])
+        with col2:
+            with st.spinner("Fetching ohlcv data from Yahoo Finance"):
+                data = get_financial_data(
+                    tickers=tickers,
+                    start=start,
+                    end=end,
+                    interval=interval,
+                    auto_adjust=auto_adjust,
+                )
+                st.session_state["data"] = data
+                st.session_state.conf_change = False
     else:
         col2.error("Please fill all the areas.")
 
@@ -46,7 +53,7 @@ def add_fundamental_data(fundamentals):
     data = st.session_state["data"]
     start = data.index[0]
     end = data.index[-1]
-    if "Gross Domestic Product" not in data.columns:
+    if "Gross Domestic Product" not in list(data.columns):
         _, col2, _ = st.columns([1, 2, 1])
         with col2:
             with st.spinner("Fetching fundamental data"):
@@ -158,7 +165,7 @@ def main():
     add_bg_from_local("data/background.png", "data/bot.png")
 
     if "conf_change" not in st.session_state:
-        st.session_state.conf_change = False
+        st.session_state.conf_change = True
     if "ticker" not in st.session_state:
         st.session_state["ticker"] = ""
     if "indicators" not in st.session_state:
@@ -302,7 +309,7 @@ def main():
                 elif data is not None:
                     st.success("Data fetched successfully")
                     st.markdown("<br>", unsafe_allow_html=True)
-    elif data_fetch_way == "Read from a file":
+    elif data_fetch_way == "Read from a file" and st.session_state.conf_change:
         col2.markdown("<br><br>", unsafe_allow_html=True)
         uploaded_file = col2.file_uploader(
             "To upload, select a csv or excel file whose first word matches the ticker name.",
@@ -333,6 +340,7 @@ def main():
                 )
                 data = st.session_state["data"]
                 col2.success("Data fetched successfully")
+                st.session_state.conf_change = False
     if st.session_state["data"] is not None:
         st.session_state["fundamentals"] = col2.multiselect(
             "Besides the price data, which fundamental data do you want to add?",
@@ -340,7 +348,7 @@ def main():
         )
         add_fundamental_data(st.session_state["fundamentals"])
 
-        if "ti_momentum_rsi" not in st.session_state["data"].columns:
+        if "ti_momentum_rsi" not in list(st.session_state["data"].columns):
             st.session_state["data"] = create_technical_indicators(
                 st.session_state["data"]
             )
@@ -395,7 +403,7 @@ def main():
                 "Low",
                 "Close",
             ]
-            columns_to_chart.extend(fred_codes.keys())
+            columns_to_chart.extend(st.session_state["fundamentals"])
             columns_to_chart.extend(st.session_state["indicators"])
             display_format = col2.multiselect(
                 "Select the data to show in the chart: ",
