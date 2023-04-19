@@ -55,3 +55,10 @@ def add_bg_from_local(background_file, sidebar_background_file):
     </style>"""
 
     st.markdown(page, unsafe_allow_html=True)
+
+
+def local_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    style = "<style>.row-widget.stButton {text-align: center;}</style>"
+    st.markdown(style, unsafe_allow_html=True)
