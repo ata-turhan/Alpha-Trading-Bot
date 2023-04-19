@@ -43,7 +43,7 @@ def main():
         "<h1 style='text-align: center; color: black; font-size: 65px;'> 💡 Strategy Module </h1> <br> <br>",
         unsafe_allow_html=True,
     )
-    _, center_col, _ = st.columns([1, 2, 1])
+    _, center_col_get, _ = st.columns([1, 2, 1])
 
     style = "<style>.row-widget.stButton {text-align: center;}</style>"
     st.markdown(style, unsafe_allow_html=True)
@@ -53,14 +53,14 @@ def main():
     if st.session_state["data"] is None:
         st.error("Please get the data first.")
     else:
-        strategy_fetch_way = center_col.selectbox(
+        strategy_fetch_way = center_col_get.selectbox(
             "Which way do you want to get the predictions of a strategy: ",
             ["<Select>", "Create a strategy", "Read from a file"],
         )
         st.markdown("<br> <br>", unsafe_allow_html=True)
 
         if strategy_fetch_way == "Read from a file":
-            uploaded_file = center_col.file_uploader(
+            uploaded_file = center_col_get.file_uploader(
                 "Choose a csv file to upload"
             )
             if uploaded_file is not None:
@@ -69,19 +69,21 @@ def main():
                         pd.read_csv(uploaded_file)
                     )
                 except FileNotFoundError as exception:
-                    center_col.error("you need to upload a csv or excel file.")
+                    center_col_get.error(
+                        "you need to upload a csv or excel file."
+                    )
                 else:
                     predictions = st.session_state["predictions"]
                     if predictions is not None:
                         st.session_state["strategies"][
                             f"Uploaded Signals-{uploaded_file.name}"
                         ] = st.session_state["predictions"]
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        center_col.success(
+                        # st.markdown("<br>", unsafe_allow_html=True)
+                        center_col_get.success(
                             "The predictions of strategy fetched successfully"
                         )
         elif strategy_fetch_way == "Create a strategy":
-            smooth_method = st.selectbox(
+            smooth_method = center_col_get.selectbox(
                 "Which way do you want to use the price data with smoothing?",
                 [
                     "None",
@@ -91,11 +93,11 @@ def main():
                 ],
             )
             st.session_state["smoothed_data"] = cd.signal_smoothing(
-                data=st.session_state["data"],
+                df=st.session_state["data"],
                 smoothing_method=smooth_method,
                 parameters={"window": 20},
             )
-            strategy_type = st.selectbox(
+            strategy_type = center_col_get.selectbox(
                 "Which strategy do you want to create: ",
                 [
                     "<Select>",
@@ -109,14 +111,14 @@ def main():
                 on_change=clean_predictions,
             )
             if strategy_type == "Correlation Trading":
-                market = st.selectbox(
+                market = center_col_get.selectbox(
                     "Select the correlated market: ",
                     ["<Select>", "Stocks & ETFs", "Forex", "Crypto"],
                 )
                 if market != "<Select>":
                     assets = list(st.session_state["assets"][market].keys())
                     assets.insert(0, "<Select>")
-                    correlated_asset = st.selectbox(
+                    correlated_asset = center_col_get.selectbox(
                         "Select the correlated asset: ", assets
                     )
                     if (
@@ -159,7 +161,7 @@ def main():
                                         "Predictions of the strategy created and saved successfully"
                                     )
             elif strategy_type == "Indicator Trading":
-                indicator = st.selectbox(
+                indicator = center_col_get.selectbox(
                     "Select the indicator you want to use: ",
                     ["<Select>", "RSI", "SMA", "EMA", "Bollinger Bands"],
                 )
@@ -264,7 +266,7 @@ def main():
                             indicator_name=indicator,
                         )
             elif strategy_type == "Momentum Trading":
-                indicator = st.selectbox(
+                indicator = center_col_get.selectbox(
                     "Select the momentum strategy you want to use: ",
                     [
                         "<Select>",
@@ -367,7 +369,7 @@ def main():
                     Sentiment of tweets of last 24 hours.",
                 )
                 if "Sentiment Data" in data_types:
-                    transformer_type = st.selectbox(
+                    transformer_type = center_col_get.selectbox(
                         "Select the tranformer model you want to use: ",
                         ["<Select>", "Vader"],
                     )
@@ -393,12 +395,12 @@ def main():
                         # with st.spinner('Train and test data are created...'):
                         # X_train, y_train, X_test, y_test = create_train_test_data(st.session_state["data"])
                     st.success("Technical data is ready!")
-                    ai_method = st.selectbox(
+                    ai_method = center_col_get.selectbox(
                         "Select the artifical intelligence method you want to use: ",
                         ["<Select>", "Machine Learning", "Deep Learning"],
                     )
                     if ai_method == "Deep Learning":
-                        dl_method = st.selectbox(
+                        dl_method = center_col_get.selectbox(
                             "Select the deep learning model you want to use: ",
                             ["<Select>", "AutoKeras", "Prophet"],
                         )
@@ -533,7 +535,7 @@ def main():
             elif strategy_type == "Candlestick Pattern Trading":
                 col1, col2 = st.columns([1, 1])
                 with col1:
-                    buy_pattern = st.selectbox(
+                    buy_pattern = center_col_get.selectbox(
                         "Select the pattern you want to use for a buy signal:",
                         [
                             "<Select>",
@@ -552,7 +554,7 @@ def main():
                         ],
                     )
                 with col2:
-                    sell_pattern = st.selectbox(
+                    sell_pattern = center_col_get.selectbox(
                         "Select the pattern you want to use for a sell signal:",
                         [
                             "<Select>",
@@ -636,21 +638,23 @@ def main():
                 )
     if len(st.session_state["strategies"]) != 0:
         strategies = st.session_state["strategies"]
-        _, center_col2, _ = st.columns([1, 2, 1])
-        center_col2.subheader("These strategies have been created:")
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        _, center_col_strategies_created, _ = st.columns([1, 2, 1])
+        center_col_strategies_created.subheader(
+            "These strategies have been created:"
+        )
         st.markdown("<br>", unsafe_allow_html=True)
 
         for key, val in strategies.items():
             _, left_col, _, right_col, _ = st.columns([1, 2, 1, 2, 1])
             with left_col:
-                st.write(f"s{key[-1]} - " + key)
+                st.write(key)
             with right_col:
                 if (
                     st.checkbox("Use this strategy in mix.", key=key)
                     and key not in st.session_state.added_keys
                 ):
                     st.session_state.mix.append(strategies[key])
-                    st.write(key)
                     st.session_state.added_keys.add(key)
 
         st.markdown("<br><br>", unsafe_allow_html=True)
