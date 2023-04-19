@@ -73,6 +73,9 @@ def main():
                 else:
                     predictions = st.session_state["predictions"]
                     if predictions is not None:
+                        st.session_state["strategies"][
+                            f"Uploaded Signals-{uploaded_file.name}"
+                        ] = st.session_state["predictions"]
                         st.markdown("<br>", unsafe_allow_html=True)
                         center_col.success(
                             "The predictions of strategy fetched successfully"
@@ -633,12 +636,15 @@ def main():
                 )
     if len(st.session_state["strategies"]) != 0:
         strategies = st.session_state["strategies"]
-        st.subheader("These strategies have been created:")
+        _, center_col2, _ = st.columns([1, 2, 1])
+        center_col2.subheader("These strategies have been created:")
+        st.markdown("<br>", unsafe_allow_html=True)
+
         for key, val in strategies.items():
-            col1, col2 = st.columns([1, 1])
-            with col1:
+            _, left_col, _, right_col, _ = st.columns([1, 2, 1, 2, 1])
+            with left_col:
                 st.write(f"s{key[-1]} - " + key)
-            with col2:
+            with right_col:
                 if (
                     st.checkbox("Use this strategy in mix.", key=key)
                     and key not in st.session_state.added_keys
@@ -646,7 +652,10 @@ def main():
                     st.session_state.mix.append(strategies[key])
                     st.write(key)
                     st.session_state.added_keys.add(key)
-        mixing_logic = st.text_input(
+
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        _, center_col3, _ = st.columns([1, 2, 1])
+        mixing_logic = center_col3.text_input(
             "Write your logic to mix the strategies with and-or:",
             help="For example: 's1 and s2 and s3'",
         )
@@ -654,7 +663,9 @@ def main():
             st.session_state["predictions"] = cs.mix_strategies(
                 st.session_state.mix, mixing_logic
             )
-            st.success("Predictions of the strategies mixed successfully")
+            center_col2.success(
+                "Predictions of the strategies mixed successfully"
+            )
 
 
 if __name__ == "__main__":
