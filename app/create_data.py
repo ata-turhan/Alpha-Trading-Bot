@@ -63,7 +63,7 @@ def show_prices(
         cols=1,
         shared_xaxes=False,
         vertical_spacing=0.1,
-        subplot_titles=(f"Price of '{ticker}'", f"Volume of '{ticker}'"),
+        subplot_titles=(f"Chart", f"Volume"),
         row_width=[1, 5],
     )
     if "Candlestick" in show_which_price:

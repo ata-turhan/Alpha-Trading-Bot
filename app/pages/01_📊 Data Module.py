@@ -15,6 +15,37 @@ from create_data import (
 )
 
 
+def set_session_variables():
+    if "conf_change" not in st.session_state:
+        st.session_state.conf_change = True
+    if "ticker" not in st.session_state:
+        st.session_state["ticker"] = ""
+    if "indicators" not in st.session_state:
+        st.session_state["indicators"] = None
+    if "fundamentals" not in st.session_state:
+        st.session_state["fundamentals"] = None
+    if "assets" not in st.session_state:
+        st.session_state["assets"] = None
+    if "data" not in st.session_state:
+        st.session_state["data"] = None
+    if "data_to_show" not in st.session_state:
+        st.session_state["data_to_show"] = None
+    if "all_areas_filled" not in st.session_state:
+        st.session_state["all_areas_filled"] = False
+    if "fetch_data_button_clicked" not in st.session_state:
+        st.session_state["fetch_data_button_clicked"] = False
+    if "smooth_data_button_clicked" not in st.session_state:
+        st.session_state["smooth_data_button_clicked"] = False
+    if "smooth_data_selectbox_clicked" not in st.session_state:
+        st.session_state["smooth_data_selectbox_clicked"] = False
+    if "show_data_button_clicked" not in st.session_state:
+        st.session_state["show_data_button_clicked"] = False
+    if "show_chart_button_clicked" not in st.session_state:
+        st.session_state["show_chart_button_clicked"] = False
+    if "show_chart_selectbox_clicked" not in st.session_state:
+        st.session_state["show_chart_selectbox_clicked"] = False
+
+
 def fetch_data_button_click(
     tickers, start, end, interval, auto_adjust, col2
 ) -> None:
@@ -160,38 +191,10 @@ def get_tickers():
 
 
 def main():
+    set_session_variables()
     configure_page()
     configure_authors()
     add_bg_from_local("data/background.png", "data/bot.png")
-
-    if "conf_change" not in st.session_state:
-        st.session_state.conf_change = True
-    if "ticker" not in st.session_state:
-        st.session_state["ticker"] = ""
-    if "indicators" not in st.session_state:
-        st.session_state["indicators"] = None
-    if "fundamentals" not in st.session_state:
-        st.session_state["fundamentals"] = None
-    if "assets" not in st.session_state:
-        st.session_state["assets"] = None
-    if "data" not in st.session_state:
-        st.session_state["data"] = None
-    if "data_to_show" not in st.session_state:
-        st.session_state["data_to_show"] = None
-    if "all_areas_filled" not in st.session_state:
-        st.session_state["all_areas_filled"] = False
-    if "fetch_data_button_clicked" not in st.session_state:
-        st.session_state["fetch_data_button_clicked"] = False
-    if "smooth_data_button_clicked" not in st.session_state:
-        st.session_state["smooth_data_button_clicked"] = False
-    if "smooth_data_selectbox_clicked" not in st.session_state:
-        st.session_state["smooth_data_selectbox_clicked"] = False
-    if "show_data_button_clicked" not in st.session_state:
-        st.session_state["show_data_button_clicked"] = False
-    if "show_chart_button_clicked" not in st.session_state:
-        st.session_state["show_chart_button_clicked"] = False
-    if "show_chart_selectbox_clicked" not in st.session_state:
-        st.session_state["show_chart_selectbox_clicked"] = False
 
     DEFAULT_CHOICE = "<Select>"
 
