@@ -163,7 +163,7 @@ def momentum_day_trading(
             predictions.at[ohlcv.index[i + down_day], "Predictions"] = (
                 1 if reverse else 2
             )
-    st.write(predictions)
+    # st.write(predictions)
     return predictions
 
 
@@ -425,11 +425,9 @@ def support_resistance_trading(
 def show_predictions_on_chart(
     ohlcv: pd.DataFrame, predictions: np.array, ticker: str
 ):
-    st.write(ohlcv)
-    st.write(predictions)
     fig = go.Figure()
-    buy_labels = predictions == 1
-    sell_labels = predictions == 2
+    buy_labels = predictions["Predictions"] == 1
+    sell_labels = predictions["Predictions"] == 2
     fig.add_trace(
         go.Scatter(
             x=ohlcv.index,
@@ -566,6 +564,7 @@ def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
         )
         st.plotly_chart(fig, use_container_width=True)
     elif indicator_name == "RSI":
+        st.write("draw")
         ohlcv["RSI"] = ta.momentum.RSIIndicator(
             close=ohlcv["Close"], window=14, fillna=False
         ).rsi()

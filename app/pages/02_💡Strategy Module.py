@@ -76,7 +76,7 @@ def main():
                     predictions = st.session_state["predictions"]
                     if predictions is not None:
                         st.session_state["strategies"][
-                            f"Uploaded Signals-{uploaded_file.name}"
+                            f"Uploaded Signals-{uploaded_file.name[:-4]}"
                         ] = st.session_state["predictions"]
                         # st.markdown("<br>", unsafe_allow_html=True)
                         center_col_get.success(
@@ -145,8 +145,8 @@ def main():
                                 st.session_state[
                                     "predictions"
                                 ] = cs.correlation_trading(
-                                    data1=correlated_asset_ohclv,
-                                    data2=st.session_state["smoothed_data"],
+                                    ohlcv1=correlated_asset_ohclv,
+                                    ohlcv2=st.session_state["smoothed_data"],
                                     downward_movement=downward_movement,
                                     upward_movement=0.01,
                                 )
@@ -155,7 +155,7 @@ def main():
                                         f"Predictions of the {strategy_type}.csv"
                                     )
                                     st.session_state["strategies"][
-                                        f"Correlation Trading-{len(st.session_state['strategies'])}"
+                                        "Correlation Trading"
                                     ] = st.session_state["predictions"]
                                     st.success(
                                         "Predictions of the strategy created and saved successfully"
@@ -167,7 +167,9 @@ def main():
                 )
                 if indicator != "<Select>":
                     if indicator == "RSI":
-                        col1, col2 = st.columns([1, 1])
+                        col1, col2 = center_col_get.columns(
+                            [1, 1], gap="large"
+                        )
                         with col1:
                             oversold = st.number_input(
                                 "Please enter the oversold value", value=30
@@ -181,7 +183,7 @@ def main():
                         )
                         if strategy_created:
                             st.session_state["predictions"] = cs.rsi_trading(
-                                data=st.session_state["smoothed_data"],
+                                ohlcv=st.session_state["smoothed_data"],
                                 oversold=oversold,
                                 overbought=overbought,
                             )
@@ -202,7 +204,7 @@ def main():
                         )
                         if strategy_created:
                             st.session_state["predictions"] = cs.sma_trading(
-                                data=st.session_state["smoothed_data"],
+                                ohlcv=st.session_state["smoothed_data"],
                                 short_mo=short_smo,
                                 long_mo=long_smo,
                             )
@@ -223,7 +225,7 @@ def main():
                         )
                         if strategy_created:
                             st.session_state["predictions"] = cs.ema_trading(
-                                data=st.session_state["smoothed_data"],
+                                ohlcv=st.session_state["smoothed_data"],
                                 short_mo=short_emo,
                                 long_mo=long_emo,
                             )
@@ -244,7 +246,7 @@ def main():
                         st.markdown("<br>", unsafe_allow_html=True)
                         if strategy_created:
                             st.session_state["predictions"] = cs.bb_trading(
-                                data=st.session_state["smoothed_data"],
+                                ohlcv=st.session_state["smoothed_data"],
                                 window=window,
                                 window_dev=window_dev,
                             )
@@ -256,13 +258,14 @@ def main():
                             f"Predictions of the {strategy_type}.csv"
                         )
                         st.session_state["strategies"][
-                            f"Indicator Trading-{len(st.session_state['strategies'])}"
+                            f"Indicator Trading-{indicator}"
                         ] = st.session_state["predictions"]
                         st.success(
                             "Predictions of the strategy created and saved successfully"
                         )
+
                         cs.draw_technical_indicators(
-                            data=st.session_state["smoothed_data"],
+                            ohlcv=st.session_state["smoothed_data"],
                             indicator_name=indicator,
                         )
             elif strategy_type == "Momentum Trading":
@@ -296,7 +299,7 @@ def main():
                             st.session_state[
                                 "predictions"
                             ] = cs.momentum_day_trading(
-                                data=st.session_state["smoothed_data"],
+                                ohlcv=st.session_state["smoothed_data"],
                                 up_day=up_day,
                                 down_day=down_day,
                                 reverse=reverse,
@@ -335,7 +338,7 @@ def main():
                             st.session_state[
                                 "predictions"
                             ] = cs.momentum_percentage_trading(
-                                data=st.session_state["smoothed_data"],
+                                ohlcv=st.session_state["smoothed_data"],
                                 up_percentage=up_percentage,
                                 up_day=up_day,
                                 down_percentage=down_percentage,
@@ -351,7 +354,7 @@ def main():
                         )
                         # st.write(type(st.session_state["strategies"]))
                         st.session_state["strategies"][
-                            f"Momentum Trading-{len(st.session_state['strategies'])}"
+                            f"Momentum Trading-{indicator}"
                         ] = st.session_state["predictions"]
                         st.success(
                             "Predictions of the strategy created and saved successfully"
@@ -582,7 +585,7 @@ def main():
                         st.session_state[
                             "predictions"
                         ] = cs.candlestick_trading(
-                            data=st.session_state["smoothed_data"],
+                            ohlcv=st.session_state["smoothed_data"],
                             buy_pattern=buy_pattern,
                             sell_pattern=sell_pattern,
                         )
@@ -591,7 +594,7 @@ def main():
                                 f"Predictions of the {strategy_type}.csv"
                             )
                             st.session_state["strategies"][
-                                f"Candlestick Pattern Trading-{len(st.session_state['strategies'])}"
+                                f"Candlestick Pattern Trading-{buy_pattern}|{sell_pattern}"
                             ] = st.session_state["predictions"]
                             st.success(
                                 "Predictions of the strategy created and saved successfully"
@@ -611,7 +614,7 @@ def main():
                     st.session_state[
                         "predictions"
                     ] = cs.support_resistance_trading(
-                        data=st.session_state["smoothed_data"],
+                        ohlcv=st.session_state["smoothed_data"],
                         rolling_wave_length=rolling_wave_length,
                         num_clusters=num_clusters,
                     )
@@ -620,7 +623,7 @@ def main():
                             f"Predictions of the {strategy_type}.csv"
                         )
                         st.session_state["strategies"][
-                            f"Support-Resistance-Trading-{len(st.session_state['strategies'])}"
+                            "Support-Resistance-Trading"
                         ] = st.session_state["predictions"]
                         st.success(
                             "Predictions of the strategy created and saved successfully"
@@ -629,10 +632,10 @@ def main():
                 st.session_state["predictions"] is not None
                 and strategy_type != "<Select>"
             ):
-                st.write(st.session_state["predictions"])
+                # st.write(st.session_state["predictions"])
                 predictions = st.session_state["predictions"]
                 cs.show_predictions_on_chart(
-                    data=st.session_state["smoothed_data"],
+                    ohlcv=st.session_state["smoothed_data"],
                     predictions=predictions,
                     ticker=st.session_state["ticker"],
                 )
