@@ -6,19 +6,20 @@ configure_authors()
 add_bg_from_local("data/background.png", "data/bot.png")
 
 st.markdown(
-    "<h1 style='text-align: center; color: black; font-size: 65px;'> 📧 Feedback Module </h1> <br> <br>",
+    "<h1 style='text-align: center; color: black; font-size: 65px;'> 📧 Feedback Module </h1> <br>",
     unsafe_allow_html=True,
 )
 style = "<style>.row-widget.stButton {text-align: center;}</style>"
 st.markdown(style, unsafe_allow_html=True)
 
-st.markdown("<br> <br>", unsafe_allow_html=True)
-st.header(
-    "You can use the text area below to send your feedback about the app to the developer. Thanks!"
-)
+
+feedback_message = '<p style="font-family:Arial Black; font-size: 30px;" align="center"> \
+    You can use the text area below to send your feedback about the app to the developer. Thanks! </p>'
+st.markdown(feedback_message, unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
 contact_form = """
-<form action="https://formsubmit.co/kuantum21fizik@gmail.com" method="POST">
+<form action="https://formsubmit.co/kuantum21fizik@gmail.com" method="POST" align="center">
      <input type="hidden" name="_captcha" value="false">
      <input type="hidden" name="_subject" value="Trading Bot Feedback!">
      <input type="text" name="name" placeholder="Your name" required>
@@ -29,7 +30,8 @@ contact_form = """
 </form>
 """
 
-st.markdown(contact_form, unsafe_allow_html=True)
+_, center_col, _ = st.columns([1, 3, 1])
+center_col.markdown(contact_form, unsafe_allow_html=True)
 
 
 def local_css(file_name):
