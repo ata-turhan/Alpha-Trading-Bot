@@ -134,47 +134,20 @@ def load_tickers():
     _, col2, _ = st.columns(3)
     with col2:
         with st.spinner("Getting Tickers..."):
+            tickers_dict = {}
+            markets = ["Stock", "ETF", "Forex", "Crypto"]
             tickers = pd.read_excel(
-                "data/Yahoo Ticker Symbols - September 2017.xlsx",
+                "data/tickers.xlsx",
                 sheet_name=None,
             )
-            markets = [
-                "Stock",
-                "ETF",
-                "Index",
-                "Currency",
-            ]
-            tickers_dict = {}
             for market in markets:
-                market_df = (
-                    tickers[f"{market}"]
-                    .loc[3:][
-                        [
-                            "Unnamed: 1",
-                            f"Yahoo {market} Tickers",
-                        ]
-                    ]
-                    .sort_values(by="Unnamed: 1")
-                )
-                market_df.set_index("Unnamed: 1", inplace=True)
-                market_dict = market_df[f"Yahoo {market} Tickers"].to_dict()
+                market_df = tickers[f"{market}"].set_index("Symbol")
+                market_dict = market_df["Name"].to_dict()
                 tickers_dict[market] = market_dict
-            markets.append("Crypto")
-            crypto_tickers = pd.read_html(
-                "https://finance.yahoo.com/crypto/?offset=0&count=25"
-            )[0]
-            crypto_tickers.set_index("Name", inplace=True)
-            crypto_tickers = crypto_tickers["Symbol"].to_dict()
-            tickers_dict["Crypto"] = crypto_tickers
             tickers_list = {}
             for market in markets:
                 tickers_list[market] = [
-                    f"{k} | {v}"
-                    for k, v in tickers_dict[market].items()
-                    if k is not None
-                    and k != ""
-                    and type(k) == str
-                    and k[0].isalpha()
+                    f"{k} - {v}" for k, v in tickers_dict[market].items()
                 ]
     return tickers_dict, tickers_list
 
@@ -221,7 +194,7 @@ def main():
         start, end, interval, auto_adjust = [None] * 4
         market = col2.selectbox(
             "Select the market: ",
-            [DEFAULT_CHOICE, "Stock", "ETF", "Index", "Currency", "Crypto"],
+            [DEFAULT_CHOICE, "Stock", "ETF", "Forex", "Crypto"],
             on_change=clear_data,
         )
         if market != DEFAULT_CHOICE:
@@ -231,7 +204,7 @@ def main():
                 "Select the asset: ", assets, on_change=clear_data
             )
             if asset != DEFAULT_CHOICE:
-                asset = asset.split("|")[0].strip()
+                asset = asset.split("-")[0].strip()
             intervals = [
                 "1m",
                 "1d",
@@ -245,9 +218,9 @@ def main():
                 "Select the time frame: ", intervals, on_change=clear_data
             )
             if asset != DEFAULT_CHOICE and interval != DEFAULT_CHOICE:
-                ticker = st.session_state["tickers_dict"][market].get(
-                    asset, None
-                )
+                ticker = asset
+                st.write(ticker)
+                st.write(len(ticker))
                 if ticker is None:
                     full_data = None
                 else:

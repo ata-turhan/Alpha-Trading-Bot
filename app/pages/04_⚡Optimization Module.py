@@ -9,8 +9,8 @@ configure_page()
 configure_authors()
 add_bg_from_local("data/background.png", "data/bot.png")
 
-if "ohlcv" not in st.session_state:
-    st.session_state["ohlcv"] = None
+if "data" not in st.session_state:
+    st.session_state["data"] = None
 if "predictions" not in st.session_state:
     st.session_state["predictions"] = None
 if "ticker" not in st.session_state:
@@ -30,7 +30,7 @@ style = "<style>.row-widget.stButton {text-align: center;}</style>"
 st.markdown(style, unsafe_allow_html=True)
 st.markdown("<br> <br>", unsafe_allow_html=True)
 if (
-    st.session_state["ohlcv"] is None
+    st.session_state["data"] is None
     or st.session_state["predictions"] is None
     or st.session_state["ticker"] == ""
     or st.session_state["backtest_configuration_ready"] == False
@@ -40,7 +40,7 @@ if (
     )
 else:
     ticker = st.session_state["ticker"]
-    ohlcv = st.session_state["ohlcv"]
+    data = st.session_state["data"]
     predictions = np.array(st.session_state["predictions"])
     st.markdown("<br>", unsafe_allow_html=True)
     metric_optimized = st.selectbox(
