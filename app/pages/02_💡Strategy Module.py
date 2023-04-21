@@ -81,15 +81,13 @@ def main():
                         st.session_state["smoothed_data"] = st.session_state[
                             "data"
                         ]
-                        key = (
-                            f" - Uploaded Signals ({uploaded_file.name[:-4]})"
+                        key_name = (
+                            f"Uploaded Signals ({uploaded_file.name[:-4]})"
                         )
-                        if key not in st.session_state.strategy_keys:
-                            st.session_state.strategy_keys.add(key)
-                            key = (
-                                f"S{len(st.session_state['strategies'])+1}"
-                                + key
-                            )
+                        st.session_state.last_strategy = key_name
+                        if key_name not in st.session_state.strategy_keys:
+                            st.session_state.strategy_keys.add(key_name)
+                            key = f"S{len(st.session_state['strategies'])+1} - {key_name}"
                             st.session_state["strategies"][
                                 key
                             ] = st.session_state["signals"]
@@ -566,6 +564,7 @@ def main():
     if (
         st.session_state["smoothed_data"] is not None
         and st.session_state["signals"] is not None
+        and st.session_state.last_strategy != ""
     ):
         cs.show_signals_on_chart(
             ohlcv=st.session_state["smoothed_data"],
