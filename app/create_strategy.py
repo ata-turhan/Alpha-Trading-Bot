@@ -471,10 +471,10 @@ def mix_strategies(mix: set, mixing_logic: str):
     try:
         mix_signal = np.zeros((len(mix[0]),))
         mixing_logic = re.sub(r"[Ss][0-9]+", "{}", mixing_logic)
-        st.write(mixing_logic)
+        st.write(mix)
         for m in mix:
-            m["is_buy"] = m["Signals"] == 1
-            m["is_sell"] = m["Signals"] == 2
+            m["is_buy"] = np.where(m["Signals"] == 1, 1, 0)
+            m["is_sell"] = np.where(m["Signals"] == 2, 1, 0)
         for i in range(len(mix[0])):
             buy_evaluations = []
             sell_evaluations = []
@@ -579,8 +579,8 @@ def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
             shared_xaxes=False,
             vertical_spacing=0.2,
             subplot_titles=(
-                "<span style='font-size: 30px;'><b>RSI Price</b></span>",
-                "<span style='font-size: 30px;'><b>Close Value</b></span>",
+                "<span style='font-size: 30px;'><b>RSI Value</b></span>",
+                "<span style='font-size: 30px;'><b>Close Price</b></span>",
             ),
             row_width=[1, 1],
         )

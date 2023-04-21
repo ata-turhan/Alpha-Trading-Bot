@@ -56,6 +56,7 @@ def main():
         strategy_fetch_way = center_col_get.selectbox(
             "Which way do you want to get the signals of a strategy: ",
             ["<Select>", "Create a strategy", "Read from a file"],
+            on_change=clean_signals,
         )
         st.markdown("<br> <br>", unsafe_allow_html=True)
 
@@ -66,7 +67,8 @@ def main():
             if uploaded_file is not None:
                 try:
                     st.session_state["signals"] = pd.read_csv(
-                        uploaded_file, names=["Signals"], skiprows=1
+                        uploaded_file,
+                        index_col="Date",
                     )
                 except FileNotFoundError as exception:
                     center_col_get.error(
@@ -78,15 +80,19 @@ def main():
                         st.session_state["smoothed_data"] = st.session_state[
                             "data"
                         ]
-                        key = f"S{len(st.session_state['strategies'])+1}"
-                        key += (
+                        key = (
                             f" - Uploaded Signals ({uploaded_file.name[:-4]})"
                         )
                         if key not in st.session_state.strategy_keys:
                             st.session_state.strategy_keys.add(key)
+                            key = (
+                                f"S{len(st.session_state['strategies'])+1}"
+                                + key
+                            )
                             st.session_state["strategies"][
                                 key
                             ] = st.session_state["signals"]
+
                             # st.markdown("<br>", unsafe_allow_html=True)
                             center_col_get.success(
                                 "The signals of the strategy fetched successfully"
@@ -100,6 +106,7 @@ def main():
                     "Heikin-Ashi",
                     "Trend Normalization",
                 ],
+                on_change=clean_signals,
             )
             st.session_state["smoothed_data"] = cd.signal_smoothing(
                 df=st.session_state["data"],
@@ -557,10 +564,13 @@ def main():
                 st.success("The signals of the strategy created successfully")
                 if strategy_type == "Indicator Trading":
                     key = f"S{len(st.session_state['strategies'])+1}"
-                    key += f" - {strategy_type} ({indicator})"
-                    st.session_state["strategies"][key] = st.session_state[
-                        "signals"
-                    ]
+                    key = f" - {strategy_type} ({indicator})"
+                    if key not in st.session_state.strategy_keys:
+                        st.session_state.strategy_keys.add(key)
+                        key = f"S{len(st.session_state['strategies'])+1}" + key
+                        st.session_state["strategies"][key] = st.session_state[
+                            "signals"
+                        ]
                     cs.draw_technical_indicators(
                         ohlcv=st.session_state["smoothed_data"],
                         indicator_name=indicator,
@@ -574,7 +584,6 @@ def main():
             signals=st.session_state["signals"],
         )
     if len(st.session_state["strategies"]) != 0:
-        strategies = st.session_state["strategies"]
         st.markdown("<br><br>", unsafe_allow_html=True)
         _, center_col_strategies_created, _ = st.columns([1, 2, 1])
         center_col_strategies_created.subheader(
@@ -582,6 +591,7 @@ def main():
         )
         st.markdown("<br>", unsafe_allow_html=True)
 
+        strategies = st.session_state["strategies"]
         for key, val in strategies.items():
             _, left_col, _, right_col, _ = st.columns([1, 2, 1, 2, 1])
             with left_col:
@@ -589,8 +599,10 @@ def main():
             with right_col:
                 if st.checkbox("Use this strategy in mix.", key=key):
                     st.session_state.mix[key] = val
+
         st.markdown("<br><br>", unsafe_allow_html=True)
         _, center_col3, _ = st.columns([1, 2, 1])
+
         mixing_logic = center_col3.text_input(
             "Write your logic to mix the strategies with and & or:",
             help="For example: 'S1 and S2 and S3'",
