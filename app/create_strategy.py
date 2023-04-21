@@ -43,31 +43,31 @@ def correlation_trading(
     indices = list(set(index1).intersection(set(index2)))
     for idx in range(len(indices)):
         indices[idx] = indices[idx] + dt.timedelta(days=1)
-    predictions = pd.DataFrame(
-        index=ohlcv2.index, data={"Predictions": np.zeros((len(ohlcv2),))}
+    signals = pd.DataFrame(
+        index=ohlcv2.index, data={"Signals": np.zeros((len(ohlcv2),))}
     )
-    predictions.loc[indices, "Predictions"] = 1
-    return predictions
+    signals.loc[indices, "Signals"] = 1
+    return signals
 
 
 def rsi_trading(ohlcv: pd.DataFrame, oversold: int = 30, overbought: int = 70):
-    predictions = pd.DataFrame(
-        index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
+    signals = pd.DataFrame(
+        index=ohlcv.index, data={"Signals": np.zeros((len(ohlcv),))}
     )
     ohlcv["RSI"] = ta.momentum.RSIIndicator(
         close=ohlcv["Close"], window=14, fillna=False
     ).rsi()
     for i in range(len(ohlcv) - 1):
         if ohlcv.at[ohlcv.index[i], "RSI"] <= oversold:
-            predictions.at[ohlcv.index[i + 1], "Predictions"] = 1
+            signals.at[ohlcv.index[i + 1], "Signals"] = 1
         elif ohlcv.at[ohlcv.index[i], "RSI"] >= overbought:
-            predictions.at[ohlcv.index[i + 1], "Predictions"] = 2
-    return predictions
+            signals.at[ohlcv.index[i + 1], "Signals"] = 2
+    return signals
 
 
 def sma_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
-    predictions = pd.DataFrame(
-        index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
+    signals = pd.DataFrame(
+        index=ohlcv.index, data={"Signals": np.zeros((len(ohlcv),))}
     )
     ohlcv[f"SMA-{short_mo}"] = ohlcv["Close"].rolling(short_mo).mean()
     ohlcv[f"SMA-{long_mo}"] = ohlcv["Close"].rolling(long_mo).mean()
@@ -78,21 +78,21 @@ def sma_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
             >= ohlcv.at[ohlcv.index[i], f"SMA-{long_mo}"]
             and not short_mo_above
         ):
-            predictions.at[ohlcv.index[i + 1], "Predictions"] = 1
+            signals.at[ohlcv.index[i + 1], "Signals"] = 1
             short_mo_above = True
         elif (
             ohlcv.at[ohlcv.index[i], f"SMA-{short_mo}"]
             <= ohlcv.at[ohlcv.index[i], f"SMA-{long_mo}"]
             and short_mo_above
         ):
-            predictions.at[ohlcv.index[i + 1], "Predictions"] = 2
+            signals.at[ohlcv.index[i + 1], "Signals"] = 2
             short_mo_above = False
-    return predictions
+    return signals
 
 
 def ema_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
-    predictions = pd.DataFrame(
-        index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
+    signals = pd.DataFrame(
+        index=ohlcv.index, data={"Signals": np.zeros((len(ohlcv),))}
     )
     ohlcv[f"EMA-{short_mo}"] = ohlcv["Close"].ewm(span=short_mo).mean()
     ohlcv[f"EMA-{long_mo}"] = ohlcv["Close"].ewm(span=long_mo).mean()
@@ -103,21 +103,21 @@ def ema_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
             >= ohlcv.at[ohlcv.index[i], f"EMA-{long_mo}"]
             and not short_mo_above
         ):
-            predictions.at[ohlcv.index[i + 1], "Predictions"] = 1
+            signals.at[ohlcv.index[i + 1], "Signals"] = 1
             short_mo_above = True
         elif (
             ohlcv.at[ohlcv.index[i], f"EMA-{short_mo}"]
             <= ohlcv.at[ohlcv.index[i], f"EMA-{long_mo}"]
             and short_mo_above
         ):
-            predictions.at[ohlcv.index[i + 1], "Predictions"] = 2
+            signals.at[ohlcv.index[i + 1], "Signals"] = 2
             short_mo_above = False
-    return predictions
+    return signals
 
 
 def bb_trading(ohlcv: pd.DataFrame, window: int = 20, window_dev: int = 2):
-    predictions = pd.DataFrame(
-        index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
+    signals = pd.DataFrame(
+        index=ohlcv.index, data={"Signals": np.zeros((len(ohlcv),))}
     )
     indicator_bb = BollingerBands(
         close=ohlcv["Close"], window=window, window_dev=window_dev
@@ -129,13 +129,13 @@ def bb_trading(ohlcv: pd.DataFrame, window: int = 20, window_dev: int = 2):
             ohlcv.at[ohlcv.index[i], "Close"]
             <= ohlcv.at[ohlcv.index[i], "bb_bbl"]
         ):
-            predictions.at[ohlcv.index[i + 1], "Predictions"] = 1
+            signals.at[ohlcv.index[i + 1], "Signals"] = 1
         elif (
             ohlcv.at[ohlcv.index[i], "Close"]
             >= ohlcv.at[ohlcv.index[i], "bb_bbh"]
         ):
-            predictions.at[ohlcv.index[i + 1], "Predictions"] = 2
-    return predictions
+            signals.at[ohlcv.index[i + 1], "Signals"] = 2
+    return signals
 
 
 def momentum_day_trading(
@@ -144,8 +144,8 @@ def momentum_day_trading(
     down_day: int = 3,
     reverse: bool = False,
 ):
-    predictions = pd.DataFrame(
-        index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
+    signals = pd.DataFrame(
+        index=ohlcv.index, data={"Signals": np.zeros((len(ohlcv),))}
     )
     ohlcv["change"] = ohlcv["Close"].pct_change()
     for i in range(1, len(ohlcv) - up_day):
@@ -153,18 +153,18 @@ def momentum_day_trading(
             ohlcv.at[ohlcv.index[i + j], "change"] > 0 for j in range(up_day)
         )
         if long_position:
-            predictions.at[ohlcv.index[i + up_day], "Predictions"] = (
+            signals.at[ohlcv.index[i + up_day], "Signals"] = (
                 2 if reverse else 1
             )
         short_position = all(
             ohlcv.at[ohlcv.index[i + j], "change"] < 0 for j in range(down_day)
         )
         if short_position:
-            predictions.at[ohlcv.index[i + down_day], "Predictions"] = (
+            signals.at[ohlcv.index[i + down_day], "Signals"] = (
                 1 if reverse else 2
             )
-    # st.write(predictions)
-    return predictions
+    # st.write(signals)
+    return signals
 
 
 def momentum_percentage_trading(
@@ -175,25 +175,25 @@ def momentum_percentage_trading(
     down_day: int = 3,
     reverse: bool = False,
 ):
-    predictions = pd.DataFrame(
-        index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
+    signals = pd.DataFrame(
+        index=ohlcv.index, data={"Signals": np.zeros((len(ohlcv),))}
     )
     for i in range(1, len(ohlcv) - up_day - 1):
         if (
             ohlcv.at[ohlcv.index[i + up_day], "Close"]
             - ohlcv.at[ohlcv.index[i], "Close"]
         ) / ohlcv.at[ohlcv.index[i], "Close"] * 100 >= up_percentage:
-            predictions.at[ohlcv.index[i + up_day + 1], "Predictions"] = (
+            signals.at[ohlcv.index[i + up_day + 1], "Signals"] = (
                 2 if reverse else 1
             )
         elif (
             ohlcv.at[ohlcv.index[i + down_day], "Close"]
             - ohlcv.at[ohlcv.index[i], "Close"]
         ) / ohlcv.at[ohlcv.index[i], "Close"] * 100 <= -down_percentage:
-            predictions.at[ohlcv.index[i + down_day + 1], "Predictions"] = (
+            signals.at[ohlcv.index[i + down_day + 1], "Signals"] = (
                 1 if reverse else 2
             )
-    return predictions
+    return signals
 
 
 """
@@ -241,11 +241,11 @@ def ml_trading(
         )
     with st.spinner("Finalizing the best model..."):
     # default model
-    model_predictions = classification.predict_model(
+    model_signals = classification.predict_model(
         tuned_model, data=test_data
     )
     return pd.DataFrame(
-        index=test_data.index, data={"Predictions": model_predictions["Label"]}
+        index=test_data.index, data={"Signals": model_signals["Label"]}
     )
 """
 
@@ -283,9 +283,9 @@ def dl_trading(
     with st.spinner("Finalizing the best model..."):
         best_nn_model = search.export_model()
     preds = best_nn_model.predict(test_data.loc[:, :"Label"])
-    predictions = np.argmax(preds, axis=1)
+    signals = np.argmax(preds, axis=1)
     return pd.DataFrame(
-        index=test_data.index, data={"Predictions": predictions}
+        index=test_data.index, data={"Signals": signals}
     )
 """
 
@@ -329,21 +329,21 @@ def candlestick_trading(
     }
     candlestick_func_dict[buy_pattern](ohlcv)
     candlestick_func_dict[sell_pattern](ohlcv)
-    predictions = pd.DataFrame(
-        index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
+    signals = pd.DataFrame(
+        index=ohlcv.index, data={"Signals": np.zeros((len(ohlcv),))}
     )
     for i in range(len(ohlcv) - 1):
         if (
             ohlcv.at[ohlcv.index[i], candlestick_column_dict[buy_pattern]]
             == True
         ):
-            predictions.at[ohlcv.index[i + 1], "Predictions"] = 1
+            signals.at[ohlcv.index[i + 1], "Signals"] = 1
         elif (
             ohlcv.at[ohlcv.index[i], candlestick_column_dict[sell_pattern]]
             == True
         ):
-            predictions.at[ohlcv.index[i + 1], "Predictions"] = 2
-    return predictions
+            signals.at[ohlcv.index[i + 1], "Signals"] = 2
+    return signals
 
 
 @st.cache
@@ -396,8 +396,8 @@ def calculate_support_resistance(df, rolling_wave_length, num_clusters, area):
 def support_resistance_trading(
     ohlcv: pd.DataFrame, rolling_wave_length: int = 20, num_clusters: int = 4
 ):
-    predictions = pd.DataFrame(
-        index=ohlcv.index, data={"Predictions": np.zeros((len(ohlcv),))}
+    signals = pd.DataFrame(
+        index=ohlcv.index, data={"Signals": np.zeros((len(ohlcv),))}
     )
     supports = calculate_support_resistance(
         ohlcv, rolling_wave_length, num_clusters, "support"
@@ -411,23 +411,21 @@ def support_resistance_trading(
                 ohlcv.at[ohlcv.index[i - 1], "Close"] >= support
                 and ohlcv.at[ohlcv.index[i], "Close"] < support
             ):
-                predictions.at[ohlcv.index[i + 1], "Predictions"] = 2
-        if predictions.at[ohlcv.index[i + 1], "Predictions"] == 0:
+                signals.at[ohlcv.index[i + 1], "Signals"] = 2
+        if signals.at[ohlcv.index[i + 1], "Signals"] == 0:
             for resistance in resistances:
                 if (
                     ohlcv.at[ohlcv.index[i - 1], "Close"] <= resistance
                     and ohlcv.at[ohlcv.index[i], "Close"] > resistance
                 ):
-                    predictions.at[ohlcv.index[i + 1], "Predictions"] = 1
-    return predictions
+                    signals.at[ohlcv.index[i + 1], "Signals"] = 1
+    return signals
 
 
-def show_predictions_on_chart(
-    ohlcv: pd.DataFrame, predictions: np.array, ticker: str
-):
+def show_signals_on_chart(ohlcv: pd.DataFrame, signals: np.array, ticker: str):
     fig = go.Figure()
-    buy_labels = predictions["Predictions"] == 1
-    sell_labels = predictions["Predictions"] == 2
+    buy_labels = signals["Signals"] == 1
+    sell_labels = signals["Signals"] == 2
     fig.add_trace(
         go.Scatter(
             x=ohlcv.index,
@@ -456,34 +454,35 @@ def show_predictions_on_chart(
         )
     )
     fig.update_layout(
-        title=f"<span style='font-size: 30px;'><b>Close Price with Predictions of {ticker}</b></span>",
+        title=f"<span style='font-size: 30px;'><b>Close Price with Signals of {ticker}</b></span>",
         title_x=0.5,
     )
     st.plotly_chart(fig, use_container_width=True)
 
 
-@st.cache
 def mix_strategies(mix: set, mixing_logic: str):
-    mix_prediction = np.zeros((len(mix[0]),))
-    mixing_logic = re.sub(r"s[0-9]*", "{}", mixing_logic)
-    for m in mix:
-        m["is_buy"] = m["Predictions"] == 1
-        m["is_sell"] = m["Predictions"] == 2
-    for i in range(len(mix[0])):
-        buy_evaluations = []
-        sell_evaluations = []
+    try:
+        mix_signal = np.zeros((len(mix[0]),))
+        mixing_logic = re.sub(r"[Ss][0-9]+", "{}", mixing_logic)
+        st.write(mixing_logic)
         for m in mix:
-            buy_evaluations.append(m["is_buy"].iat[i])
-            sell_evaluations.append(m["is_sell"].iat[i])
-        buy_evaluation = eval(mixing_logic.format(*buy_evaluations))
-        sell_evaluation = eval(mixing_logic.format(*sell_evaluations))
-        if buy_evaluation:
-            mix_prediction[i] = 1
-        if sell_evaluation:
-            mix_prediction[i] = 2
-    return pd.DataFrame(
-        index=mix[0].index, data={"Predictions": mix_prediction}
-    )
+            m["is_buy"] = m["Signals"] == 1
+            m["is_sell"] = m["Signals"] == 2
+        for i in range(len(mix[0])):
+            buy_evaluations = []
+            sell_evaluations = []
+            for m in mix:
+                buy_evaluations.append(m["is_buy"].iat[i])
+                sell_evaluations.append(m["is_sell"].iat[i])
+            buy_evaluation = eval(mixing_logic.format(*buy_evaluations))
+            sell_evaluation = eval(mixing_logic.format(*sell_evaluations))
+            if buy_evaluation:
+                mix_signal[i] = 1
+            if sell_evaluation:
+                mix_signal[i] = 2
+        return pd.DataFrame(index=mix[0].index, data={"Signals": mix_signal})
+    except:
+        return None
 
 
 def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):

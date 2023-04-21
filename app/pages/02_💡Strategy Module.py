@@ -24,7 +24,7 @@ def set_session_variables():
     if "ticker" not in st.session_state:
         st.session_state["ticker"] = ""
     if "mix" not in st.session_state:
-        st.session_state.mix = []
+        st.session_state.mix = dict()
     if "strategy_keys" not in st.session_state:
         st.session_state.strategy_keys = set()
 
@@ -65,7 +65,9 @@ def main():
             )
             if uploaded_file is not None:
                 try:
-                    st.session_state["signals"] = pd.read_csv(uploaded_file)
+                    st.session_state["signals"] = pd.read_csv(
+                        uploaded_file, names=["Signals"]
+                    )
                 except FileNotFoundError as exception:
                     center_col_get.error(
                         "you need to upload a csv or excel file."
@@ -81,7 +83,7 @@ def main():
                             ] = st.session_state["signals"]
                             # st.markdown("<br>", unsafe_allow_html=True)
                             center_col_get.success(
-                                "The signals of strategy fetched successfully"
+                                "The signals of the strategy fetched successfully"
                             )
         elif strategy_fetch_way == "Create a strategy":
             smooth_method = center_col_get.selectbox(
@@ -617,7 +619,7 @@ def main():
                             "Support-Resistance-Trading"
                         ] = st.session_state["signals"]
                         st.success(
-                            "signals of the strategy created and saved successfully"
+                            "The signals of the strategy created and saved successfully"
                         )
             if (
                 st.session_state["signals"] is not None
@@ -645,21 +647,29 @@ def main():
                 st.write(key)
             with right_col:
                 if st.checkbox("Use this strategy in mix.", key=key):
-                    st.session_state.mix.append(strategies[key])
+                    st.session_state.mix[key] = val
         st.markdown("<br><br>", unsafe_allow_html=True)
         _, center_col3, _ = st.columns([1, 2, 1])
         mixing_logic = center_col3.text_input(
-            "Write your logic to mix the strategies with and-or:",
+            "Write your logic to mix the strategies with and & or:",
             help="For example: 'S1 and S2 and S3'",
         )
         if st.button("Mix the strategies"):
             if len(st.session_state.mix) > 0:
                 st.session_state["signals"] = cs.mix_strategies(
-                    st.session_state.mix, mixing_logic
+                    list(st.session_state.mix.values()), mixing_logic
                 )
-                center_col3.success(
-                    "signals of the strategies mixed successfully"
-                )
+                if st.session_state["signals"] is None:
+                    center_col3.error(
+                        "The signals of the strategies cannot be mixed, please write a correct logic statement."
+                    )
+                else:
+                    for m in st.session_state.mix.values():
+                        st.dataframe(m)
+                    st.dataframe(st.session_state["signals"])
+                    center_col3.success(
+                        "The signals of the strategies mixed successfully"
+                    )
             else:
                 center_col3.error("No strategy is chosen for mix.")
 
