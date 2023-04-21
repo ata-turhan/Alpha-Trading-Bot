@@ -308,8 +308,8 @@ def main():
                 col2.success("Data fetched successfully")
                 st.session_state.conf_change = False
     if st.session_state["data"] is not None:
-        _, col2, _ = st.columns([1, 2, 1])
-        st.session_state["fundamentals"] = col2.multiselect(
+        col1, col2, col3 = st.columns([5, 1, 5], gap="small")
+        st.session_state["fundamentals"] = col1.multiselect(
             "Besides the price data, which fundamental data do you want to add?",
             fred_codes.keys(),
         )
@@ -319,7 +319,7 @@ def main():
             st.session_state["data"] = create_technical_indicators(
                 st.session_state["data"]
             )
-        st.session_state["indicators"] = col2.multiselect(
+        st.session_state["indicators"] = col3.multiselect(
             "Besides the price data, which technical indicators data do you want to add?",
             [col for col in st.session_state["data"].columns if "ti_" in col],
         )

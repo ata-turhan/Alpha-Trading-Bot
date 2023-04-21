@@ -19,18 +19,18 @@ def set_session_variables():
         st.session_state["smoothed_data"] = None
     if "strategies" not in st.session_state:
         st.session_state.strategies = {}
-    if "predictions" not in st.session_state:
-        st.session_state["predictions"] = None
+    if "signals" not in st.session_state:
+        st.session_state["signals"] = None
     if "ticker" not in st.session_state:
         st.session_state["ticker"] = ""
     if "mix" not in st.session_state:
         st.session_state.mix = []
-    if "added_keys" not in st.session_state:
-        st.session_state.added_keys = set()
+    if "strategy_keys" not in st.session_state:
+        st.session_state.strategy_keys = set()
 
 
-def clean_predictions():
-    st.session_state["predictions"] = None
+def clean_signals():
+    st.session_state["signals"] = None
 
 
 def main():
@@ -54,7 +54,7 @@ def main():
         st.error("Please get the data first.")
     else:
         strategy_fetch_way = center_col_get.selectbox(
-            "Which way do you want to get the predictions of a strategy: ",
+            "Which way do you want to get the signals of a strategy: ",
             ["<Select>", "Create a strategy", "Read from a file"],
         )
         st.markdown("<br> <br>", unsafe_allow_html=True)
@@ -65,23 +65,24 @@ def main():
             )
             if uploaded_file is not None:
                 try:
-                    st.session_state["predictions"] = np.array(
-                        pd.read_csv(uploaded_file)
-                    )
+                    st.session_state["signals"] = pd.read_csv(uploaded_file)
                 except FileNotFoundError as exception:
                     center_col_get.error(
                         "you need to upload a csv or excel file."
                     )
                 else:
-                    predictions = st.session_state["predictions"]
-                    if predictions is not None:
-                        st.session_state["strategies"][
-                            f"Uploaded Signals-{uploaded_file.name[:-4]}"
-                        ] = st.session_state["predictions"]
-                        # st.markdown("<br>", unsafe_allow_html=True)
-                        center_col_get.success(
-                            "The predictions of strategy fetched successfully"
-                        )
+                    signals = st.session_state["signals"]
+                    if signals is not None:
+                        key = f"Uploaded Signals ({uploaded_file.name[:-4]})"
+                        if key not in st.session_state.strategy_keys:
+                            st.session_state.strategy_keys.add(key)
+                            st.session_state["strategies"][
+                                f"S{len(st.session_state['strategies'])+1} - {key}"
+                            ] = st.session_state["signals"]
+                            # st.markdown("<br>", unsafe_allow_html=True)
+                            center_col_get.success(
+                                "The signals of strategy fetched successfully"
+                            )
         elif strategy_fetch_way == "Create a strategy":
             smooth_method = center_col_get.selectbox(
                 "Which way do you want to use the price data with smoothing?",
@@ -108,7 +109,7 @@ def main():
                     "Candlestick Pattern Trading",
                     "Support-Resistance Trading",
                 ],
-                on_change=clean_predictions,
+                on_change=clean_signals,
             )
             if strategy_type == "Correlation Trading":
                 market = center_col_get.selectbox(
@@ -140,25 +141,25 @@ def main():
                         if downward_movement != 0:
                             st.markdown("<br>", unsafe_allow_html=True)
                             if st.button(
-                                "Create the predictions of the strategy."
+                                "Create the signals of the strategy."
                             ):
                                 st.session_state[
-                                    "predictions"
+                                    "signals"
                                 ] = cs.correlation_trading(
                                     ohlcv1=correlated_asset_ohclv,
                                     ohlcv2=st.session_state["smoothed_data"],
                                     downward_movement=downward_movement,
                                     upward_movement=0.01,
                                 )
-                                if st.session_state["predictions"] is not None:
-                                    st.session_state["predictions"].to_csv(
-                                        f"Predictions of the {strategy_type}.csv"
+                                if st.session_state["signals"] is not None:
+                                    st.session_state["signals"].to_csv(
+                                        f"signals of the {strategy_type}.csv"
                                     )
                                     st.session_state["strategies"][
                                         "Correlation Trading"
-                                    ] = st.session_state["predictions"]
+                                    ] = st.session_state["signals"]
                                     st.success(
-                                        "Predictions of the strategy created and saved successfully"
+                                        "signals of the strategy created and saved successfully"
                                     )
             elif strategy_type == "Indicator Trading":
                 indicator = center_col_get.selectbox(
@@ -179,10 +180,10 @@ def main():
                                 "Please enter the overbought value", value=70
                             )
                         strategy_created = st.button(
-                            "Create the predictions of the strategy."
+                            "Create the signals of the strategy."
                         )
                         if strategy_created:
-                            st.session_state["predictions"] = cs.rsi_trading(
+                            st.session_state["signals"] = cs.rsi_trading(
                                 ohlcv=st.session_state["smoothed_data"],
                                 oversold=oversold,
                                 overbought=overbought,
@@ -200,10 +201,10 @@ def main():
                                 value=200,
                             )
                         strategy_created = st.button(
-                            "Create the predictions of the strategy."
+                            "Create the signals of the strategy."
                         )
                         if strategy_created:
-                            st.session_state["predictions"] = cs.sma_trading(
+                            st.session_state["signals"] = cs.sma_trading(
                                 ohlcv=st.session_state["smoothed_data"],
                                 short_mo=short_smo,
                                 long_mo=long_smo,
@@ -221,10 +222,10 @@ def main():
                                 value=200,
                             )
                         strategy_created = st.button(
-                            "Create the predictions of the strategy."
+                            "Create the signals of the strategy."
                         )
                         if strategy_created:
-                            st.session_state["predictions"] = cs.ema_trading(
+                            st.session_state["signals"] = cs.ema_trading(
                                 ohlcv=st.session_state["smoothed_data"],
                                 short_mo=short_emo,
                                 long_mo=long_emo,
@@ -241,27 +242,27 @@ def main():
                                 value=2,
                             )
                         strategy_created = st.button(
-                            "Create the predictions of the strategy."
+                            "Create the signals of the strategy."
                         )
                         st.markdown("<br>", unsafe_allow_html=True)
                         if strategy_created:
-                            st.session_state["predictions"] = cs.bb_trading(
+                            st.session_state["signals"] = cs.bb_trading(
                                 ohlcv=st.session_state["smoothed_data"],
                                 window=window,
                                 window_dev=window_dev,
                             )
                     if (
-                        st.session_state["predictions"] is not None
+                        st.session_state["signals"] is not None
                         and strategy_created
                     ):
-                        st.session_state["predictions"].to_csv(
-                            f"Predictions of the {strategy_type}.csv"
+                        st.session_state["signals"].to_csv(
+                            f"signals of the {strategy_type}.csv"
                         )
                         st.session_state["strategies"][
                             f"Indicator Trading-{indicator}"
-                        ] = st.session_state["predictions"]
+                        ] = st.session_state["signals"]
                         st.success(
-                            "Predictions of the strategy created and saved successfully"
+                            "signals of the strategy created and saved successfully"
                         )
 
                         cs.draw_technical_indicators(
@@ -293,11 +294,11 @@ def main():
                                 "Reverse the logic of the strategy"
                             )
                         strategy_created = st.button(
-                            "Create the predictions of the strategy."
+                            "Create the signals of the strategy."
                         )
                         if strategy_created:
                             st.session_state[
-                                "predictions"
+                                "signals"
                             ] = cs.momentum_day_trading(
                                 ohlcv=st.session_state["smoothed_data"],
                                 up_day=up_day,
@@ -332,11 +333,11 @@ def main():
                             )
                         st.markdown("<br>", unsafe_allow_html=True)
                         strategy_created = st.button(
-                            "Create the predictions of the strategy."
+                            "Create the signals of the strategy."
                         )
                         if strategy_created:
                             st.session_state[
-                                "predictions"
+                                "signals"
                             ] = cs.momentum_percentage_trading(
                                 ohlcv=st.session_state["smoothed_data"],
                                 up_percentage=up_percentage,
@@ -346,18 +347,18 @@ def main():
                                 reverse=reverse,
                             )
                     if (
-                        st.session_state["predictions"] is not None
+                        st.session_state["signals"] is not None
                         and strategy_created
                     ):
-                        st.session_state["predictions"].to_csv(
-                            f"Predictions of the {strategy_type}.csv"
+                        st.session_state["signals"].to_csv(
+                            f"signals of the {strategy_type}.csv"
                         )
                         # st.write(type(st.session_state["strategies"]))
                         st.session_state["strategies"][
                             f"Momentum Trading-{indicator}"
-                        ] = st.session_state["predictions"]
+                        ] = st.session_state["signals"]
                         st.success(
-                            "Predictions of the strategy created and saved successfully"
+                            "signals of the strategy created and saved successfully"
                         )
             elif strategy_type == "AI Trading":
                 data_types = st.multiselect(
@@ -414,7 +415,7 @@ def main():
                                 step=5,
                             )
                             if st.button(
-                                "Create the predictions of the strategy."
+                                "Create the signals of the strategy."
                             ):
                                 market = st.session_state["smoothed_data"]
                                 train_data = market.iloc[
@@ -423,9 +424,7 @@ def main():
                                 test_data = market.iloc[
                                     len(market) * 4 // 5 :, :
                                 ]
-                                st.session_state[
-                                    "predictions"
-                                ] = cs.dl_trading(
+                                st.session_state["signals"] = cs.dl_trading(
                                     train_data=train_data,
                                     test_data=test_data,
                                     possible_models=possible_models,
@@ -450,7 +449,7 @@ def main():
                             # st.write(type(selected_models))
                             st.markdown("<br>", unsafe_allow_html=True)
                             if st.button(
-                                "Create the predictions of the strategy."
+                                "Create the signals of the strategy."
                             ):
                                 # train_data = pd.concat([pd.DataFrame(X_train[0], index=y_train[0].index), y_train[0]], axis=1)
                                 # test_data = pd.DataFrame(X_test[0], index=y_test[0].index)
@@ -461,30 +460,26 @@ def main():
                                 test_data = market.iloc[
                                     len(market) * 4 // 5 :, :
                                 ]
-                                st.session_state[
-                                    "predictions"
-                                ] = cs.ml_trading(
+                                st.session_state["signals"] = cs.ml_trading(
                                     train_data=train_data,
                                     test_data=test_data,
                                     selected_models=selected_models,
                                     tune_number=tune_number,
                                 )
-                                if st.session_state["predictions"] is not None:
-                                    st.session_state["predictions"].to_csv(
-                                        f"Predictions of the {strategy_type}.csv"
+                                if st.session_state["signals"] is not None:
+                                    st.session_state["signals"].to_csv(
+                                        f"signals of the {strategy_type}.csv"
                                     )
                                     st.session_state["strategies"][
                                         f"AI Trading-{len(st.session_state['strategies'])}"
-                                    ] = st.session_state["predictions"]
+                                    ] = st.session_state["signals"]
                                     st.success(
-                                        "Predictions of the strategy created and saved successfully"
+                                        "signals of the strategy created and saved successfully"
                                     )
                                     target_names = ["Hold", "Buy", "Sell"]
                                     cm = confusion_matrix(
                                         test_data["Label"],
-                                        st.session_state["predictions"][
-                                            "Predictions"
-                                        ],
+                                        st.session_state["signals"]["signals"],
                                     )
                                     plt.grid(False)
                                     disp = ConfusionMatrixDisplay(
@@ -507,8 +502,8 @@ def main():
                                         )
                                         report = classification_report(
                                             test_data["Label"],
-                                            st.session_state["predictions"][
-                                                "Predictions"
+                                            st.session_state["signals"][
+                                                "signals"
                                             ],
                                             target_names=target_names,
                                             output_dict=True,
@@ -520,19 +515,17 @@ def main():
                                         train_period = pd.DataFrame(
                                             index=train_data.index,
                                             data={
-                                                "Predictions": np.zeros(
+                                                "signals": np.zeros(
                                                     (len(train_data),)
                                                 )
                                             },
                                         )
                                         st.session_state[
-                                            "predictions"
+                                            "signals"
                                         ] = pd.concat(
                                             [
                                                 train_period,
-                                                st.session_state[
-                                                    "predictions"
-                                                ],
+                                                st.session_state["signals"],
                                             ]
                                         )
             elif strategy_type == "Candlestick Pattern Trading":
@@ -576,28 +569,26 @@ def main():
                         ],
                     )
                 st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("Create the predictions of the strategy."):
+                if st.button("Create the signals of the strategy."):
                     if buy_pattern == "<Select>" or sell_pattern == "<Select>":
                         st.warning(
                             "Please select the patterns for buy and sell signals."
                         )
                     else:
-                        st.session_state[
-                            "predictions"
-                        ] = cs.candlestick_trading(
+                        st.session_state["signals"] = cs.candlestick_trading(
                             ohlcv=st.session_state["smoothed_data"],
                             buy_pattern=buy_pattern,
                             sell_pattern=sell_pattern,
                         )
-                        if st.session_state["predictions"] is not None:
-                            st.session_state["predictions"].to_csv(
-                                f"Predictions of the {strategy_type}.csv"
+                        if st.session_state["signals"] is not None:
+                            st.session_state["signals"].to_csv(
+                                f"signals of the {strategy_type}.csv"
                             )
                             st.session_state["strategies"][
                                 f"Candlestick Pattern Trading-{buy_pattern}|{sell_pattern}"
-                            ] = st.session_state["predictions"]
+                            ] = st.session_state["signals"]
                             st.success(
-                                "Predictions of the strategy created and saved successfully"
+                                "signals of the strategy created and saved successfully"
                             )
             elif strategy_type == "Support-Resistance Trading":
                 col1, col2 = st.columns([1, 1])
@@ -610,33 +601,33 @@ def main():
                         "Please enter the cluster numbers", value=4
                     )
                 st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("Create the predictions of the strategy."):
+                if st.button("Create the signals of the strategy."):
                     st.session_state[
-                        "predictions"
+                        "signals"
                     ] = cs.support_resistance_trading(
                         ohlcv=st.session_state["smoothed_data"],
                         rolling_wave_length=rolling_wave_length,
                         num_clusters=num_clusters,
                     )
-                    if st.session_state["predictions"] is not None:
-                        st.session_state["predictions"].to_csv(
-                            f"Predictions of the {strategy_type}.csv"
+                    if st.session_state["signals"] is not None:
+                        st.session_state["signals"].to_csv(
+                            f"signals of the {strategy_type}.csv"
                         )
                         st.session_state["strategies"][
                             "Support-Resistance-Trading"
-                        ] = st.session_state["predictions"]
+                        ] = st.session_state["signals"]
                         st.success(
-                            "Predictions of the strategy created and saved successfully"
+                            "signals of the strategy created and saved successfully"
                         )
             if (
-                st.session_state["predictions"] is not None
+                st.session_state["signals"] is not None
                 and strategy_type != "<Select>"
             ):
-                # st.write(st.session_state["predictions"])
-                predictions = st.session_state["predictions"]
-                cs.show_predictions_on_chart(
+                # st.write(st.session_state["signals"])
+                signals = st.session_state["signals"]
+                cs.show_signals_on_chart(
                     ohlcv=st.session_state["smoothed_data"],
-                    predictions=predictions,
+                    signals=signals,
                     ticker=st.session_state["ticker"],
                 )
     if len(st.session_state["strategies"]) != 0:
@@ -653,26 +644,24 @@ def main():
             with left_col:
                 st.write(key)
             with right_col:
-                if (
-                    st.checkbox("Use this strategy in mix.", key=key)
-                    and key not in st.session_state.added_keys
-                ):
+                if st.checkbox("Use this strategy in mix.", key=key):
                     st.session_state.mix.append(strategies[key])
-                    st.session_state.added_keys.add(key)
-
         st.markdown("<br><br>", unsafe_allow_html=True)
         _, center_col3, _ = st.columns([1, 2, 1])
         mixing_logic = center_col3.text_input(
             "Write your logic to mix the strategies with and-or:",
-            help="For example: 's1 and s2 and s3'",
+            help="For example: 'S1 and S2 and S3'",
         )
         if st.button("Mix the strategies"):
-            st.session_state["predictions"] = cs.mix_strategies(
-                st.session_state.mix, mixing_logic
-            )
-            center_col2.success(
-                "Predictions of the strategies mixed successfully"
-            )
+            if len(st.session_state.mix) > 0:
+                st.session_state["signals"] = cs.mix_strategies(
+                    st.session_state.mix, mixing_logic
+                )
+                center_col3.success(
+                    "signals of the strategies mixed successfully"
+                )
+            else:
+                center_col3.error("No strategy is chosen for mix.")
 
 
 if __name__ == "__main__":
