@@ -46,9 +46,7 @@ def set_session_variables():
         st.session_state["show_chart_selectbox_clicked"] = False
 
 
-def fetch_data_button_click(
-    tickers, start, end, interval, auto_adjust, col2
-) -> None:
+def fetch_data_button_click(tickers, start, end, interval, col2) -> None:
     if (
         st.session_state["all_areas_filled"]
         and st.session_state.conf_change == True
@@ -63,7 +61,7 @@ def fetch_data_button_click(
                     start=start,
                     end=end,
                     interval=interval,
-                    auto_adjust=auto_adjust,
+                    auto_adjust=True,
                 )
                 st.session_state["data"] = data
                 st.session_state.conf_change = False
@@ -191,7 +189,7 @@ def main():
 
     if data_fetch_way == "Fetch over the internet":
         get_tickers()
-        start, end, interval, auto_adjust = [None] * 4
+        start, end, interval = [None] * 3
         market = col2.selectbox(
             "Select the market: ",
             [DEFAULT_CHOICE, "Stock", "ETF", "Forex", "Crypto"],
@@ -249,17 +247,11 @@ def main():
                             ),
                             on_change=clear_data,
                         )
-            adjust_situation = col2.selectbox(
-                "Do you want to adjust the prices: ",
-                [DEFAULT_CHOICE, "Yes", "No"],
-            )
-
             st.session_state["all_areas_filled"] = (
                 market != DEFAULT_CHOICE
                 and start != None
                 and end != None
                 and interval != DEFAULT_CHOICE
-                and adjust_situation != DEFAULT_CHOICE
             )
         if (
             st.button(
@@ -270,7 +262,6 @@ def main():
                     start,
                     end,
                     interval,
-                    auto_adjust,
                     col2,
                 ),
             )
