@@ -272,7 +272,8 @@ def main():
                 if data is None and st.session_state.conf_change == False:
                     st.error("Data could not be downloaded.")
                 elif data is not None:
-                    col2.success("Data fetched successfully")
+                    _, fetch_col, _ = st.columns([3, 2, 3])
+                    fetch_col.success("Data fetched successfully")
                     st.markdown("<br>", unsafe_allow_html=True)
     elif data_fetch_way == "Read from a file" and st.session_state.conf_change:
         col2.markdown("<br><br>", unsafe_allow_html=True)
