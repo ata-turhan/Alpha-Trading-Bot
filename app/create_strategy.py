@@ -65,7 +65,7 @@ def rsi_trading(ohlcv: pd.DataFrame, oversold: int = 30, overbought: int = 70):
     return signals
 
 
-def sma_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
+def sma_trading(ohlcv: pd.DataFrame, short_smo: int = 50, long_smo: int = 200):
     signals = pd.DataFrame(
         index=ohlcv.index, data={"Signals": np.zeros((len(ohlcv),))}
     )
@@ -90,7 +90,7 @@ def sma_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
     return signals
 
 
-def ema_trading(ohlcv: pd.DataFrame, short_mo: int = 50, long_mo: int = 200):
+def ema_trading(ohlcv: pd.DataFrame, short_emo: int = 50, long_emo: int = 200):
     signals = pd.DataFrame(
         index=ohlcv.index, data={"Signals": np.zeros((len(ohlcv),))}
     )
@@ -470,14 +470,20 @@ def show_signals_on_chart(
 def mix_strategies(mix: set, mixing_logic: str):
     try:
         mix_signal = np.zeros((len(mix[0]),))
-        mixing_logic = re.sub(r"[Ss][0-9]+", "{}", mixing_logic)
+        mixing_logic = re.sub(
+            r"\bs(\d+)\b", lambda match: f"{{{match.group(1)}}}", mixing_logic
+        )
         st.write(mix)
         for m in mix:
             m["is_buy"] = np.where(m["Signals"] == 1, 1, 0)
             m["is_sell"] = np.where(m["Signals"] == 2, 1, 0)
         for i in range(len(mix[0])):
-            buy_evaluations = []
-            sell_evaluations = []
+            buy_evaluations = [
+                0,
+            ]
+            sell_evaluations = [
+                0,
+            ]
             for m in mix:
                 buy_evaluations.append(m["is_buy"].iat[i])
                 sell_evaluations.append(m["is_sell"].iat[i])

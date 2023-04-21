@@ -23,8 +23,6 @@ def set_session_variables():
         st.session_state["signals"] = None
     if "ticker" not in st.session_state:
         st.session_state["ticker"] = ""
-    if "mix" not in st.session_state:
-        st.session_state.mix = dict()
     if "strategy_keys" not in st.session_state:
         st.session_state.strategy_keys = set()
 
@@ -167,8 +165,8 @@ def main():
                         func = cs.sma_trading
                         params = {
                             "ohlcv": st.session_state["smoothed_data"],
-                            "short_mo": short_mo,
-                            "long_mo": long_mo,
+                            "short_smo": short_smo,
+                            "short_smo": short_smo,
                         }
                     if indicator == "EMA":
                         col1, col2 = st.columns([1, 1])
@@ -185,8 +183,8 @@ def main():
                         func = cs.ema_trading
                         params = {
                             "ohlcv": st.session_state["smoothed_data"],
-                            "short_mo": short_mo,
-                            "long_mo": long_mo,
+                            "short_emo": short_emo,
+                            "long_emo": long_emo,
                         }
                     if indicator == "Bollinger Bands":
                         col1, col2 = st.columns([1, 1])
@@ -592,14 +590,10 @@ def main():
         st.markdown("<br>", unsafe_allow_html=True)
 
         strategies = st.session_state["strategies"]
+        st.write(strategies)
         for key, val in strategies.items():
-            _, left_col, _, right_col, _ = st.columns([1, 2, 1, 2, 1])
-            with left_col:
-                st.write(key)
-            with right_col:
-                if st.checkbox("Use this strategy in mix.", key=key):
-                    st.session_state.mix[key] = val
-
+            _, strategies_col, _ = st.columns([1, 2, 1])
+            strategies_col.write(key)
         st.markdown("<br><br>", unsafe_allow_html=True)
         _, center_col3, _ = st.columns([1, 2, 1])
 
@@ -608,23 +602,20 @@ def main():
             help="For example: 'S1 and S2 and S3'",
         )
         if st.button("Mix the strategies"):
-            if len(st.session_state.mix) > 0:
-                st.session_state["signals"] = cs.mix_strategies(
-                    list(st.session_state.mix.values()), mixing_logic
+            st.session_state["signals"] = cs.mix_strategies(
+                list(strategies.values()), mixing_logic
+            )
+            if st.session_state["signals"] is None:
+                center_col3.error(
+                    "The signals of the strategies cannot be mixed, please write a correct logic statement."
                 )
-                if st.session_state["signals"] is None:
-                    center_col3.error(
-                        "The signals of the strategies cannot be mixed, please write a correct logic statement."
-                    )
-                else:
-                    for m in st.session_state.mix.values():
-                        st.dataframe(m)
-                    st.dataframe(st.session_state["signals"])
-                    center_col3.success(
-                        "The signals of the strategies mixed successfully"
-                    )
             else:
-                center_col3.error("No strategy is chosen for mix.")
+                # for m in st.session_state.strategies.values():
+                #    st.dataframe(m)
+                # st.dataframe(st.session_state["signals"])
+                center_col3.success(
+                    "The signals of the strategies mixed successfully"
+                )
 
 
 if __name__ == "__main__":
