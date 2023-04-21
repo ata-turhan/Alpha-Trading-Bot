@@ -135,7 +135,7 @@ def load_tickers():
             tickers_dict = {}
             markets = ["Stock", "ETF", "Forex", "Crypto"]
             tickers = pd.read_excel(
-                "data/tickers.xlsx",
+                "data/tickers/tickers.xlsx",
                 sheet_name=None,
             )
             for market in markets:

@@ -25,6 +25,8 @@ def set_session_variables():
         st.session_state["ticker"] = ""
     if "strategy_keys" not in st.session_state:
         st.session_state.strategy_keys = set()
+    if "last_strategy" not in st.session_state:
+        st.session_state.last_strategy = ""
 
 
 def clean_signals():
@@ -51,6 +53,7 @@ def main():
     if st.session_state["data"] is None:
         st.error("Please get the data first.")
     else:
+        key_name = ""
         strategy_fetch_way = center_col_get.selectbox(
             "Which way do you want to get the signals of a strategy: ",
             ["<Select>", "Create a strategy", "Read from a file"],
@@ -130,19 +133,22 @@ def main():
                 indicator = center_col_get.selectbox(
                     "Select the indicator you want to use: ",
                     ["<Select>", "RSI", "SMA", "EMA", "Bollinger Bands"],
+                    on_change=clean_signals,
                 )
                 if indicator != "<Select>":
                     if indicator == "RSI":
-                        col1, col2 = center_col_get.columns(
-                            [1, 1], gap="large"
-                        )
+                        col1, col2 = center_col_get.columns(2, gap="large")
                         with col1:
                             oversold = st.number_input(
-                                "Please enter the oversold value", value=30
+                                "Please enter the oversold value",
+                                value=30,
+                                on_change=clean_signals,
                             )
                         with col2:
                             overbought = st.number_input(
-                                "Please enter the overbought value", value=70
+                                "Please enter the overbought value",
+                                value=70,
+                                on_change=clean_signals,
                             )
                         func = cs.rsi_trading
                         params = {
@@ -150,35 +156,41 @@ def main():
                             "oversold": oversold,
                             "overbought": overbought,
                         }
+                        key_name = f"{strategy_type} - {indicator}  ({oversold}, {overbought})"
                     if indicator == "SMA":
-                        col1, col2 = st.columns([1, 1])
+                        col1, col2 = center_col_get.columns(2, gap="medium")
                         with col1:
                             short_smo = st.number_input(
                                 "Please enter the short moving average value",
                                 value=50,
+                                on_change=clean_signals,
                             )
                         with col2:
                             long_smo = st.number_input(
                                 "Please enter the long moving average value",
                                 value=200,
+                                on_change=clean_signals,
                             )
                         func = cs.sma_trading
                         params = {
                             "ohlcv": st.session_state["smoothed_data"],
                             "short_smo": short_smo,
-                            "short_smo": short_smo,
+                            "long_smo": long_smo,
                         }
+                        key_name = f"{strategy_type} - {indicator}  ({short_smo}, {long_smo})"
                     if indicator == "EMA":
-                        col1, col2 = st.columns([1, 1])
+                        col1, col2 = center_col_get.columns(2, gap="medium")
                         with col1:
                             short_emo = st.number_input(
                                 "Please enter the short moving average value",
                                 value=50,
+                                on_change=clean_signals,
                             )
                         with col2:
                             long_emo = st.number_input(
                                 "Please enter the long moving average value",
                                 value=200,
+                                on_change=clean_signals,
                             )
                         func = cs.ema_trading
                         params = {
@@ -186,16 +198,20 @@ def main():
                             "short_emo": short_emo,
                             "long_emo": long_emo,
                         }
+                        key_name = f"{strategy_type} - {indicator}  ({short_emo}, {long_emo})"
                     if indicator == "Bollinger Bands":
-                        col1, col2 = st.columns([1, 1])
+                        col1, col2 = center_col_get.columns(2, gap="small")
                         with col1:
                             window = st.number_input(
-                                "Please enter the window value", value=20
+                                "Please enter the window value",
+                                value=20,
+                                on_change=clean_signals,
                             )
                         with col2:
                             window_dev = st.number_input(
                                 "Please enter the window deviation value",
                                 value=2,
+                                on_change=clean_signals,
                             )
                         func = cs.bb_trading
                         params = {
@@ -203,97 +219,91 @@ def main():
                             "window": window,
                             "window_dev": window_dev,
                         }
+                        key_name = f"{strategy_type} - {indicator}  ({window}, {window_dev})"
             elif strategy_type == "Momentum Trading":
-                indicator = center_col_get.selectbox(
+                variation = center_col_get.selectbox(
                     "Select the momentum strategy you want to use: ",
                     [
                         "<Select>",
                         "Momentum Day Trading",
                         "Momentum Percentage Trading",
                     ],
+                    on_change=clean_signals,
                 )
-                if indicator != "<Select>":
-                    if indicator == "Momentum Day Trading":
-                        col1, col2, col3 = st.columns([1, 1, 1])
+                if variation != "<Select>":
+                    if variation == "Momentum Day Trading":
+                        col1, col2 = center_col_get.columns(2)
                         with col1:
                             up_day = st.number_input(
-                                "Please enter the up day number", value=3
+                                "Please enter the up day number",
+                                value=3,
+                                on_change=clean_signals,
                             )
                         with col2:
                             down_day = st.number_input(
-                                "Please enter the down day number", value=3
+                                "Please enter the down day number",
+                                value=3,
+                                on_change=clean_signals,
                             )
-                        with col3:
+                        _, col2, _ = center_col_get.columns([1, 3, 1])
+                        with col2:
                             reverse = st.checkbox(
-                                "Reverse the logic of the strategy"
+                                "Reverse the logic of the strategy",
+                                on_change=clean_signals,
                             )
-                        strategy_created = st.button(
-                            "Create the signals of the strategy."
-                        )
-                        if strategy_created:
-                            st.session_state[
-                                "signals"
-                            ] = cs.momentum_day_trading(
-                                ohlcv=st.session_state["smoothed_data"],
-                                up_day=up_day,
-                                down_day=down_day,
-                                reverse=reverse,
-                            )
-                    if indicator == "Momentum Percentage Trading":
-                        col1, col2, col3, col4, col5 = st.columns(
-                            [1, 1, 1, 1, 1]
-                        )
+                        func = cs.momentum_day_trading
+                        params = {
+                            "ohlcv": st.session_state["smoothed_data"],
+                            "up_day": up_day,
+                            "down_day": down_day,
+                            "reverse": reverse,
+                        }
+                    if variation == "Momentum Percentage Trading":
+                        col1, col2 = center_col_get.columns(2, gap="medium")
                         with col1:
                             up_day = st.number_input(
-                                "Please enter the up day number", value=3
+                                "Please enter the up day number",
+                                value=3,
+                                on_change=clean_signals,
                             )
                         with col2:
                             up_percentage = st.number_input(
                                 "Please enter the up percentage number",
                                 value=3,
+                                on_change=clean_signals,
                             )
-                        with col3:
+                        col1, col2 = center_col_get.columns(
+                            [4, 5], gap="medium"
+                        )
+                        with col1:
                             down_day = st.number_input(
-                                "Please enter the down day number", value=3
+                                "Please enter the down day number",
+                                value=3,
+                                on_change=clean_signals,
                             )
-                        with col4:
+                        with col2:
                             down_percentage = st.number_input(
                                 "Please enter the down percentage number",
                                 value=3,
+                                on_change=clean_signals,
                             )
-                        with col5:
+                        _, col2, _ = center_col_get.columns([1, 3, 1])
+                        with col2:
                             reverse = st.checkbox(
-                                "Reverse the logic of the strategy"
+                                "Reverse the logic of the strategy",
+                                on_change=clean_signals,
                             )
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        strategy_created = st.button(
-                            "Create the signals of the strategy."
-                        )
-                        if strategy_created:
-                            st.session_state[
-                                "signals"
-                            ] = cs.momentum_percentage_trading(
-                                ohlcv=st.session_state["smoothed_data"],
-                                up_percentage=up_percentage,
-                                up_day=up_day,
-                                down_percentage=down_percentage,
-                                down_day=down_day,
-                                reverse=reverse,
-                            )
-                    if (
-                        st.session_state["signals"] is not None
-                        and strategy_created
-                    ):
-                        st.session_state["signals"].to_csv(
-                            f"signals of the {strategy_type}.csv"
-                        )
-                        # st.write(type(st.session_state["strategies"]))
-                        st.session_state["strategies"][
-                            f"Momentum Trading-{indicator}"
-                        ] = st.session_state["signals"]
-                        st.success(
-                            "signals of the strategy created and saved successfully"
-                        )
+
+                        func = cs.momentum_percentage_trading
+                        params = {
+                            "ohlcv": st.session_state["smoothed_data"],
+                            "up_percentage": up_percentage,
+                            "up_day": up_day,
+                            "down_percentage": down_percentage,
+                            "down_day": down_day,
+                            "reverse": reverse,
+                        }
+                    key_name = f"{strategy_type} - {variation}  ({up_day}, {down_day})"
             elif strategy_type == "AI Trading":
                 data_types = st.multiselect(
                     "Select the data types you want to include for ai modeling: ",
@@ -482,6 +492,7 @@ def main():
                             "Bullish Engulfing",
                             "Bullish Harami",
                         ],
+                        on_change=clean_signals,
                     )
                 with col2:
                     sell_pattern = center_col_get.selectbox(
@@ -501,78 +512,57 @@ def main():
                             "Bearish Engulfing",
                             "Bearish Harami",
                         ],
+                        on_change=clean_signals,
                     )
-                st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("Create the signals of the strategy."):
-                    if buy_pattern == "<Select>" or sell_pattern == "<Select>":
-                        st.warning(
-                            "Please select the patterns for buy and sell signals."
-                        )
-                    else:
-                        st.session_state["signals"] = cs.candlestick_trading(
-                            ohlcv=st.session_state["smoothed_data"],
-                            buy_pattern=buy_pattern,
-                            sell_pattern=sell_pattern,
-                        )
-                        if st.session_state["signals"] is not None:
-                            st.session_state["signals"].to_csv(
-                                f"signals of the {strategy_type}.csv"
-                            )
-                            st.session_state["strategies"][
-                                f"Candlestick Pattern Trading-{buy_pattern}|{sell_pattern}"
-                            ] = st.session_state["signals"]
-                            st.success(
-                                "signals of the strategy created and saved successfully"
-                            )
+                func = cs.candlestick_trading
+                params = {
+                    "ohlcv": st.session_state["smoothed_data"],
+                    "buy_pattern": buy_pattern,
+                    "sell_pattern": sell_pattern,
+                }
+                key_name = f"{strategy_type} ({buy_pattern}, {sell_pattern})"
             elif strategy_type == "Support-Resistance Trading":
-                col1, col2 = st.columns([1, 1])
+                col1, col2 = center_col_get.columns([1, 1])
                 with col1:
                     rolling_wave_length = st.number_input(
-                        "Please enter the rolling wave length", value=20
+                        "Please enter the rolling wave length",
+                        value=20,
+                        on_change=clean_signals,
                     )
                 with col2:
                     num_clusters = st.number_input(
-                        "Please enter the cluster numbers", value=4
+                        "Please enter the cluster numbers",
+                        value=4,
+                        on_change=clean_signals,
                     )
-                st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("Create the signals of the strategy."):
-                    st.session_state[
-                        "signals"
-                    ] = cs.support_resistance_trading(
-                        ohlcv=st.session_state["smoothed_data"],
-                        rolling_wave_length=rolling_wave_length,
-                        num_clusters=num_clusters,
-                    )
-                    if st.session_state["signals"] is not None:
-                        st.session_state["signals"].to_csv(
-                            f"signals of the {strategy_type}.csv"
-                        )
-                        st.session_state["strategies"][
-                            "Support-Resistance-Trading"
-                        ] = st.session_state["signals"]
-                        st.success(
-                            "The signals of the strategy created and saved successfully"
-                        )
+                func = cs.support_resistance_trading
+                params = {
+                    "ohlcv": st.session_state["smoothed_data"],
+                    "rolling_wave_length": rolling_wave_length,
+                    "num_clusters": num_clusters,
+                }
+                key_name = (
+                    f"{strategy_type} ({rolling_wave_length}, {num_clusters})"
+                )
             if st.button("Create the signals of the strategy."):
                 st.session_state["signals"] = func(**params)
-            if (
-                st.session_state["signals"] is not None
-                and strategy_type != "<Select>"
-            ):
-                st.success("The signals of the strategy created successfully")
-                if strategy_type == "Indicator Trading":
-                    key = f"S{len(st.session_state['strategies'])+1}"
-                    key = f" - {strategy_type} ({indicator})"
-                    if key not in st.session_state.strategy_keys:
-                        st.session_state.strategy_keys.add(key)
-                        key = f"S{len(st.session_state['strategies'])+1}" + key
+                if st.session_state["signals"] is not None and key_name != "":
+                    st.success(
+                        "The signals of the strategy created successfully"
+                    )
+                    st.session_state.last_strategy = key_name
+                    if key_name not in st.session_state.strategy_keys:
+                        st.session_state.strategy_keys.add(key_name)
+                        key = f"S{len(st.session_state['strategies'])+1} - {key_name}"
                         st.session_state["strategies"][key] = st.session_state[
                             "signals"
                         ]
-                    cs.draw_technical_indicators(
-                        ohlcv=st.session_state["smoothed_data"],
-                        indicator_name=indicator,
-                    )
+                    if strategy_type == "Indicator Trading":
+                        cs.draw_technical_indicators(
+                            ohlcv=st.session_state["smoothed_data"],
+                            indicator_name=indicator,
+                        )
+
     if (
         st.session_state["smoothed_data"] is not None
         and st.session_state["signals"] is not None
@@ -580,9 +570,10 @@ def main():
         cs.show_signals_on_chart(
             ohlcv=st.session_state["smoothed_data"],
             signals=st.session_state["signals"],
+            last_strategy_name=st.session_state.last_strategy,
         )
     if len(st.session_state["strategies"]) != 0:
-        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
         _, center_col_strategies_created, _ = st.columns([1, 2, 1])
         center_col_strategies_created.subheader(
             "These strategies have been created:"
@@ -590,7 +581,7 @@ def main():
         st.markdown("<br>", unsafe_allow_html=True)
 
         strategies = st.session_state["strategies"]
-        st.write(strategies)
+        # st.write(strategies)
         for key, val in strategies.items():
             _, strategies_col, _ = st.columns([1, 2, 1])
             strategies_col.write(key)

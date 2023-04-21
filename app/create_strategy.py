@@ -69,24 +69,24 @@ def sma_trading(ohlcv: pd.DataFrame, short_smo: int = 50, long_smo: int = 200):
     signals = pd.DataFrame(
         index=ohlcv.index, data={"Signals": np.zeros((len(ohlcv),))}
     )
-    ohlcv[f"SMA-{short_mo}"] = ohlcv["Close"].rolling(short_mo).mean()
-    ohlcv[f"SMA-{long_mo}"] = ohlcv["Close"].rolling(long_mo).mean()
-    short_mo_above = False
+    ohlcv[f"SMA-{short_smo}"] = ohlcv["Close"].rolling(short_smo).mean()
+    ohlcv[f"SMA-{long_smo}"] = ohlcv["Close"].rolling(long_smo).mean()
+    short_smo_above = False
     for i in range(len(ohlcv) - 1):
         if (
-            ohlcv.at[ohlcv.index[i], f"SMA-{short_mo}"]
-            >= ohlcv.at[ohlcv.index[i], f"SMA-{long_mo}"]
-            and not short_mo_above
+            ohlcv.at[ohlcv.index[i], f"SMA-{short_smo}"]
+            >= ohlcv.at[ohlcv.index[i], f"SMA-{long_smo}"]
+            and not short_smo_above
         ):
             signals.at[ohlcv.index[i + 1], "Signals"] = 1
-            short_mo_above = True
+            short_smo_above = True
         elif (
-            ohlcv.at[ohlcv.index[i], f"SMA-{short_mo}"]
-            <= ohlcv.at[ohlcv.index[i], f"SMA-{long_mo}"]
-            and short_mo_above
+            ohlcv.at[ohlcv.index[i], f"SMA-{short_smo}"]
+            <= ohlcv.at[ohlcv.index[i], f"SMA-{long_smo}"]
+            and short_smo_above
         ):
             signals.at[ohlcv.index[i + 1], "Signals"] = 2
-            short_mo_above = False
+            short_smo_above = False
     return signals
 
 
@@ -94,24 +94,24 @@ def ema_trading(ohlcv: pd.DataFrame, short_emo: int = 50, long_emo: int = 200):
     signals = pd.DataFrame(
         index=ohlcv.index, data={"Signals": np.zeros((len(ohlcv),))}
     )
-    ohlcv[f"EMA-{short_mo}"] = ohlcv["Close"].ewm(span=short_mo).mean()
-    ohlcv[f"EMA-{long_mo}"] = ohlcv["Close"].ewm(span=long_mo).mean()
-    short_mo_above = False
+    ohlcv[f"EMA-{short_emo}"] = ohlcv["Close"].ewm(span=short_emo).mean()
+    ohlcv[f"EMA-{long_emo}"] = ohlcv["Close"].ewm(span=long_emo).mean()
+    short_emo_above = False
     for i in range(len(ohlcv) - 1):
         if (
-            ohlcv.at[ohlcv.index[i], f"EMA-{short_mo}"]
-            >= ohlcv.at[ohlcv.index[i], f"EMA-{long_mo}"]
-            and not short_mo_above
+            ohlcv.at[ohlcv.index[i], f"EMA-{short_emo}"]
+            >= ohlcv.at[ohlcv.index[i], f"EMA-{long_emo}"]
+            and not short_emo_above
         ):
             signals.at[ohlcv.index[i + 1], "Signals"] = 1
-            short_mo_above = True
+            short_emo_above = True
         elif (
-            ohlcv.at[ohlcv.index[i], f"EMA-{short_mo}"]
-            <= ohlcv.at[ohlcv.index[i], f"EMA-{long_mo}"]
-            and short_mo_above
+            ohlcv.at[ohlcv.index[i], f"EMA-{short_emo}"]
+            <= ohlcv.at[ohlcv.index[i], f"EMA-{long_emo}"]
+            and short_emo_above
         ):
             signals.at[ohlcv.index[i + 1], "Signals"] = 2
-            short_mo_above = False
+            short_emo_above = False
     return signals
 
 
@@ -346,7 +346,6 @@ def candlestick_trading(
     return signals
 
 
-@st.cache
 def calculate_support_resistance(df, rolling_wave_length, num_clusters, area):
     date = df.index
     # Reset index for merging
@@ -392,7 +391,6 @@ def calculate_support_resistance(df, rolling_wave_length, num_clusters, area):
     return waves2.reset_index().waves
 
 
-@st.cache
 def support_resistance_trading(
     ohlcv: pd.DataFrame, rolling_wave_length: int = 20, num_clusters: int = 4
 ):
@@ -425,6 +423,7 @@ def support_resistance_trading(
 def show_signals_on_chart(
     ohlcv: pd.DataFrame,
     signals: np.array,
+    last_strategy_name: str,
 ):
     ohlcv = ohlcv.copy()
     ohlcv["buy"] = np.where(signals["Signals"] == 1, 1, 0)
@@ -458,8 +457,8 @@ def show_signals_on_chart(
         )
     )
     fig.update_layout(
-        title=f"<span style='font-size: 30px;'><b>Close Price with the Signals of the Strategy</b></span>",
-        title_x=0.3,
+        title=f"<span style='font-size: 30px;'><b>Close Price with the Signals of the {last_strategy_name}</b></span>",
+        title_x=0.1,
         autosize=True,
         width=950,
         height=400,
@@ -473,7 +472,6 @@ def mix_strategies(mix: set, mixing_logic: str):
         mixing_logic = re.sub(
             r"\bs(\d+)\b", lambda match: f"{{{match.group(1)}}}", mixing_logic
         )
-        st.write(mix)
         for m in mix:
             m["is_buy"] = np.where(m["Signals"] == 1, 1, 0)
             m["is_sell"] = np.where(m["Signals"] == 2, 1, 0)
