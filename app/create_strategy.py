@@ -422,10 +422,14 @@ def support_resistance_trading(
     return signals
 
 
-def show_signals_on_chart(ohlcv: pd.DataFrame, signals: np.array, ticker: str):
+def show_signals_on_chart(
+    ohlcv: pd.DataFrame,
+    signals: np.array,
+):
+    ohlcv = ohlcv.copy()
+    ohlcv["buy"] = np.where(signals["Signals"] == 1, 1, 0)
+    ohlcv["sell"] = np.where(signals["Signals"] == 2, 1, 0)
     fig = go.Figure()
-    buy_labels = signals["Signals"] == 1
-    sell_labels = signals["Signals"] == 2
     fig.add_trace(
         go.Scatter(
             x=ohlcv.index,
@@ -437,8 +441,8 @@ def show_signals_on_chart(ohlcv: pd.DataFrame, signals: np.array, ticker: str):
     )
     fig.add_trace(
         go.Scatter(
-            x=ohlcv[buy_labels].index,
-            y=ohlcv[buy_labels]["Close"],
+            x=ohlcv[ohlcv["buy"] == True].index,
+            y=ohlcv[ohlcv["buy"] == True]["Close"],
             mode="markers",
             marker=dict(size=6, color="#2cc05c"),
             name="Buy",
@@ -446,16 +450,19 @@ def show_signals_on_chart(ohlcv: pd.DataFrame, signals: np.array, ticker: str):
     )
     fig.add_trace(
         go.Scatter(
-            x=ohlcv[sell_labels].index,
-            y=ohlcv[sell_labels]["Close"],
+            x=ohlcv[ohlcv["sell"] == True].index,
+            y=ohlcv[ohlcv["sell"] == True]["Close"],
             mode="markers",
             marker=dict(size=6, color="#f62728"),
             name="Sell",
         )
     )
     fig.update_layout(
-        title=f"<span style='font-size: 30px;'><b>Close Price with Signals of {ticker}</b></span>",
-        title_x=0.5,
+        title=f"<span style='font-size: 30px;'><b>Close Price with the Signals of the Strategy</b></span>",
+        title_x=0.3,
+        autosize=True,
+        width=950,
+        height=400,
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -563,7 +570,6 @@ def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
         )
         st.plotly_chart(fig, use_container_width=True)
     elif indicator_name == "RSI":
-        st.write("draw")
         ohlcv["RSI"] = ta.momentum.RSIIndicator(
             close=ohlcv["Close"], window=14, fillna=False
         ).rsi()
@@ -571,23 +577,12 @@ def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
             rows=2,
             cols=1,
             shared_xaxes=False,
-            vertical_spacing=0.1,
+            vertical_spacing=0.2,
             subplot_titles=(
-                "<span style='font-size: 30px;'><b>Close Price</b></span>",
-                "<span style='font-size: 30px;'><b>RSI Value</b></span>",
+                "<span style='font-size: 30px;'><b>RSI Price</b></span>",
+                "<span style='font-size: 30px;'><b>Close Value</b></span>",
             ),
             row_width=[1, 1],
-        )
-        fig.add_trace(
-            go.Scatter(
-                x=ohlcv.index,
-                y=ohlcv["Close"],
-                mode="lines",
-                line=dict(color="#222266"),
-                name="Close Price",
-            ),
-            row=1,
-            col=1,
         )
         fig.add_trace(
             go.Scatter(
@@ -597,17 +592,24 @@ def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
                 line=dict(color="#880099"),
                 name="RSI Value",
             ),
+            row=1,
+            col=1,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=ohlcv.index,
+                y=ohlcv["Close"],
+                mode="lines",
+                line=dict(color="#222266"),
+                name="Close Price",
+            ),
             row=2,
             col=1,
         )
         fig.update_layout(
-            title="<span style='font-size: 30px;'><b>Close Price with RSI</b></span>",
-            title_x=0.5,
-        )
-        fig.update_layout(
             autosize=True,
             width=950,
-            height=950,
+            height=600,
         )
         st.plotly_chart(fig, use_container_width=True)
     elif indicator_name == "SMA":

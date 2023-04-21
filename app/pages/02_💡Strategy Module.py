@@ -48,7 +48,7 @@ def main():
     style = "<style>.row-widget.stButton {text-align: center;}</style>"
     st.markdown(style, unsafe_allow_html=True)
 
-    correlated_asset = None
+    pass
 
     if st.session_state["data"] is None:
         st.error("Please get the data first.")
@@ -66,7 +66,7 @@ def main():
             if uploaded_file is not None:
                 try:
                     st.session_state["signals"] = pd.read_csv(
-                        uploaded_file, names=["Signals"]
+                        uploaded_file, names=["Signals"], skiprows=1
                     )
                 except FileNotFoundError as exception:
                     center_col_get.error(
@@ -75,11 +75,17 @@ def main():
                 else:
                     signals = st.session_state["signals"]
                     if signals is not None:
-                        key = f"Uploaded Signals ({uploaded_file.name[:-4]})"
+                        st.session_state["smoothed_data"] = st.session_state[
+                            "data"
+                        ]
+                        key = f"S{len(st.session_state['strategies'])+1}"
+                        key += (
+                            f" - Uploaded Signals ({uploaded_file.name[:-4]})"
+                        )
                         if key not in st.session_state.strategy_keys:
                             st.session_state.strategy_keys.add(key)
                             st.session_state["strategies"][
-                                f"S{len(st.session_state['strategies'])+1} - {key}"
+                                key
                             ] = st.session_state["signals"]
                             # st.markdown("<br>", unsafe_allow_html=True)
                             center_col_get.success(
@@ -100,70 +106,22 @@ def main():
                 smoothing_method=smooth_method,
                 parameters={"window": 20},
             )
+            func = ""
+            pass
             strategy_type = center_col_get.selectbox(
                 "Which strategy do you want to create: ",
                 [
                     "<Select>",
-                    "Correlation Trading",
                     "Indicator Trading",
                     "Momentum Trading",
                     "AI Trading",
                     "Candlestick Pattern Trading",
+                    "Candlestick Sentiment Trading",
                     "Support-Resistance Trading",
                 ],
                 on_change=clean_signals,
             )
-            if strategy_type == "Correlation Trading":
-                market = center_col_get.selectbox(
-                    "Select the correlated market: ",
-                    ["<Select>", "Stocks & ETFs", "Forex", "Crypto"],
-                )
-                if market != "<Select>":
-                    assets = list(st.session_state["assets"][market].keys())
-                    assets.insert(0, "<Select>")
-                    correlated_asset = center_col_get.selectbox(
-                        "Select the correlated asset: ", assets
-                    )
-                    if (
-                        correlated_asset is not None
-                        and correlated_asset != "<Select>"
-                    ):
-                        correlated_asset_ohclv = cd.create_ohlcv_alike(
-                            data=st.session_state["smoothed_data"],
-                            new_asset=st.session_state["assets"][market][
-                                correlated_asset
-                            ],
-                        )
-                        try:
-                            downward_movement = st.number_input(
-                                "How much downward movement do you expect to see from the correlated asset?"
-                            )
-                        except TypeError:
-                            st.write("Please write a number.")
-                        if downward_movement != 0:
-                            st.markdown("<br>", unsafe_allow_html=True)
-                            if st.button(
-                                "Create the signals of the strategy."
-                            ):
-                                st.session_state[
-                                    "signals"
-                                ] = cs.correlation_trading(
-                                    ohlcv1=correlated_asset_ohclv,
-                                    ohlcv2=st.session_state["smoothed_data"],
-                                    downward_movement=downward_movement,
-                                    upward_movement=0.01,
-                                )
-                                if st.session_state["signals"] is not None:
-                                    st.session_state["signals"].to_csv(
-                                        f"signals of the {strategy_type}.csv"
-                                    )
-                                    st.session_state["strategies"][
-                                        "Correlation Trading"
-                                    ] = st.session_state["signals"]
-                                    st.success(
-                                        "signals of the strategy created and saved successfully"
-                                    )
-            elif strategy_type == "Indicator Trading":
+            if strategy_type == "Indicator Trading":
                 indicator = center_col_get.selectbox(
                     "Select the indicator you want to use: ",
                     ["<Select>", "RSI", "SMA", "EMA", "Bollinger Bands"],
@@ -181,15 +139,12 @@ def main():
                             overbought = st.number_input(
                                 "Please enter the overbought value", value=70
                             )
-                        strategy_created = st.button(
-                            "Create the signals of the strategy."
-                        )
-                        if strategy_created:
-                            st.session_state["signals"] = cs.rsi_trading(
-                                ohlcv=st.session_state["smoothed_data"],
-                                oversold=oversold,
-                                overbought=overbought,
-                            )
+                        func = cs.rsi_trading
+                        params = {
+                            "ohlcv": st.session_state["smoothed_data"],
+                            "oversold": oversold,
+                            "overbought": overbought,
+                        }
                     if indicator == "SMA":
                         col1, col2 = st.columns([1, 1])
                         with col1:
@@ -202,15 +157,12 @@ def main():
                                 "Please enter the long moving average value",
                                 value=200,
                             )
-                        strategy_created = st.button(
-                            "Create the signals of the strategy."
-                        )
-                        if strategy_created:
-                            st.session_state["signals"] = cs.sma_trading(
-                                ohlcv=st.session_state["smoothed_data"],
-                                short_mo=short_smo,
-                                long_mo=long_smo,
-                            )
+                        func = cs.sma_trading
+                        params = {
+                            "ohlcv": st.session_state["smoothed_data"],
+                            "short_mo": short_mo,
+                            "long_mo": long_mo,
+                        }
                     if indicator == "EMA":
                         col1, col2 = st.columns([1, 1])
                         with col1:
@@ -223,15 +175,12 @@ def main():
                                 "Please enter the long moving average value",
                                 value=200,
                             )
-                        strategy_created = st.button(
-                            "Create the signals of the strategy."
-                        )
-                        if strategy_created:
-                            st.session_state["signals"] = cs.ema_trading(
-                                ohlcv=st.session_state["smoothed_data"],
-                                short_mo=short_emo,
-                                long_mo=long_emo,
-                            )
+                        func = cs.ema_trading
+                        params = {
+                            "ohlcv": st.session_state["smoothed_data"],
+                            "short_mo": short_mo,
+                            "long_mo": long_mo,
+                        }
                     if indicator == "Bollinger Bands":
                         col1, col2 = st.columns([1, 1])
                         with col1:
@@ -243,34 +192,12 @@ def main():
                                 "Please enter the window deviation value",
                                 value=2,
                             )
-                        strategy_created = st.button(
-                            "Create the signals of the strategy."
-                        )
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        if strategy_created:
-                            st.session_state["signals"] = cs.bb_trading(
-                                ohlcv=st.session_state["smoothed_data"],
-                                window=window,
-                                window_dev=window_dev,
-                            )
-                    if (
-                        st.session_state["signals"] is not None
-                        and strategy_created
-                    ):
-                        st.session_state["signals"].to_csv(
-                            f"signals of the {strategy_type}.csv"
-                        )
-                        st.session_state["strategies"][
-                            f"Indicator Trading-{indicator}"
-                        ] = st.session_state["signals"]
-                        st.success(
-                            "signals of the strategy created and saved successfully"
-                        )
-
-                        cs.draw_technical_indicators(
-                            ohlcv=st.session_state["smoothed_data"],
-                            indicator_name=indicator,
-                        )
+                        func = cs.bb_trading
+                        params = {
+                            "ohlcv": st.session_state["smoothed_data"],
+                            "window": window,
+                            "window_dev": window_dev,
+                        }
             elif strategy_type == "Momentum Trading":
                 indicator = center_col_get.selectbox(
                     "Select the momentum strategy you want to use: ",
@@ -621,17 +548,31 @@ def main():
                         st.success(
                             "The signals of the strategy created and saved successfully"
                         )
+            if st.button("Create the signals of the strategy."):
+                st.session_state["signals"] = func(**params)
             if (
                 st.session_state["signals"] is not None
                 and strategy_type != "<Select>"
             ):
-                # st.write(st.session_state["signals"])
-                signals = st.session_state["signals"]
-                cs.show_signals_on_chart(
-                    ohlcv=st.session_state["smoothed_data"],
-                    signals=signals,
-                    ticker=st.session_state["ticker"],
-                )
+                st.success("The signals of the strategy created successfully")
+                if strategy_type == "Indicator Trading":
+                    key = f"S{len(st.session_state['strategies'])+1}"
+                    key += f" - {strategy_type} ({indicator})"
+                    st.session_state["strategies"][key] = st.session_state[
+                        "signals"
+                    ]
+                    cs.draw_technical_indicators(
+                        ohlcv=st.session_state["smoothed_data"],
+                        indicator_name=indicator,
+                    )
+    if (
+        st.session_state["smoothed_data"] is not None
+        and st.session_state["signals"] is not None
+    ):
+        cs.show_signals_on_chart(
+            ohlcv=st.session_state["smoothed_data"],
+            signals=st.session_state["signals"],
+        )
     if len(st.session_state["strategies"]) != 0:
         strategies = st.session_state["strategies"]
         st.markdown("<br><br>", unsafe_allow_html=True)
