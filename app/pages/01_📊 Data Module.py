@@ -147,7 +147,7 @@ def load_tickers():
             tickers_list = {}
             for market in markets:
                 tickers_list[market] = [
-                    f"{k} - {v}" for k, v in tickers_dict[market].items()
+                    f"{k} | {v}" for k, v in tickers_dict[market].items()
                 ]
     return tickers_dict, tickers_list
 
@@ -204,7 +204,7 @@ def main():
                 "Select the asset: ", assets, on_change=clear_data
             )
             if asset != DEFAULT_CHOICE:
-                asset = asset.split("-")[0].strip()
+                asset = asset.split("|")[0].strip()
             intervals = [
                 "1m",
                 "1d",
@@ -219,8 +219,6 @@ def main():
             )
             if asset != DEFAULT_CHOICE and interval != DEFAULT_CHOICE:
                 ticker = asset
-                st.write(ticker)
-                st.write(len(ticker))
                 if ticker is None:
                     full_data = None
                 else:
