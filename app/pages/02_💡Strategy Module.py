@@ -383,138 +383,169 @@ def main():
                         st.session_state.ai_data.iloc[:split],
                         st.session_state.ai_data.iloc[split:],
                     )
-                    st.dataframe(train)
-                    st.dataframe(test)
-
-                    ai_method = center_col_get.selectbox(
-                        "Select the artifical intelligence method you want to use: ",
-                        ["<Select>", "Machine Learning", "Deep Learning"],
+                    # st.dataframe(train)
+                    # st.dataframe(test)
+                ai_method = center_col_get.selectbox(
+                    "Select the AI method you want to use: ",
+                    [
+                        "<Select>",
+                        "Basic Machine Learning",
+                        "Advanced Machine Learning",
+                        "Deep Learning",
+                    ],
+                )
+                if ai_method == "Basic Machine Learning":
+                    bml_model = st.selectbox(
+                        "Select the basic machine learning model you want to use: ",
+                        [
+                            "Logistic Regression",
+                            "Support Vector Machine",
+                            "Random Forest",
+                        ],
+                        on_change=clean_signals,
                     )
-                    if ai_method == "Deep Learning":
-                        dl_method = center_col_get.selectbox(
-                            "Select the deep learning model you want to use: ",
-                            ["<Select>", "AutoKeras", "Prophet"],
-                        )
-                        if dl_method == "AutoKeras":
-                            possible_models = st.number_input(
-                                "Select the number of the possible models to try",
-                                value=5,
-                                step=5,
-                            )
-                            if st.button(
-                                "Create the signals of the strategy."
-                            ):
-                                market = st.session_state["smoothed_data"]
-                                train_data = market.iloc[
-                                    : len(market) * 4 // 5, :
-                                ]
-                                test_data = market.iloc[
-                                    len(market) * 4 // 5 :, :
-                                ]
-                                st.session_state["signals"] = cs.dl_trading(
-                                    train_data=train_data,
-                                    test_data=test_data,
-                                    possible_models=possible_models,
-                                )
-                    elif ai_method == "Machine Learning":
-                        models = cs.get_ml_models(
-                            st.session_state["smoothed_data"].iloc[:100, :]
-                        )
-                        ai_models = st.multiselect(
-                            "Select the machine learning models you want to use: ",
-                            models.keys(),
-                        )
-                        tune_number = st.number_input(
-                            "Select the number of the iterations to tune the model",
+                    func = cs.basic_ml_trading
+                    params = {
+                        "train": train,
+                        "test": test,
+                    }
+                    key_name = f"{bml_model}"
+                elif ai_method == "Advanced Machine Learning":
+                    aml_model = st.selectbox(
+                        "Select the advanced machine learning model you want to use: ",
+                        [
+                            "XGBoost",
+                            "LightGBM",
+                            "CatBoost",
+                        ],
+                        on_change=clean_signals,
+                    )
+                    func = cs.advanved_ml_trading
+                    params = {
+                        "train": train,
+                        "test": test,
+                    }
+                    key_name = f"{aml_model}"
+                if ai_method == "Deep Learning":
+                    dl_model_layer = st.number_input(
+                        "Please enter the number of layers for your neural network",
+                        value=5,
+                        on_change=clean_signals,
+                    )
+                    func = cs.dl_trading
+                    params = {
+                        "train": train,
+                        "test": test,
+                    }
+                    key_name = f"Neural Network ({dl_model_layer}-Layers)"
+
+                if ai_method == "Deep Learning":
+                    dl_method = center_col_get.selectbox(
+                        "Select the deep learning model you want to use: ",
+                        ["<Select>", "AutoKeras", "Prophet"],
+                    )
+                    if dl_method == "AutoKeras":
+                        possible_models = st.number_input(
+                            "Select the number of the possible models to try",
                             value=5,
                             step=5,
                         )
-                        if len(ai_models) != 0:
-                            selected_models = [
-                                models[key] for key in ai_models
-                            ]
-                            # st.write(type(selected_models))
-                            st.markdown("<br>", unsafe_allow_html=True)
-                            if st.button(
-                                "Create the signals of the strategy."
-                            ):
-                                # train_data = pd.concat([pd.DataFrame(X_train[0], index=y_train[0].index), y_train[0]], axis=1)
-                                # test_data = pd.DataFrame(X_test[0], index=y_test[0].index)
-                                market = st.session_state["smoothed_data"]
-                                train_data = market.iloc[
-                                    : len(market) * 4 // 5, :
-                                ]
-                                test_data = market.iloc[
-                                    len(market) * 4 // 5 :, :
-                                ]
-                                st.session_state["signals"] = cs.ml_trading(
-                                    train_data=train_data,
-                                    test_data=test_data,
-                                    selected_models=selected_models,
-                                    tune_number=tune_number,
+                        if st.button("Create the signals of the strategy."):
+                            market = st.session_state["smoothed_data"]
+                            train_data = market.iloc[: len(market) * 4 // 5, :]
+                            test_data = market.iloc[len(market) * 4 // 5 :, :]
+                            st.session_state["signals"] = cs.dl_trading(
+                                train_data=train_data,
+                                test_data=test_data,
+                                possible_models=possible_models,
+                            )
+                elif ai_method == "Machine Learning":
+                    models = cs.get_ml_models(
+                        st.session_state["smoothed_data"].iloc[:100, :]
+                    )
+                    ai_models = st.multiselect(
+                        "Select the machine learning models you want to use: ",
+                        models.keys(),
+                    )
+                    tune_number = st.number_input(
+                        "Select the number of the iterations to tune the model",
+                        value=5,
+                        step=5,
+                    )
+                    if len(ai_models) != 0:
+                        selected_models = [models[key] for key in ai_models]
+                        # st.write(type(selected_models))
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        if st.button("Create the signals of the strategy."):
+                            # train_data = pd.concat([pd.DataFrame(X_train[0], index=y_train[0].index), y_train[0]], axis=1)
+                            # test_data = pd.DataFrame(X_test[0], index=y_test[0].index)
+                            market = st.session_state["smoothed_data"]
+                            train_data = market.iloc[: len(market) * 4 // 5, :]
+                            test_data = market.iloc[len(market) * 4 // 5 :, :]
+                            st.session_state["signals"] = cs.ml_trading(
+                                train_data=train_data,
+                                test_data=test_data,
+                                selected_models=selected_models,
+                                tune_number=tune_number,
+                            )
+                            if st.session_state["signals"] is not None:
+                                st.session_state["signals"].to_csv(
+                                    f"signals of the {strategy_type}.csv"
                                 )
-                                if st.session_state["signals"] is not None:
-                                    st.session_state["signals"].to_csv(
-                                        f"signals of the {strategy_type}.csv"
+                                st.session_state["strategies"][
+                                    f"AI Trading-{len(st.session_state['strategies'])}"
+                                ] = st.session_state["signals"]
+                                st.success(
+                                    "signals of the strategy created and saved successfully"
+                                )
+                                target_names = ["Hold", "Buy", "Sell"]
+                                cm = confusion_matrix(
+                                    test_data["Label"],
+                                    st.session_state["signals"]["signals"],
+                                )
+                                plt.grid(False)
+                                disp = ConfusionMatrixDisplay(
+                                    confusion_matrix=cm,
+                                    display_labels=target_names,
+                                )
+                                disp.plot(cmap=plt.cm.Blues)
+                                disp.ax_.grid(False)
+                                fig = disp.ax_.get_figure()
+                                fig.set_size_inches(5, 5)
+                                col1, col2 = st.columns([1, 1])
+                                with col1:
+                                    st.subheader(
+                                        "Confusion matrix of the AI Model"
                                     )
-                                    st.session_state["strategies"][
-                                        f"AI Trading-{len(st.session_state['strategies'])}"
-                                    ] = st.session_state["signals"]
-                                    st.success(
-                                        "signals of the strategy created and saved successfully"
+                                    st.pyplot(fig)
+                                with col2:
+                                    st.subheader(
+                                        "Classification report of the AI Model"
                                     )
-                                    target_names = ["Hold", "Buy", "Sell"]
-                                    cm = confusion_matrix(
+                                    report = classification_report(
                                         test_data["Label"],
                                         st.session_state["signals"]["signals"],
+                                        target_names=target_names,
+                                        output_dict=True,
                                     )
-                                    plt.grid(False)
-                                    disp = ConfusionMatrixDisplay(
-                                        confusion_matrix=cm,
-                                        display_labels=target_names,
+                                    df_report = pd.DataFrame(
+                                        report
+                                    ).transpose()
+                                    st.dataframe(df_report)
+                                    train_period = pd.DataFrame(
+                                        index=train_data.index,
+                                        data={
+                                            "signals": np.zeros(
+                                                (len(train_data),)
+                                            )
+                                        },
                                     )
-                                    disp.plot(cmap=plt.cm.Blues)
-                                    disp.ax_.grid(False)
-                                    fig = disp.ax_.get_figure()
-                                    fig.set_size_inches(5, 5)
-                                    col1, col2 = st.columns([1, 1])
-                                    with col1:
-                                        st.subheader(
-                                            "Confusion matrix of the AI Model"
-                                        )
-                                        st.pyplot(fig)
-                                    with col2:
-                                        st.subheader(
-                                            "Classification report of the AI Model"
-                                        )
-                                        report = classification_report(
-                                            test_data["Label"],
-                                            st.session_state["signals"][
-                                                "signals"
-                                            ],
-                                            target_names=target_names,
-                                            output_dict=True,
-                                        )
-                                        df_report = pd.DataFrame(
-                                            report
-                                        ).transpose()
-                                        st.dataframe(df_report)
-                                        train_period = pd.DataFrame(
-                                            index=train_data.index,
-                                            data={
-                                                "signals": np.zeros(
-                                                    (len(train_data),)
-                                                )
-                                            },
-                                        )
-                                        st.session_state[
-                                            "signals"
-                                        ] = pd.concat(
-                                            [
-                                                train_period,
-                                                st.session_state["signals"],
-                                            ]
-                                        )
+                                    st.session_state["signals"] = pd.concat(
+                                        [
+                                            train_period,
+                                            st.session_state["signals"],
+                                        ]
+                                    )
             if st.button("Create the signals of the strategy."):
                 st.session_state["signals"] = func(**params)
                 if st.session_state["signals"] is not None and key_name != "":
