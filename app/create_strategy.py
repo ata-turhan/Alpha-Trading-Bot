@@ -529,7 +529,7 @@ def show_signals_on_chart(
     )
     fig.update_layout(
         title=f"<span style='font-size: 30px;'><b>Close Price with the Signals of the {last_strategy_name}</b></span>",
-        title_x=0.1,
+        title_x=0.05,
         autosize=True,
         width=950,
         height=400,

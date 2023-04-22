@@ -519,6 +519,29 @@ def main():
                     "sell_pattern": sell_pattern,
                 }
                 key_name = f"{strategy_type} ({buy_pattern}, {sell_pattern})"
+            elif strategy_type == "Candlestick Sentiment Trading":
+                col1, col2 = st.columns([1, 1])
+                with col1:
+                    consecutive_bullish_num = center_col_get.number_input(
+                        "Please enter the the consecutive number of \
+                        bullish candles to trigger the buy signal",
+                        value=5,
+                        on_change=clean_signals,
+                    )
+                with col2:
+                    consecutive_bearish_num = center_col_get.number_input(
+                        "Please enter the the consecutive number of \
+                        bearish candles to trigger the sell signal",
+                        value=5,
+                        on_change=clean_signals,
+                    )
+                func = cs.candlestick_sentiment_trading
+                params = {
+                    "ohlcv": st.session_state["smoothed_data"],
+                    "consecutive_bullish_num": consecutive_bullish_num,
+                    "consecutive_bearish_num": consecutive_bearish_num,
+                }
+                key_name = f"{strategy_type} ({consecutive_bullish_num}, {consecutive_bearish_num})"
             elif strategy_type == "Support-Resistance Trading":
                 col1, col2 = center_col_get.columns([1, 1])
                 with col1:
