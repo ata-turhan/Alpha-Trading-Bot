@@ -309,41 +309,13 @@ def main():
                 with col1:
                     buy_pattern = center_col_get.selectbox(
                         "Select the pattern you want to use for a buy signal:",
-                        [
-                            "<Select>",
-                            "Doji",
-                            "Gravestone Doji",
-                            "Dragonfly Doji",
-                            "Longleg Doji",
-                            "Hammer Hanging Man",
-                            "Inverse Hammer",
-                            "Spinning Top",
-                            "Dark Cloud Cover",
-                            "Piercing Pattern",
-                            "Bullish Marubozu",
-                            "Bullish Engulfing",
-                            "Bullish Harami",
-                        ],
+                        cs.candlestick_bullish_patterns,
                         on_change=clean_signals,
                     )
                 with col2:
                     sell_pattern = center_col_get.selectbox(
                         "Select the pattern you want to use for a sell signal:",
-                        [
-                            "<Select>",
-                            "Doji",
-                            "Gravestone Doji",
-                            "Dragonfly Doji",
-                            "Longleg Doji",
-                            "Hammer Hanging Man",
-                            "Inverse Hammer",
-                            "Spinning Top",
-                            "Dark Cloud Cover",
-                            "Piercing Pattern",
-                            "Bearish Marubozu",
-                            "Bearish Engulfing",
-                            "Bearish Harami",
-                        ],
+                        cs.candlestick_bearish_patterns,
                         on_change=clean_signals,
                     )
                 func = cs.candlestick_pattern_trading

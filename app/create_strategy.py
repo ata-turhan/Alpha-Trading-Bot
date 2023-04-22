@@ -32,6 +32,40 @@ from ta.volatility import BollingerBands
 # from keras.callbacks import (Callback,ModelCheckpoint,EarlyStopping,CSVLogger,ReduceLROnPlateau,)
 
 
+candlestick_bullish_patterns = [
+    "<Select>",
+    "Doji",
+    "Gravestone Doji",
+    "Dragonfly Doji",
+    "Longleg Doji",
+    "Hammer Hanging Man",
+    "Inverse Hammer",
+    "Spinning Top",
+    "Dark Cloud Cover",
+    "Piercing Pattern",
+    "Bullish Marubozu",
+    "Bullish Engulfing",
+    "Bullish Harami",
+]
+
+
+candlestick_bearish_patterns = [
+    "<Select>",
+    "Doji",
+    "Gravestone Doji",
+    "Dragonfly Doji",
+    "Longleg Doji",
+    "Hammer Hanging Man",
+    "Inverse Hammer",
+    "Spinning Top",
+    "Dark Cloud Cover",
+    "Piercing Pattern",
+    "Bearish Marubozu",
+    "Bearish Engulfing",
+    "Bearish Harami",
+]
+
+
 def correlation_trading(
     ohlcv1: pd.DataFrame,
     ohlcv2: pd.DataFrame,
