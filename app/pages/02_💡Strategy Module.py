@@ -1,8 +1,6 @@
 import create_data as cd
 import create_strategy as cs
 import matplotlib.pyplot as plt
-
-pass
 import pandas as pd
 import streamlit as st
 from configuration import add_bg_from_local, configure_authors, configure_page
@@ -30,6 +28,8 @@ def set_session_variables():
         st.session_state.strategy_keys = set()
     if "last_strategy" not in st.session_state:
         st.session_state.last_strategy = ""
+    if "all_strategy_areas_filled" not in st.session_state:
+        st.session_state.all_strategy_areas_filled = False
 
 
 def clean_signals():
@@ -54,8 +54,6 @@ def main():
     style = "<style>.row-widget.stButton {text-align: center;}</style>"
     st.markdown(style, unsafe_allow_html=True)
 
-    pass
-
     if st.session_state["data"] is None:
         st.error("Please get the data first.")
     else:
@@ -65,7 +63,7 @@ def main():
             [DEFAULT_CHOICE, "Create a strategy", "Read from a file"],
             on_change=clean_signals,
         )
-        st.markdown("<br> <br>", unsafe_allow_html=True)
+        # st.markdown("<br> <br>", unsafe_allow_html=True)
 
         if strategy_fetch_way == "Read from a file":
             uploaded_file = center_col_get.file_uploader(
@@ -81,15 +79,15 @@ def main():
                     center_col_get.error(
                         "you need to upload a csv or excel file."
                     )
+                except Except as e:
+                    center_col_get.error(e)
                 else:
                     signals = st.session_state["signals"]
                     if signals is not None:
                         st.session_state["smoothed_data"] = st.session_state[
                             "data"
                         ]
-                        key_name = (
-                            f"Uploaded Signals ({uploaded_file.name[:-4]})"
-                        )
+                        key_name = f"Uploaded Signals ({uploaded_file.name.replace('.csv', '')})"
                         st.session_state.last_strategy = key_name
                         if key_name not in st.session_state.strategy_keys:
                             st.session_state.strategy_keys.add(key_name)
@@ -102,6 +100,7 @@ def main():
                             center_col_get.success(
                                 "The signals of the strategy fetched successfully"
                             )
+                            # st.write(st.session_state["strategies"])
         elif strategy_fetch_way == "Create a strategy":
             smooth_method = center_col_get.selectbox(
                 "Which way do you want to use the price data with smoothing?",
@@ -119,7 +118,7 @@ def main():
                 parameters={"window": 20},
             )
             func = ""
-            pass
+            params = {}
             strategy_type = center_col_get.selectbox(
                 "Which strategy do you want to create: ",
                 [
@@ -307,7 +306,7 @@ def main():
                             "down_day": down_day,
                             "reverse": reverse,
                         }
-                    key_name = f"{strategy_type} - {variation}  ({up_day}, {down_day})"
+                    key_name = f"{strategy_type} - {variation}  ({up_day}, {down_day}, reverse={reverse})"
             elif strategy_type == "Candlestick Pattern Trading":
                 col1, col2 = st.columns([1, 1])
                 with col1:
@@ -496,22 +495,21 @@ def main():
                         col2.dataframe(df_report, width=500, height=410)
                         break_line = '<hr style="height:2px;border-width:10;color:black;background-color:black">'
                         st.markdown(break_line, unsafe_allow_html=True)
-
+    st.session_state.all_strategy_areas_filled = (
+        key_name != "" and strategy_fetch_way != DEFAULT_CHOICE
+    )
     if (
         st.session_state["smoothed_data"] is not None
         and st.session_state["signals"] is not None
         and st.session_state.last_strategy != ""
-        and strategy_fetch_way != DEFAULT_CHOICE
+        and st.session_state.all_strategy_areas_filled
+        and len(st.session_state["strategies"]) > 0
     ):
         cs.show_signals_on_chart(
             ohlcv=st.session_state["smoothed_data"],
             signals=st.session_state["signals"],
             last_strategy_name=st.session_state.last_strategy,
         )
-    if (
-        strategy_fetch_way != DEFAULT_CHOICE
-        and len(st.session_state["strategies"]) > 0
-    ):
         st.markdown("<br>", unsafe_allow_html=True)
         _, center_col_strategies_created, _ = st.columns([1, 2, 1])
         center_col_strategies_created.subheader(
@@ -546,6 +544,7 @@ def main():
                 center_col3.success(
                     "The signals of the strategies mixed successfully"
                 )
+                st.session_state.last_strategy = "Mixed Strategy"
 
 
 if __name__ == "__main__":

@@ -30,8 +30,8 @@ def set_session_variables():
         st.session_state.data = None
     if "data_to_show" not in st.session_state:
         st.session_state.data_to_show = None
-    if "all_areas_filled" not in st.session_state:
-        st.session_state.all_areas_filled = False
+    if "all_data_areas_filled" not in st.session_state:
+        st.session_state.all_data_areas_filled = False
     if "fetch_data_button_clicked" not in st.session_state:
         st.session_state.fetch_data_button_clicked = False
     if "smooth_data_button_clicked" not in st.session_state:
@@ -48,7 +48,7 @@ def set_session_variables():
 
 def fetch_data_button_click(tickers, start, end, interval, col2) -> None:
     if (
-        st.session_state["all_areas_filled"]
+        st.session_state["all_data_areas_filled"]
         and st.session_state.conf_change == True
     ):
         st.session_state["fetch_data_button_clicked"] = True
@@ -254,7 +254,7 @@ def main():
                             ),
                             on_change=clear_data,
                         )
-            st.session_state["all_areas_filled"] = (
+            st.session_state["all_data_areas_filled"] = (
                 market != DEFAULT_CHOICE
                 and start != None
                 and end != None
@@ -274,7 +274,7 @@ def main():
             )
             or st.session_state["fetch_data_button_clicked"]
         ):
-            if st.session_state["all_areas_filled"]:
+            if st.session_state["all_data_areas_filled"]:
                 data = st.session_state["data"]
                 if data is None and st.session_state.conf_change == False:
                     st.error("Data could not be downloaded.")
@@ -283,7 +283,7 @@ def main():
                     fetch_col.success("Data fetched successfully")
                     st.markdown("<br>", unsafe_allow_html=True)
     elif data_fetch_way == "Read from a file" and st.session_state.conf_change:
-        col2.markdown("<br><br>", unsafe_allow_html=True)
+        # col2.markdown("<br><br>", unsafe_allow_html=True)
         uploaded_file = col2.file_uploader(
             "To upload, select a csv or excel file whose first word matches the ticker name.",
             on_change=clear_data,

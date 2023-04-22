@@ -6,6 +6,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 import ta
+from lightgbm import LGBMClassifier
 from Pattern import (
     DarkCloudCover,
     Engulf,
@@ -21,16 +22,13 @@ from Pattern import (
     longleg_doji,
 )
 from plotly.subplots import make_subplots
-
-# from pycaret import classification
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
 from ta.volatility import BollingerBands
-
-# import autokeras as ak
-# import tensorflow as tf
-# import keras
-# from keras.callbacks import (Callback,ModelCheckpoint,EarlyStopping,CSVLogger,ReduceLROnPlateau,)
-
+from xgboost import XGBClassifier
 
 candlestick_bullish_patterns = [
     "<Select>",
@@ -228,100 +226,6 @@ def momentum_percentage_trading(
                 1 if reverse else 2
             )
     return signals
-
-
-"""
-def get_ml_models(train_data: pd.DataFrame):
-    s = classification.setup(
-        data=train_data,
-        target="Label",
-        silent=True,
-    )
-    df = classification.models()
-    df.query('Name != "Dummy Classifier"', inplace=True)
-    ids = df.index
-    names = df.Name
-    models = {name: id_val for id_val, name in zip(ids, names)}
-    return models
-
-
-@st.cache
-def ml_trading(
-    train_data: pd.DataFrame,
-    test_data: pd.DataFrame,
-    selected_models: list,
-    tune_number: int,
-):
-    with st.spinner("Data preprocessing..."):
-        s = classification.setup(
-            data=train_data,
-            target="Label",
-            experiment_name="ai_trading",
-            fold=5,
-            use_gpu=False,
-            normalize=True,
-            pca=False,
-            remove_outliers=True,
-            remove_multicollinearity=True,
-            feature_selection=False,
-            fix_imbalance=True,
-            silent=True,
-        )
-    with st.spinner("Create the models..."):
-        model = classification.compare_models(include=selected_models)
-    with st.spinner("Tune the best model..."):
-        tuned_model = classification.tune_model(
-            model, optimize="F1", n_iter=tune_number, choose_better=True
-        )
-    with st.spinner("Finalizing the best model..."):
-    # default model
-    model_signals = classification.predict_model(
-        tuned_model, data=test_data
-    )
-    return pd.DataFrame(
-        index=test_data.index, data={"Signals": model_signals["Label"]}
-    )
-"""
-
-"""
-def dl_trading(
-    train_data: pd.DataFrame,
-    test_data: pd.DataFrame,
-    possible_models: list,
-):
-    callback = [
-        EarlyStopping(monitor="val_loss", patience=25, mode="min"),
-        ReduceLROnPlateau(
-            monitor="val_loss",
-            factor=0.1,
-            patience=15,
-            verbose=1,
-            min_delta=1e-3,
-            mode="min",
-        ),
-    ]
-    with st.spinner("Searching best neural network architecture..."):
-        search = ak.StructuredDataClassifier(
-            max_trials=possible_models,
-            project_name="Asset Price Classifier",
-            overwrite=True,
-        )
-        search.fit(
-            x=train_data.loc[:, :"Label"],
-            y=train_data.loc[:, "Label"],
-            epochs=30,
-            verbose=2,
-            callbacks=[callback],
-            validation_split=0.3,
-        )
-    with st.spinner("Finalizing the best model..."):
-        best_nn_model = search.export_model()
-    preds = best_nn_model.predict(test_data.loc[:, :"Label"])
-    signals = np.argmax(preds, axis=1)
-    return pd.DataFrame(
-        index=test_data.index, data={"Signals": signals}
-    )
-"""
 
 
 def candlestick_pattern_trading(
@@ -523,14 +427,6 @@ def candlestick_sentiment_trading(
         if sell:
             signals.at[ohlcv.index[i + consecutive_bearish_num], "Signals"] = 2
     return signals
-
-
-from lightgbm import LGBMClassifier
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.neural_network import MLPClassifier
-from sklearn.svm import SVC
-from xgboost import XGBClassifier
 
 
 def basic_ml_trading(
