@@ -1,7 +1,8 @@
 import create_data as cd
 import create_strategy as cs
 import matplotlib.pyplot as plt
-import numpy as np
+
+pass
 import pandas as pd
 import streamlit as st
 from configuration import add_bg_from_local, configure_authors, configure_page
@@ -438,95 +439,12 @@ def main():
                             "data": st.session_state.ai_data,
                         }
                         key_name = f"Neural Network ({dl_model_layer}-Layers)"
-                elif ai_method == "Machine Learning":
-                    models = cs.get_ml_models(
-                        st.session_state["smoothed_data"].iloc[:100, :]
-                    )
-                    ai_models = st.multiselect(
-                        "Select the machine learning models you want to use: ",
-                        models.keys(),
-                    )
-                    tune_number = st.number_input(
-                        "Select the number of the iterations to tune the model",
-                        value=5,
-                        step=5,
-                    )
-                    if len(ai_models) != 0:
-                        selected_models = [models[key] for key in ai_models]
-                        # st.write(type(selected_models))
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        if st.button("Create the signals of the strategy."):
-                            # train_data = pd.concat([pd.DataFrame(X_train[0], index=y_train[0].index), y_train[0]], axis=1)
-                            # test_data = pd.DataFrame(X_test[0], index=y_test[0].index)
-                            market = st.session_state["smoothed_data"]
-                            train_data = market.iloc[: len(market) * 4 // 5, :]
-                            test_data = market.iloc[len(market) * 4 // 5 :, :]
-                            st.session_state["signals"] = cs.ml_trading(
-                                train_data=train_data,
-                                test_data=test_data,
-                                selected_models=selected_models,
-                                tune_number=tune_number,
-                            )
-                            if st.session_state["signals"] is not None:
-                                st.session_state["signals"].to_csv(
-                                    f"signals of the {strategy_type}.csv"
-                                )
-                                st.session_state["strategies"][
-                                    f"AI Trading-{len(st.session_state['strategies'])}"
-                                ] = st.session_state["signals"]
-                                st.success(
-                                    "signals of the strategy created and saved successfully"
-                                )
-                                target_names = ["Hold", "Buy", "Sell"]
-                                cm = confusion_matrix(
-                                    test_data["Label"],
-                                    st.session_state["signals"]["signals"],
-                                )
-                                plt.grid(False)
-                                disp = ConfusionMatrixDisplay(
-                                    confusion_matrix=cm,
-                                    display_labels=target_names,
-                                )
-                                disp.plot(cmap=plt.cm.Blues)
-                                disp.ax_.grid(False)
-                                fig = disp.ax_.get_figure()
-                                fig.set_size_inches(5, 5)
-                                col1, col2 = st.columns([1, 1])
-                                with col1:
-                                    st.subheader(
-                                        "Confusion matrix of the AI Model"
-                                    )
-                                    st.pyplot(fig)
-                                with col2:
-                                    st.subheader(
-                                        "Classification report of the AI Model"
-                                    )
-                                    report = classification_report(
-                                        test_data["Label"],
-                                        st.session_state["signals"]["signals"],
-                                        target_names=target_names,
-                                        output_dict=True,
-                                    )
-                                    df_report = pd.DataFrame(
-                                        report
-                                    ).transpose()
-                                    st.dataframe(df_report)
-                                    train_period = pd.DataFrame(
-                                        index=train_data.index,
-                                        data={
-                                            "signals": np.zeros(
-                                                (len(train_data),)
-                                            )
-                                        },
-                                    )
-                                    st.session_state["signals"] = pd.concat(
-                                        [
-                                            train_period,
-                                            st.session_state["signals"],
-                                        ]
-                                    )
+
             if st.button("Create the signals of the strategy."):
-                st.session_state["signals"] = func(**params)
+                if strategy_type == "AI Trading":
+                    st.session_state["signals"], test_data = func(**params)
+                else:
+                    st.session_state["signals"] = func(**params)
                 if st.session_state["signals"] is not None and key_name != "":
                     st.success(
                         "The signals of the strategy created successfully"
@@ -543,18 +461,54 @@ def main():
                             ohlcv=st.session_state["smoothed_data"],
                             indicator_name=indicator,
                         )
+                        break_line = '<hr style="height:2px;border-width:10;color:black;background-color:black">'
+                        st.markdown(break_line, unsafe_allow_html=True)
+                    elif strategy_type == "AI Trading":
+                        y_test, y_pred = test_data[0], test_data[1]
+                        target_names = ["Hold", "Buy", "Sell"]
+                        cm = confusion_matrix(
+                            y_test,
+                            y_pred,
+                        )
+                        plt.grid(False)
+                        disp = ConfusionMatrixDisplay(
+                            confusion_matrix=cm,
+                            display_labels=target_names,
+                        )
+                        disp.plot(cmap=plt.cm.Blues)
+                        disp.ax_.grid(False)
+                        fig = disp.ax_.get_figure()
+                        fig.set_size_inches(5, 4)
+                        col1, col2 = st.columns([1, 1])
+                        col1.subheader("Confusion matrix of the AI Model")
+                        col1.pyplot(fig)
+                        col2.subheader("Classification report of the AI Model")
+                        report = classification_report(
+                            y_test,
+                            y_pred,
+                            target_names=target_names,
+                            output_dict=True,
+                        )
+                        df_report = pd.DataFrame(report).transpose()
+                        col2.dataframe(df_report, width=500, height=410)
+                        break_line = '<hr style="height:2px;border-width:10;color:black;background-color:black">'
+                        st.markdown(break_line, unsafe_allow_html=True)
 
     if (
         st.session_state["smoothed_data"] is not None
         and st.session_state["signals"] is not None
         and st.session_state.last_strategy != ""
+        and strategy_fetch_way != "<Select>"
     ):
         cs.show_signals_on_chart(
             ohlcv=st.session_state["smoothed_data"],
             signals=st.session_state["signals"],
             last_strategy_name=st.session_state.last_strategy,
         )
-    if len(st.session_state["strategies"]) > 0:
+    if (
+        strategy_fetch_way != "<Select>"
+        and len(st.session_state["strategies"]) > 0
+    ):
         st.markdown("<br>", unsafe_allow_html=True)
         _, center_col_strategies_created, _ = st.columns([1, 2, 1])
         center_col_strategies_created.subheader(

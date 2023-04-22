@@ -564,7 +564,7 @@ def basic_ml_trading(
         index=full_data.index, data={"Signals": np.zeros((len(full_data),))}
     )
     signals.loc[test.index[0] :, "Signals"] = pred
-    return signals
+    return signals, (y_test, pred)
 
 
 def advanced_ml_trading(
@@ -598,7 +598,7 @@ def advanced_ml_trading(
         index=full_data.index, data={"Signals": np.zeros((len(full_data),))}
     )
     signals.loc[test.index[0] :, "Signals"] = pred
-    return signals
+    return signals, (y_test, pred)
 
 
 def dl_trading(dl_model_layer: str, data: pd.DataFrame):
@@ -623,7 +623,7 @@ def dl_trading(dl_model_layer: str, data: pd.DataFrame):
         index=full_data.index, data={"Signals": np.zeros((len(full_data),))}
     )
     signals.loc[test.index[0] :, "Signals"] = pred
-    return signals
+    return signals, (y_test, pred)
 
 
 def show_signals_on_chart(
@@ -664,7 +664,8 @@ def show_signals_on_chart(
     )
     fig.update_layout(
         title=f"<span style='font-size: 30px;'><b>Close Price with the Signals of the {last_strategy_name}</b></span>",
-        title_x=0.05,
+        title_x=0.5,
+        title_xanchor="center",
         autosize=True,
         width=950,
         height=400,
