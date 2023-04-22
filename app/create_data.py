@@ -258,7 +258,6 @@ def create_labels(ohlcv: pd.DataFrame) -> None:
                 df.iloc[j, df.columns.get_loc("Label")] = 1
             elif df["Close"].iloc[j] == maxPrice and (j - i) == 5:
                 df.iloc[j, df.columns.get_loc("Label")] = 2
-    df.drop(index=df.index[-6:], axis=0, inplace=True)
     return df
 
 

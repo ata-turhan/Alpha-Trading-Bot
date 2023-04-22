@@ -525,6 +525,59 @@ def candlestick_sentiment_trading(
     return signals
 
 
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+
+
+def basic_ml_trading(bml_model: str, train: pd.DataFrame, test: pd.DataFrame):
+    train.fillna(0, inplace=True)
+    test.fillna(0, inplace=True)
+    X_train, y_train = train.drop(["Label"], axis=1), train["Label"]
+    X_test, y_test = test.drop(["Label"], axis=1), test["Label"]
+    # st.dataframe(y_train)
+    # st.dataframe(y_test)
+    if bml_model == "Logistic Regression":
+        model = LogisticRegression()
+    elif bml_model == "Support Vector Machine":
+        model = SVC()
+    elif bml_model == "Random Forest":
+        model = RandomForestClassifier()
+    model.fit(X_train, y_train)
+    pred = model.predict(X_test)
+    st.dataframe(pred)
+    full_data = train.append(test)
+    signals = pd.DataFrame(
+        index=full_data.index, data={"Signals": np.zeros((len(full_data),))}
+    )
+    signals.loc[test.index[0] :, "Signals"] = pred
+    return signals
+
+
+def dl_trading(dl_model_layer: str, train: pd.DataFrame, test: pd.DataFrame):
+    train.fillna(0, inplace=True)
+    test.fillna(0, inplace=True)
+    X_train, y_train = train.drop(["Label"], axis=1), train["Label"]
+    X_test, y_test = test.drop(["Label"], axis=1), test["Label"]
+    # st.dataframe(y_train)
+    # st.dataframe(y_test)
+    if bml_model == "Logistic Regression":
+        model = LogisticRegression()
+    elif bml_model == "Support Vector Machine":
+        model = SVC()
+    elif bml_model == "Random Forest":
+        model = RandomForestClassifier()
+    model.fit(X_train, y_train)
+    pred = model.predict(X_test)
+    st.dataframe(pred)
+    full_data = train.append(test)
+    signals = pd.DataFrame(
+        index=full_data.index, data={"Signals": np.zeros((len(full_data),))}
+    )
+    signals.loc[test.index[0] :, "Signals"] = pred
+    return signals
+
+
 def show_signals_on_chart(
     ohlcv: pd.DataFrame,
     signals: np.array,

@@ -375,9 +375,11 @@ def main():
                 with st.spinner(
                     "True labels and train-test data are being created..."
                 ):
+                    st.dataframe(st.session_state.data)
                     st.session_state.ai_data = cd.create_labels(
                         ohlcv=st.session_state.data
                     )
+                    st.dataframe(st.session_state.ai_data)
                     split = int(len(st.session_state.ai_data) * 0.8)
                     train, test = (
                         st.session_state.ai_data.iloc[:split],
@@ -395,7 +397,7 @@ def main():
                     ],
                 )
                 if ai_method == "Basic Machine Learning":
-                    bml_model = st.selectbox(
+                    bml_model = center_col_get.selectbox(
                         "Select the basic machine learning model you want to use: ",
                         [
                             "Logistic Regression",
@@ -406,12 +408,13 @@ def main():
                     )
                     func = cs.basic_ml_trading
                     params = {
+                        "bml_model": bml_model,
                         "train": train,
                         "test": test,
                     }
                     key_name = f"{bml_model}"
                 elif ai_method == "Advanced Machine Learning":
-                    aml_model = st.selectbox(
+                    aml_model = center_col_get.selectbox(
                         "Select the advanced machine learning model you want to use: ",
                         [
                             "XGBoost",
@@ -420,20 +423,21 @@ def main():
                         ],
                         on_change=clean_signals,
                     )
-                    func = cs.advanved_ml_trading
+                    func = cs.advanced_ml_trading
                     params = {
                         "train": train,
                         "test": test,
                     }
                     key_name = f"{aml_model}"
                 if ai_method == "Deep Learning":
-                    dl_model_layer = st.number_input(
+                    dl_model_layer = center_col_get.number_input(
                         "Please enter the number of layers for your neural network",
                         value=5,
                         on_change=clean_signals,
                     )
                     func = cs.dl_trading
                     params = {
+                        "dl_model_layer": dl_model_layer,
                         "train": train,
                         "test": test,
                     }
