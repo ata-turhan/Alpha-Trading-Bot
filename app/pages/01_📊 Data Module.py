@@ -128,6 +128,13 @@ def clear_data():
     reset_click()
 
 
+def clean_data_and_strategy_module():
+    clear_data()
+    st.session_state.ai_data = None
+    st.session_state.signals = None
+    st.session_state.strategies = {}
+
+
 def load_tickers():
     _, col2, _ = st.columns(3)
     with col2:
@@ -181,7 +188,7 @@ def main():
     data_fetch_way = col2.selectbox(
         "Which way do you want to get the prices: ",
         [DEFAULT_CHOICE, "Fetch over the internet", "Read from a file"],
-        on_change=clear_data,
+        on_change=clean_data_and_strategy_module,
     )
     st.markdown("<br>", unsafe_allow_html=True)
 

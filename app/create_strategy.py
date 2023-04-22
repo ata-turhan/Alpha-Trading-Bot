@@ -525,12 +525,25 @@ def candlestick_sentiment_trading(
     return signals
 
 
-from sklearn.ensemble import RandomForestClassifier
+from lightgbm import LGBMClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
+from xgboost import XGBClassifier
 
 
-def basic_ml_trading(bml_model: str, train: pd.DataFrame, test: pd.DataFrame):
+def basic_ml_trading(
+    bml_model: str,
+    data: pd.DataFrame,
+):
+    if data is None:
+        return None
+    split = int(len(data) * 0.8)
+    train, test = (
+        data.iloc[:split],
+        data.iloc[split:],
+    )
     train.fillna(0, inplace=True)
     test.fillna(0, inplace=True)
     X_train, y_train = train.drop(["Label"], axis=1), train["Label"]
@@ -545,7 +558,7 @@ def basic_ml_trading(bml_model: str, train: pd.DataFrame, test: pd.DataFrame):
         model = RandomForestClassifier()
     model.fit(X_train, y_train)
     pred = model.predict(X_test)
-    st.dataframe(pred)
+    # st.dataframe(pred)
     full_data = train.append(test)
     signals = pd.DataFrame(
         index=full_data.index, data={"Signals": np.zeros((len(full_data),))}
@@ -554,22 +567,57 @@ def basic_ml_trading(bml_model: str, train: pd.DataFrame, test: pd.DataFrame):
     return signals
 
 
-def dl_trading(dl_model_layer: str, train: pd.DataFrame, test: pd.DataFrame):
+def advanced_ml_trading(
+    aml_model: str,
+    data: pd.DataFrame,
+):
+    if data is None:
+        return None
+    split = int(len(data) * 0.8)
+    train, test = (
+        data.iloc[:split],
+        data.iloc[split:],
+    )
     train.fillna(0, inplace=True)
     test.fillna(0, inplace=True)
     X_train, y_train = train.drop(["Label"], axis=1), train["Label"]
     X_test, y_test = test.drop(["Label"], axis=1), test["Label"]
     # st.dataframe(y_train)
     # st.dataframe(y_test)
-    if bml_model == "Logistic Regression":
-        model = LogisticRegression()
-    elif bml_model == "Support Vector Machine":
-        model = SVC()
-    elif bml_model == "Random Forest":
-        model = RandomForestClassifier()
+    if aml_model == "XGBoost":
+        model = XGBClassifier()
+    elif aml_model == "LightGBM":
+        model = LGBMClassifier()
+    elif aml_model == "Gradient Boosting Classifier":
+        model = GradientBoostingClassifier()
     model.fit(X_train, y_train)
     pred = model.predict(X_test)
-    st.dataframe(pred)
+    # st.dataframe(pred)
+    full_data = train.append(test)
+    signals = pd.DataFrame(
+        index=full_data.index, data={"Signals": np.zeros((len(full_data),))}
+    )
+    signals.loc[test.index[0] :, "Signals"] = pred
+    return signals
+
+
+def dl_trading(dl_model_layer: str, data: pd.DataFrame):
+    if data is None:
+        return None
+    split = int(len(data) * 0.8)
+    train, test = (
+        data.iloc[:split],
+        data.iloc[split:],
+    )
+    train.fillna(0, inplace=True)
+    test.fillna(0, inplace=True)
+    X_train, y_train = train.drop(["Label"], axis=1), train["Label"]
+    X_test, y_test = test.drop(["Label"], axis=1), test["Label"]
+    # st.dataframe(data)
+    model = MLPClassifier(hidden_layer_sizes=(32,) * dl_model_layer)
+    model.fit(X_train, y_train)
+    pred = model.predict(X_test)
+    # st.dataframe(pred)
     full_data = train.append(test)
     signals = pd.DataFrame(
         index=full_data.index, data={"Signals": np.zeros((len(full_data),))}

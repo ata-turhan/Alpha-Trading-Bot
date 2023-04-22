@@ -372,21 +372,14 @@ def main():
                     f"{strategy_type} ({rolling_wave_length}, {num_clusters})"
                 )
             elif strategy_type == "AI Trading":
-                with st.spinner(
-                    "True labels and train-test data are being created..."
-                ):
-                    st.dataframe(st.session_state.data)
-                    st.session_state.ai_data = cd.create_labels(
-                        ohlcv=st.session_state.data
-                    )
-                    st.dataframe(st.session_state.ai_data)
-                    split = int(len(st.session_state.ai_data) * 0.8)
-                    train, test = (
-                        st.session_state.ai_data.iloc[:split],
-                        st.session_state.ai_data.iloc[split:],
-                    )
-                    # st.dataframe(train)
-                    # st.dataframe(test)
+                # st.dataframe(st.session_state.data)
+                st.session_state.ai_data = cd.create_labels(
+                    ohlcv=st.session_state.data
+                )
+                # st.dataframe(st.session_state.ai_data)
+
+                # st.dataframe(train)
+                # st.dataframe(test)
                 ai_method = center_col_get.selectbox(
                     "Select the AI method you want to use: ",
                     [
@@ -400,69 +393,51 @@ def main():
                     bml_model = center_col_get.selectbox(
                         "Select the basic machine learning model you want to use: ",
                         [
+                            "<Select>",
                             "Logistic Regression",
                             "Support Vector Machine",
                             "Random Forest",
                         ],
                         on_change=clean_signals,
                     )
-                    func = cs.basic_ml_trading
-                    params = {
-                        "bml_model": bml_model,
-                        "train": train,
-                        "test": test,
-                    }
-                    key_name = f"{bml_model}"
+                    if bml_model != "<Select>":
+                        func = cs.basic_ml_trading
+                        params = {
+                            "bml_model": bml_model,
+                            "data": st.session_state.ai_data,
+                        }
+                        key_name = f"{bml_model}"
                 elif ai_method == "Advanced Machine Learning":
                     aml_model = center_col_get.selectbox(
                         "Select the advanced machine learning model you want to use: ",
                         [
+                            "<Select>",
+                            "Gradient Boosting Classifier",
                             "XGBoost",
                             "LightGBM",
-                            "CatBoost",
                         ],
                         on_change=clean_signals,
                     )
-                    func = cs.advanced_ml_trading
-                    params = {
-                        "train": train,
-                        "test": test,
-                    }
-                    key_name = f"{aml_model}"
-                if ai_method == "Deep Learning":
+                    if aml_model != "<Select>":
+                        func = cs.advanced_ml_trading
+                        params = {
+                            "aml_model": aml_model,
+                            "data": st.session_state.ai_data,
+                        }
+                        key_name = f"{aml_model}"
+                elif ai_method == "Deep Learning":
                     dl_model_layer = center_col_get.number_input(
                         "Please enter the number of layers for your neural network",
-                        value=5,
+                        value=0,
                         on_change=clean_signals,
                     )
-                    func = cs.dl_trading
-                    params = {
-                        "dl_model_layer": dl_model_layer,
-                        "train": train,
-                        "test": test,
-                    }
-                    key_name = f"Neural Network ({dl_model_layer}-Layers)"
-
-                if ai_method == "Deep Learning":
-                    dl_method = center_col_get.selectbox(
-                        "Select the deep learning model you want to use: ",
-                        ["<Select>", "AutoKeras", "Prophet"],
-                    )
-                    if dl_method == "AutoKeras":
-                        possible_models = st.number_input(
-                            "Select the number of the possible models to try",
-                            value=5,
-                            step=5,
-                        )
-                        if st.button("Create the signals of the strategy."):
-                            market = st.session_state["smoothed_data"]
-                            train_data = market.iloc[: len(market) * 4 // 5, :]
-                            test_data = market.iloc[len(market) * 4 // 5 :, :]
-                            st.session_state["signals"] = cs.dl_trading(
-                                train_data=train_data,
-                                test_data=test_data,
-                                possible_models=possible_models,
-                            )
+                    if dl_model_layer > 0:
+                        func = cs.dl_trading
+                        params = {
+                            "dl_model_layer": dl_model_layer,
+                            "data": st.session_state.ai_data,
+                        }
+                        key_name = f"Neural Network ({dl_model_layer}-Layers)"
                 elif ai_method == "Machine Learning":
                     models = cs.get_ml_models(
                         st.session_state["smoothed_data"].iloc[:100, :]
@@ -579,7 +554,7 @@ def main():
             signals=st.session_state["signals"],
             last_strategy_name=st.session_state.last_strategy,
         )
-    if len(st.session_state["strategies"]) != 0:
+    if len(st.session_state["strategies"]) > 0:
         st.markdown("<br>", unsafe_allow_html=True)
         _, center_col_strategies_created, _ = st.columns([1, 2, 1])
         center_col_strategies_created.subheader(
