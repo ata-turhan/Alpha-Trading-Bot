@@ -512,7 +512,7 @@ def main():
                         ],
                         on_change=clean_signals,
                     )
-                func = cs.candlestick_trading
+                func = cs.candlestick_pattern_trading
                 params = {
                     "ohlcv": st.session_state["smoothed_data"],
                     "buy_pattern": buy_pattern,

@@ -290,7 +290,7 @@ def dl_trading(
 """
 
 
-def candlestick_trading(
+def candlestick_pattern_trading(
     ohlcv: pd.DataFrame, buy_pattern: str, sell_pattern: str
 ):
     candlestick_func_dict = {
@@ -417,6 +417,77 @@ def support_resistance_trading(
                     and ohlcv.at[ohlcv.index[i], "Close"] > resistance
                 ):
                     signals.at[ohlcv.index[i + 1], "Signals"] = 1
+    return signals
+
+
+def classify_candle(open, high, low, close):
+    if open > close:
+        body_color = "filled"
+    else:
+        body_color = "hollow"
+    body_height = abs(close - open)
+    wick_height = high - max(open, close)
+    shadow_height = body_height - wick_height
+    if body_height > 2 * wick_height:
+        sentiment = "bullish" if body_color == "hollow" else "bearish"
+    elif body_height > wick_height:
+        sentiment = "bullish" if body_color == "hollow" else "bearish"
+    elif wick_height > body_height:
+        sentiment = "bearish" if body_color == "hollow" else "bullish"
+    elif wick_height < body_height / 2:
+        sentiment = (
+            "very bullish" if body_color == "hollow" else "very bearish"
+        )
+    elif shadow_height < body_height / 2:
+        sentiment = "bullish" if body_color == "hollow" else "bearish"
+    elif shadow_height > body_height / 2:
+        sentiment = "bullish" if body_color == "hollow" else "bearish"
+    else:
+        sentiment = "neutral"
+    return sentiment
+
+
+def candlestick_sentiment_trading(
+    ohlcv: pd.DataFrame,
+    consecutive_bullish_num: int,
+    consecutive_bearish_num: int,
+):
+    signals = pd.DataFrame(
+        index=ohlcv.index, data={"Signals": np.zeros((len(ohlcv),))}
+    )
+    for i in range(len(ohlcv) - consecutive_bullish_num):
+        buy = True
+        for j in range(i, i + consecutive_bullish_num):
+            row = ohlcv.iloc[j, :]
+            open, high, low, close = (
+                row["Open"],
+                row["High"],
+                row["Low"],
+                row["Close"],
+            )
+            sentiment = classify_candle(open, high, low, close)
+            if "bullish" not in sentiment:
+                buy = False
+                break
+        if buy:
+            signals.at[ohlcv.index[i + consecutive_bullish_num], "Signals"] = 1
+
+    for i in range(len(ohlcv) - consecutive_bearish_num):
+        sell = True
+        for j in range(i, i + consecutive_bearish_num):
+            row = ohlcv.iloc[j, :]
+            open, high, low, close = (
+                row["Open"],
+                row["High"],
+                row["Low"],
+                row["Close"],
+            )
+            sentiment = classify_candle(open, high, low, close)
+            if "bearish" not in sentiment:
+                sell = False
+                break
+        if sell:
+            signals.at[ohlcv.index[i + consecutive_bearish_num], "Signals"] = 2
     return signals
 
 

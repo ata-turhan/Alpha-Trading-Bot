@@ -138,3 +138,4 @@ dmypy.json
 /Codes
 /Roadmap
 /Asset Price Classifier
+*.ipynb
