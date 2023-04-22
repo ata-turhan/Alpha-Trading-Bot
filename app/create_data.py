@@ -247,12 +247,12 @@ def create_technical_indicators(ohlcv: pd.DataFrame) -> pd.DataFrame:
             return data
 
 
-def create_labels(df: pd.DataFrame) -> None:
+def create_labels(ohlcv: pd.DataFrame) -> None:
+    df = ohlcv.copy()
     df["Label"] = [0] * df.shape[0]
     for i in range(df.shape[0] - 10):
         s = set(df["Close"].iloc[i : i + 11])
-        minPrice = sorted(s)[0]
-        maxPrice = sorted(s)[-1]
+        minPrice, maxPrice = sorted(s)[0], sorted(s)[-1]
         for j in range(i, i + 11):
             if df["Close"].iloc[j] == minPrice and (j - i) == 5:
                 df.iloc[j, df.columns.get_loc("Label")] = 1

@@ -14,15 +14,17 @@ from sklearn.metrics import (
 
 def set_session_variables():
     if "data" not in st.session_state:
-        st.session_state["data"] = None
+        st.session_state.data = None
     if "smoothed_data" not in st.session_state:
-        st.session_state["smoothed_data"] = None
+        st.session_state.smoothed_data = None
+    if "ai_data" not in st.session_state:
+        st.session_state.ai_data = None
     if "strategies" not in st.session_state:
         st.session_state.strategies = {}
     if "signals" not in st.session_state:
-        st.session_state["signals"] = None
+        st.session_state.signals = None
     if "ticker" not in st.session_state:
-        st.session_state["ticker"] = ""
+        st.session_state.ticker = ""
     if "strategy_keys" not in st.session_state:
         st.session_state.strategy_keys = set()
     if "last_strategy" not in st.session_state:
@@ -30,7 +32,7 @@ def set_session_variables():
 
 
 def clean_signals():
-    st.session_state["signals"] = None
+    st.session_state.signals = None
 
 
 def main():
@@ -38,7 +40,7 @@ def main():
     configure_page()
     configure_authors()
     add_bg_from_local("data/background.png", "data/bot.png")
-
+    # st.dataframe(st.session_state["smoothed_data"])
     st.markdown(
         "<h1 style='text-align: center; color: black; font-size: 65px;'> 💡 Strategy Module </h1> <br> <br>",
         unsafe_allow_html=True,
@@ -120,10 +122,10 @@ def main():
                     "<Select>",
                     "Indicator Trading",
                     "Momentum Trading",
-                    "AI Trading",
                     "Candlestick Pattern Trading",
                     "Candlestick Sentiment Trading",
                     "Support-Resistance Trading",
+                    "AI Trading",
                 ],
                 on_change=clean_signals,
             )
@@ -302,45 +304,116 @@ def main():
                             "reverse": reverse,
                         }
                     key_name = f"{strategy_type} - {variation}  ({up_day}, {down_day})"
-            elif strategy_type == "AI Trading":
-                data_types = st.multiselect(
-                    "Select the data types you want to include for ai modeling: ",
-                    [
-                        "<Select>",
-                        "Fundamental Data",
-                        "Technical Data",
-                        "Sentiment Data",
-                    ],
-                    help="Fundamental Data: CPI, DXY, Fed Rate.\nTechnical Data: Technical Indicators\nSentiment Data: \
-                    Sentiment of tweets of last 24 hours.",
-                )
-                if "Sentiment Data" in data_types:
-                    transformer_type = center_col_get.selectbox(
-                        "Select the tranformer model you want to use: ",
-                        ["<Select>", "Vader"],
+            elif strategy_type == "Candlestick Pattern Trading":
+                col1, col2 = st.columns([1, 1])
+                with col1:
+                    buy_pattern = center_col_get.selectbox(
+                        "Select the pattern you want to use for a buy signal:",
+                        [
+                            "<Select>",
+                            "Doji",
+                            "Gravestone Doji",
+                            "Dragonfly Doji",
+                            "Longleg Doji",
+                            "Hammer Hanging Man",
+                            "Inverse Hammer",
+                            "Spinning Top",
+                            "Dark Cloud Cover",
+                            "Piercing Pattern",
+                            "Bullish Marubozu",
+                            "Bullish Engulfing",
+                            "Bullish Harami",
+                        ],
+                        on_change=clean_signals,
                     )
-                if "Technical Data" in data_types:
-                    if (
-                        "Label"
-                        not in st.session_state["smoothed_data"].columns
-                        and "volume_obv"
-                        not in st.session_state["smoothed_data"].columns
-                    ):
-                        with st.spinner("Technical indicators are created..."):
-                            st.session_state[
-                                "smoothed_data"
-                            ] = cd.create_technical_indicators(
-                                st.session_state["smoothed_data"]
-                            )
-                        with st.spinner("True labels are created..."):
-                            st.session_state[
-                                "smoothed_data"
-                            ] = cd.create_labels(
-                                st.session_state["smoothed_data"]
-                            )
-                        # with st.spinner('Train and test data are created...'):
-                        # X_train, y_train, X_test, y_test = create_train_test_data(st.session_state["data"])
-                    st.success("Technical data is ready!")
+                with col2:
+                    sell_pattern = center_col_get.selectbox(
+                        "Select the pattern you want to use for a sell signal:",
+                        [
+                            "<Select>",
+                            "Doji",
+                            "Gravestone Doji",
+                            "Dragonfly Doji",
+                            "Longleg Doji",
+                            "Hammer Hanging Man",
+                            "Inverse Hammer",
+                            "Spinning Top",
+                            "Dark Cloud Cover",
+                            "Piercing Pattern",
+                            "Bearish Marubozu",
+                            "Bearish Engulfing",
+                            "Bearish Harami",
+                        ],
+                        on_change=clean_signals,
+                    )
+                func = cs.candlestick_pattern_trading
+                params = {
+                    "ohlcv": st.session_state["smoothed_data"],
+                    "buy_pattern": buy_pattern,
+                    "sell_pattern": sell_pattern,
+                }
+                key_name = f"{strategy_type} ({buy_pattern}, {sell_pattern})"
+            elif strategy_type == "Candlestick Sentiment Trading":
+                col1, col2 = st.columns([1, 1])
+                with col1:
+                    consecutive_bullish_num = center_col_get.number_input(
+                        "Please enter the the consecutive number of \
+                        bullish candles to trigger the buy signal",
+                        value=5,
+                        on_change=clean_signals,
+                    )
+                with col2:
+                    consecutive_bearish_num = center_col_get.number_input(
+                        "Please enter the the consecutive number of \
+                        bearish candles to trigger the sell signal",
+                        value=5,
+                        on_change=clean_signals,
+                    )
+                func = cs.candlestick_sentiment_trading
+                params = {
+                    "ohlcv": st.session_state["smoothed_data"],
+                    "consecutive_bullish_num": consecutive_bullish_num,
+                    "consecutive_bearish_num": consecutive_bearish_num,
+                }
+                key_name = f"{strategy_type} ({consecutive_bullish_num}, {consecutive_bearish_num})"
+            elif strategy_type == "Support-Resistance Trading":
+                col1, col2 = center_col_get.columns([1, 1])
+                with col1:
+                    rolling_wave_length = st.number_input(
+                        "Please enter the rolling wave length",
+                        value=20,
+                        on_change=clean_signals,
+                    )
+                with col2:
+                    num_clusters = st.number_input(
+                        "Please enter the cluster numbers",
+                        value=4,
+                        on_change=clean_signals,
+                    )
+                func = cs.support_resistance_trading
+                params = {
+                    "ohlcv": st.session_state["smoothed_data"],
+                    "rolling_wave_length": rolling_wave_length,
+                    "num_clusters": num_clusters,
+                }
+                key_name = (
+                    f"{strategy_type} ({rolling_wave_length}, {num_clusters})"
+                )
+            elif strategy_type == "AI Trading":
+                with st.spinner(
+                    "True labels and train-test data are being created..."
+                ):
+                    st.session_state.ai_data = cd.create_labels(
+                        ohlcv=st.session_state.data
+                    )
+                    split = int(len(st.session_state.ai_data) * 0.8)
+                    train, test = (
+                        st.session_state.ai_data.iloc[:split],
+                        st.session_state.ai_data.iloc[split:],
+                    )
+                    st.dataframe(train)
+                    st.dataframe(test)
+
                     ai_method = center_col_get.selectbox(
                         "Select the artifical intelligence method you want to use: ",
                         ["<Select>", "Machine Learning", "Deep Learning"],
@@ -470,101 +543,6 @@ def main():
                                                 st.session_state["signals"],
                                             ]
                                         )
-            elif strategy_type == "Candlestick Pattern Trading":
-                col1, col2 = st.columns([1, 1])
-                with col1:
-                    buy_pattern = center_col_get.selectbox(
-                        "Select the pattern you want to use for a buy signal:",
-                        [
-                            "<Select>",
-                            "Doji",
-                            "Gravestone Doji",
-                            "Dragonfly Doji",
-                            "Longleg Doji",
-                            "Hammer Hanging Man",
-                            "Inverse Hammer",
-                            "Spinning Top",
-                            "Dark Cloud Cover",
-                            "Piercing Pattern",
-                            "Bullish Marubozu",
-                            "Bullish Engulfing",
-                            "Bullish Harami",
-                        ],
-                        on_change=clean_signals,
-                    )
-                with col2:
-                    sell_pattern = center_col_get.selectbox(
-                        "Select the pattern you want to use for a sell signal:",
-                        [
-                            "<Select>",
-                            "Doji",
-                            "Gravestone Doji",
-                            "Dragonfly Doji",
-                            "Longleg Doji",
-                            "Hammer Hanging Man",
-                            "Inverse Hammer",
-                            "Spinning Top",
-                            "Dark Cloud Cover",
-                            "Piercing Pattern",
-                            "Bearish Marubozu",
-                            "Bearish Engulfing",
-                            "Bearish Harami",
-                        ],
-                        on_change=clean_signals,
-                    )
-                func = cs.candlestick_pattern_trading
-                params = {
-                    "ohlcv": st.session_state["smoothed_data"],
-                    "buy_pattern": buy_pattern,
-                    "sell_pattern": sell_pattern,
-                }
-                key_name = f"{strategy_type} ({buy_pattern}, {sell_pattern})"
-            elif strategy_type == "Candlestick Sentiment Trading":
-                col1, col2 = st.columns([1, 1])
-                with col1:
-                    consecutive_bullish_num = center_col_get.number_input(
-                        "Please enter the the consecutive number of \
-                        bullish candles to trigger the buy signal",
-                        value=5,
-                        on_change=clean_signals,
-                    )
-                with col2:
-                    consecutive_bearish_num = center_col_get.number_input(
-                        "Please enter the the consecutive number of \
-                        bearish candles to trigger the sell signal",
-                        value=5,
-                        on_change=clean_signals,
-                    )
-                func = cs.candlestick_sentiment_trading
-                params = {
-                    "ohlcv": st.session_state["smoothed_data"],
-                    "consecutive_bullish_num": consecutive_bullish_num,
-                    "consecutive_bearish_num": consecutive_bearish_num,
-                }
-                key_name = f"{strategy_type} ({consecutive_bullish_num}, {consecutive_bearish_num})"
-            elif strategy_type == "Support-Resistance Trading":
-                col1, col2 = center_col_get.columns([1, 1])
-                with col1:
-                    rolling_wave_length = st.number_input(
-                        "Please enter the rolling wave length",
-                        value=20,
-                        on_change=clean_signals,
-                    )
-                with col2:
-                    num_clusters = st.number_input(
-                        "Please enter the cluster numbers",
-                        value=4,
-                        on_change=clean_signals,
-                    )
-                func = cs.support_resistance_trading
-                params = {
-                    "ohlcv": st.session_state["smoothed_data"],
-                    "rolling_wave_length": rolling_wave_length,
-                    "num_clusters": num_clusters,
-                }
-                key_name = (
-                    f"{strategy_type} ({rolling_wave_length}, {num_clusters})"
-                )
             if st.button("Create the signals of the strategy."):
                 st.session_state["signals"] = func(**params)
                 if st.session_state["signals"] is not None and key_name != "":
