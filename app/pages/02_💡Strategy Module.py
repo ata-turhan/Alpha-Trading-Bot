@@ -42,6 +42,9 @@ def main():
     configure_authors()
     add_bg_from_local("data/background.png", "data/bot.png")
     # st.dataframe(st.session_state["smoothed_data"])
+
+    DEFAULT_CHOICE = "<Select>"
+
     st.markdown(
         "<h1 style='text-align: center; color: black; font-size: 65px;'> 💡 Strategy Module </h1> <br> <br>",
         unsafe_allow_html=True,
@@ -59,7 +62,7 @@ def main():
         key_name = ""
         strategy_fetch_way = center_col_get.selectbox(
             "Which way do you want to get the signals of a strategy: ",
-            ["<Select>", "Create a strategy", "Read from a file"],
+            [DEFAULT_CHOICE, "Create a strategy", "Read from a file"],
             on_change=clean_signals,
         )
         st.markdown("<br> <br>", unsafe_allow_html=True)
@@ -120,7 +123,7 @@ def main():
             strategy_type = center_col_get.selectbox(
                 "Which strategy do you want to create: ",
                 [
-                    "<Select>",
+                    DEFAULT_CHOICE,
                     "Indicator Trading",
                     "Momentum Trading",
                     "Candlestick Pattern Trading",
@@ -133,10 +136,10 @@ def main():
             if strategy_type == "Indicator Trading":
                 indicator = center_col_get.selectbox(
                     "Select the indicator you want to use: ",
-                    ["<Select>", "RSI", "SMA", "EMA", "Bollinger Bands"],
+                    [DEFAULT_CHOICE, "RSI", "SMA", "EMA", "Bollinger Bands"],
                     on_change=clean_signals,
                 )
-                if indicator != "<Select>":
+                if indicator != DEFAULT_CHOICE:
                     if indicator == "RSI":
                         col1, col2 = center_col_get.columns(2, gap="large")
                         with col1:
@@ -225,13 +228,13 @@ def main():
                 variation = center_col_get.selectbox(
                     "Select the momentum strategy you want to use: ",
                     [
-                        "<Select>",
+                        DEFAULT_CHOICE,
                         "Momentum Day Trading",
                         "Momentum Percentage Trading",
                     ],
                     on_change=clean_signals,
                 )
-                if variation != "<Select>":
+                if variation != DEFAULT_CHOICE:
                     if variation == "Momentum Day Trading":
                         col1, col2 = center_col_get.columns(2)
                         with col1:
@@ -384,7 +387,7 @@ def main():
                 ai_method = center_col_get.selectbox(
                     "Select the AI method you want to use: ",
                     [
-                        "<Select>",
+                        DEFAULT_CHOICE,
                         "Basic Machine Learning",
                         "Advanced Machine Learning",
                         "Deep Learning",
@@ -394,14 +397,14 @@ def main():
                     bml_model = center_col_get.selectbox(
                         "Select the basic machine learning model you want to use: ",
                         [
-                            "<Select>",
+                            DEFAULT_CHOICE,
                             "Logistic Regression",
                             "Support Vector Machine",
                             "Random Forest",
                         ],
                         on_change=clean_signals,
                     )
-                    if bml_model != "<Select>":
+                    if bml_model != DEFAULT_CHOICE:
                         func = cs.basic_ml_trading
                         params = {
                             "bml_model": bml_model,
@@ -412,14 +415,14 @@ def main():
                     aml_model = center_col_get.selectbox(
                         "Select the advanced machine learning model you want to use: ",
                         [
-                            "<Select>",
+                            DEFAULT_CHOICE,
                             "Gradient Boosting Classifier",
                             "XGBoost",
                             "LightGBM",
                         ],
                         on_change=clean_signals,
                     )
-                    if aml_model != "<Select>":
+                    if aml_model != DEFAULT_CHOICE:
                         func = cs.advanced_ml_trading
                         params = {
                             "aml_model": aml_model,
@@ -498,7 +501,7 @@ def main():
         st.session_state["smoothed_data"] is not None
         and st.session_state["signals"] is not None
         and st.session_state.last_strategy != ""
-        and strategy_fetch_way != "<Select>"
+        and strategy_fetch_way != DEFAULT_CHOICE
     ):
         cs.show_signals_on_chart(
             ohlcv=st.session_state["smoothed_data"],
@@ -506,7 +509,7 @@ def main():
             last_strategy_name=st.session_state.last_strategy,
         )
     if (
-        strategy_fetch_way != "<Select>"
+        strategy_fetch_way != DEFAULT_CHOICE
         and len(st.session_state["strategies"]) > 0
     ):
         st.markdown("<br>", unsafe_allow_html=True)

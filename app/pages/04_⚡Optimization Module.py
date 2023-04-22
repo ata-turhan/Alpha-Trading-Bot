@@ -10,15 +10,15 @@ configure_authors()
 add_bg_from_local("data/background.png", "data/bot.png")
 
 if "data" not in st.session_state:
-    st.session_state["data"] = None
+    st.session_state.data = None
 if "predictions" not in st.session_state:
-    st.session_state["predictions"] = None
+    st.session_state.predictions = None
 if "ticker" not in st.session_state:
-    st.session_state["ticker"] = ""
+    st.session_state.ticker = ""
 if "backtest_configuration_ready" not in st.session_state:
-    st.session_state["backtest_configuration_ready"] = False
+    st.session_state.backtest_configuration_ready = False
 if "backtest_configuration" not in st.session_state:
-    st.session_state["backtest_configuration"] = {}
+    st.session_state.backtest_configuration = {}
 
 
 st.markdown(
