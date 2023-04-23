@@ -501,79 +501,57 @@ def plot_init(
     stop_loss: float,
     leverage: int,
 ) -> None:
-    fig = make_subplots(
-        rows=1,
-        cols=1,
-        shared_xaxes=True,
-        vertical_spacing=0.05,
-        specs=[[{"type": "table"}]],
-    )
-
-    fig.add_trace(
-        go.Table(
-            columnwidth=[3, 1],
-            header=dict(
-                values=["Configurations", "Values"],
-                line_color="darkslategray",
-                fill_color="lightgreen",
-                align="center",
+    configurations = [
+        "Ticker",
+        "Benchmark Ticker",
+        "Risk-free Rate",
+        "Start Date",
+        "End Date",
+        "Inital Capital",
+        "Commission",
+        "Alpha",
+        "Threshold",
+        "Order",
+        "Short",
+        "Short Fee",
+        "Trailing Take Profit",
+        "Take Profit",
+        "Trailing Stop Loss",
+        "Stop Loss",
+        "Leverage Ratio",
+    ]
+    values = [
+        f"{ticker}",
+        f"{benchmark_ticker}",
+        round(risk_free_rate, 2),
+        start_date,
+        end_date,
+        f"{initial_capital}$",
+        f"{commission}$",
+        alpha,
+        threshold,
+        order,
+        "is used" if short else "is not used",
+        short_fee,
+        "is used" if trailing_take_profit else "is not used",
+        f"%{take_profit}",
+        "is used" if trailing_stop_loss else "is not used",
+        f"%{stop_loss}",
+        leverage,
+    ]
+    initial_conf_df = pd.DataFrame(columns=["Configurations", "Values"])
+    for i in range(len(configurations)):
+        initial_conf_df = initial_conf_df.append(
+            pd.Series(
+                {
+                    "Configurations": configurations[i],
+                    "Values": values[i],
+                }
             ),
-            cells=dict(
-                values=[
-                    [
-                        "Ticker",
-                        "Benchmark Ticker",
-                        "Risk-free Rate",
-                        "Start Date",
-                        "End Date",
-                        "Inital Capital",
-                        "Commission",
-                        "Alpha",
-                        "Threshold",
-                        "Order",
-                        "Short",
-                        "Short Fee",
-                        "Trailing Take Profit",
-                        "Take Profit",
-                        "Trailing Stop Loss",
-                        "Stop Loss",
-                        "Leverage Ratio",
-                    ],
-                    [
-                        f"{ticker}",
-                        f"{benchmark_ticker}",
-                        round(risk_free_rate, 2),
-                        start_date,
-                        end_date,
-                        f"{initial_capital}$",
-                        f"{commission}$",
-                        alpha,
-                        threshold,
-                        order,
-                        "is used" if short else "is not used",
-                        short_fee,
-                        "is used" if trailing_take_profit else "is not used",
-                        f"%{take_profit}",
-                        "is used" if trailing_stop_loss else "is not used",
-                        f"%{stop_loss}",
-                        leverage,
-                    ],
-                ],
-                line_color="darkslategray",
-                fill_color="lightgoldenrodyellow",
-                align="center",
-            ),
-        ),
-        row=1,
-        col=1,
-    )
-    fig.update_layout(
-        width=700,
-        height=700,
-        title_text="<span style='font-size: 30px;'><b>Initial Configuration</b></span>",
-        title_x=0.5,
-    )
-    st.plotly_chart(fig, use_container_width=True)
+            ignore_index=True,
+        )
+    # st.dataframe(initial_conf_df, width=500)
+    return initial_conf_df
 
 
 def plot_tables(
@@ -1334,26 +1312,25 @@ def financial_evaluation(
         st.write(
             f"\nBacktest was completed in {second_2_minute_converter(end-start)}.\n"
         )
-    if show_initial_configuration:
-        plot_init(
-            ticker,
-            benchmark_ticker,
-            risk_free_rate,
-            start_date,
-            end_date,
-            initial_capital,
-            commission,
-            alpha,
-            threshold,
-            order,
-            short,
-            short_fee,
-            trailing_take_profit,
-            take_profit,
-            trailing_stop_loss,
-            stop_loss,
-            leverage,
-        )
+    initial_conf_df = plot_init(
+        ticker,
+        benchmark_ticker,
+        risk_free_rate,
+        start_date,
+        end_date,
+        initial_capital,
+        commission,
+        alpha,
+        threshold,
+        order,
+        short,
+        short_fee,
+        trailing_take_profit,
+        take_profit,
+        trailing_stop_loss,
+        stop_loss,
+        leverage,
+    )
     metrics = plot_tables(
         portfolio_value[:i],
         benchmark_index[:i],
@@ -1371,7 +1348,7 @@ def financial_evaluation(
         plot_charts(
             "SPY", ohlcv[:i], transactions[:i], portfolio_value[:i], liquidated
         )
-    return metrics
+    return metrics, initial_conf_df
 
 
 def metric_optimization(

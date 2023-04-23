@@ -203,7 +203,7 @@ else:
     ):
         st.session_state.run_backtest_button_clicked = True
         st.session_state["backtest_configuration_ready"] = True
-        metrics = cb.financial_evaluation(
+        metrics, initial_conf_df = cb.financial_evaluation(
             hold_label,
             buy_label,
             sell_label,
@@ -232,6 +232,9 @@ else:
             show_time,
             precision_point,
         )
+
+        _, icd_col, _ = st.columns([2, 3, 2])
+        icd_col.dataframe(initial_conf_df, width=500)
 
         data = yf.download(
             "AAPL",
