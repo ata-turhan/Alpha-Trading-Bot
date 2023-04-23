@@ -9,17 +9,17 @@ def main():
 
     st.markdown(  # Combined text and styling into one line for readability
         "<h1 style='text-align: center; color: black; font-size: 75px;'> 🤖 Fully-Fledged Trading Bot </h1> \
-        <br> <br> <br>",
+        <br> <br>",
         unsafe_allow_html=True,
     )
 
     welcome_message = '<p style="font-family:Arial Black; font-size: 20px;" align="center"> \
-    This is a web app that allows you to <br> \
+    This is a web app that allows you to <br> <br> \
         • Gather financial information from any financial market.  <br> \
         • Create trading strategies with various methods <br> \
         • Thoroughly backtest these strategies. <br> \
         • Optimize these backtests without overfitting <br> \
-                                               <br> \
+                                               <br> <br> \
         You can use the modules on the sidebar to navigate in the web app. \
     </p>'
     st.markdown(welcome_message, unsafe_allow_html=True)
