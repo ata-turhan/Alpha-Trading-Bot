@@ -1,7 +1,8 @@
+import base64
+from io import BytesIO
+
 import create_backtest as cb
 import numpy as np
-
-pass
 import streamlit as st
 import yfinance as yf
 from configuration import add_bg_from_local, configure_authors, configure_page
@@ -250,8 +251,14 @@ else:
         strategy_returns = data["Adj Close"].pct_change().dropna()
         benchmark_returns = bench["Adj Close"].pct_change().dropna()
 
-        metrics_dict = cb.qs_metrics(
+        metrics_dict, metrics_df = cb.qs_metrics(
             strategy_returns, benchmark_returns, risk_free_rate=1
+        )
+
+        st.download_button(
+            "Download the metrics of the backtest",
+            metrics_df.to_html().encode("utf-8"),
+            "Metrics.html",
         )
 
         col1, col2, col3 = st.columns([1, 1, 1])
@@ -298,3 +305,56 @@ else:
         col1, col2 = st.columns([1, 1])
         col1.write(plots_dict["drawdowns_periods"])
         col2.write(plots_dict["drawdown"])
+
+        # if st.button("Download the plots of the backtest"):
+        html_first = """<html>
+                        <head>
+                            <style>
+                            {
+                                box-sizing: border-box;
+                            }
+                            /* Set additional styling options for the columns*/
+                            .column {
+                            float: left;
+                            width: 50%;
+                            }
+
+                            .row:after {
+                            content: "";
+                            display: table;
+                            clear: both;
+                            }
+                            </style>
+                        </head>
+                        <body>
+                        """
+        col1_plots = ""
+        col2_plots = ""
+        for i, plot in enumerate(plots_dict.values()):
+            tmpfile = BytesIO()
+            plot.savefig(tmpfile, format="png")
+            encoded = base64.b64encode(tmpfile.getvalue()).decode("utf-8")
+            html = (
+                "<br>"
+                + "<img src='data:image/png;base64,{}'>".format(encoded)
+                + "<br>"
+            )
+            if i % 2 == 0:
+                col1_plots += html
+            else:
+                col2_plots += html
+
+        html_last = f"""
+                            <div class="row">
+                                <div class="column">
+                                    {col1_plots}
+                                </div>
+                                <div class="column">
+                                    {col2_plots}
+                                </div>
+                            </div>
+                        </body>
+                        </html>"""
+        output = html_first + html_last
+        with open("Backtest Plots.html", "w") as f:
+            f.write(output)

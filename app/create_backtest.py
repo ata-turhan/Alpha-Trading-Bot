@@ -76,7 +76,7 @@ extremums_names = [
 
 
 def qs_metrics(strategy_returns, benchmark_returns, risk_free_rate: int = 1):
-    metrics = qs.reports.metrics(
+    metrics_df = qs.reports.metrics(
         returns=strategy_returns,
         benchmark=benchmark_returns,
         rf=risk_free_rate,
@@ -86,12 +86,14 @@ def qs_metrics(strategy_returns, benchmark_returns, risk_free_rate: int = 1):
         compounded=True,
     )
     metrics_dict = dict()
-    metrics_dict["returns"] = metrics[metrics.index.isin(returns_names)]
-    metrics_dict["ratios"] = metrics[metrics.index.isin(ratios_names)]
-    metrics_dict["risks"] = metrics[metrics.index.isin(risks_names)]
-    metrics_dict["counts"] = metrics[metrics.index.isin(counts_names)]
-    metrics_dict["extremums"] = metrics[metrics.index.isin(extremums_names)]
-    return metrics_dict
+    metrics_dict["returns"] = metrics_df[metrics_df.index.isin(returns_names)]
+    metrics_dict["ratios"] = metrics_df[metrics_df.index.isin(ratios_names)]
+    metrics_dict["risks"] = metrics_df[metrics_df.index.isin(risks_names)]
+    metrics_dict["counts"] = metrics_df[metrics_df.index.isin(counts_names)]
+    metrics_dict["extremums"] = metrics_df[
+        metrics_df.index.isin(extremums_names)
+    ]
+    return metrics_dict, metrics_df
 
 
 def qs_plots(strategy_returns, benchmark_returns, figsize: tuple = (5, 5)):
