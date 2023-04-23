@@ -434,13 +434,17 @@ def financial_evaluation(
         return
     start_date = ohlcv.index[0] - dt.timedelta(days=5)
     end_date = ohlcv.index[-1] + dt.timedelta(days=5)
-    benchmark_index = yf.download(
-        benchmark_ticker, start_date, end_date, progress=False, interval="1d"
-    )["Adj Close"]
+    benchmark = yf.download(
+        benchmark_ticker,
+        start_date,
+        end_date,
+        progress=False,
+        interval="1d",
+        auto_adjust=True,
+    )
     # st.write(ohlcv)
     # st.write(benchmark_index)
-    benchmark_index = benchmark_index.loc[ohlcv.index]
-    benchmark_index = np.array(benchmark_index)
+    benchmark = benchmark.loc[ohlcv.index]
     # adjustPrices(ohlcv)
     open_prices = ohlcv["Open"].values
     high_prices = ohlcv["High"].values
@@ -690,7 +694,10 @@ def financial_evaluation(
     charts_dict = plot_charts(
         "SPY", ohlcv[:i], transactions[:i], portfolio_value[:i], liquidated
     )
-    return initial_conf_df, charts_dict
+    portfolio = pd.DataFrame(
+        portfolio_value[1:], columns=["Value"], index=ohlcv.index
+    )
+    return initial_conf_df, charts_dict, portfolio, benchmark
 
 
 def metric_optimization(

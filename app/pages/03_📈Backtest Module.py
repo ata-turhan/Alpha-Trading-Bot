@@ -1,10 +1,8 @@
-pass
-pass
-
 import create_backtest as cb
 import numpy as np
 import streamlit as st
-import yfinance as yf
+
+pass
 from configuration import add_bg_from_local, configure_authors, configure_page
 
 configure_page()
@@ -26,6 +24,28 @@ if "run_backtest_button_clicked" not in st.session_state:
 
 
 st.markdown(
+    """
+    <style>
+        div[data-testid="column"]:nth-of-type(1)
+        {
+            text-align: center;
+        }
+
+        div[data-testid="column"]:nth-of-type(2)
+        {
+            text-align: center;
+        }
+        div[data-testid="column"]:nth-of-type(3)
+        {
+            text-align: center;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+st.markdown(
     "<h1 style='text-align: center; color: black; font-size: 65px;'> 📈 Backtest Module </h1> <br> <br>",
     unsafe_allow_html=True,
 )
@@ -41,15 +61,13 @@ if (
     st.error("Please get the data and create the strategy first.")
 else:
     ticker = st.session_state["ticker"]
-    col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         show_initial_configuration = st.checkbox("Show initial configuration")
     with col2:
         show_tables = st.checkbox("Show tables")
     with col3:
         show_charts = st.checkbox("Show charts")
-    with col4:
-        show_time = st.checkbox("Show time")
     st.markdown("<br>", unsafe_allow_html=True)
     with st.expander("See extra configuration for backtest"):
         col1, col2 = st.columns([1, 1])
@@ -203,7 +221,12 @@ else:
     ):
         st.session_state.run_backtest_button_clicked = True
         st.session_state["backtest_configuration_ready"] = True
-        initial_conf_df, charts_dict = cb.financial_evaluation(
+        (
+            initial_conf_df,
+            charts_dict,
+            portfolio,
+            benchmark,
+        ) = cb.financial_evaluation(
             hold_label,
             buy_label,
             sell_label,
@@ -229,36 +252,16 @@ else:
             show_initial_configuration,
             show_tables,
             show_charts,
-            show_time,
+            True,
             precision_point,
         )
 
-        _, icd_col, _ = st.columns([2, 3, 2])
-        icd_col.dataframe(initial_conf_df, width=500)
+        if show_initial_configuration:
+            _, icd_col, _ = st.columns([2, 3, 2])
+            icd_col.dataframe(initial_conf_df, width=500)
 
-        data = yf.download(
-            "AAPL",
-            start=data.index[0],
-            end=data.index[-1],
-            interval="1d",
-            progress=False,
-            auto_adjust=False,
-        )
-        bench = yf.download(
-            "SPY",
-            start=data.index[0],
-            end=data.index[-1],
-            interval="1d",
-            progress=False,
-            auto_adjust=False,
-        )
-
-        bench["date"] = bench.index
-        bench["date"] = bench["date"].dt.tz_localize(None)
-        bench.index = bench["date"]
-
-        strategy_returns = data["Adj Close"].pct_change().dropna()
-        benchmark_returns = bench["Adj Close"].pct_change().dropna()
+        strategy_returns = portfolio["Value"].pct_change().dropna()
+        benchmark_returns = benchmark["Close"].pct_change().dropna()
 
         metrics_dict, metrics_df = cb.qs_metrics(
             strategy_returns, benchmark_returns, risk_free_rate=1
