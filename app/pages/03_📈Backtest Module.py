@@ -260,7 +260,7 @@ else:
             True,
             precision_point,
         )
-        st.session_state.initial_conf_df = plot_init(
+        st.session_state.initial_conf_df = cb.plot_init(
             ticker,
             benchmark_ticker,
             risk_free_rate,
@@ -279,7 +279,7 @@ else:
             stop_loss,
             leverage,
         )
-        st.session_state.charts_dict = plot_charts(*charts_dict_params)
+        st.session_state.charts_dict = cb.plot_charts(*charts_dict_params)
     if (
         st.session_state.initial_conf_df is not None
         and st.session_state.charts_dict is not None
