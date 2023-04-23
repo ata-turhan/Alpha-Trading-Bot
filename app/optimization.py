@@ -181,4 +181,4 @@ def optimize(
             scores = np.append(scores, fitness2)
     result = f"Best parameters: {population[np.where(scores==max(scores))[0]][0]}, \
         Best value of {metric_optimized}: {max(scores)} "
-    col.markdown("## %s" % result)
+    st.markdown("## %s" % result)
