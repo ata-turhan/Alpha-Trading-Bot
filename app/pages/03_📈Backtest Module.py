@@ -203,7 +203,7 @@ else:
     ):
         st.session_state.run_backtest_button_clicked = True
         st.session_state["backtest_configuration_ready"] = True
-        metrics, initial_conf_df = cb.financial_evaluation(
+        initial_conf_df, charts_dict = cb.financial_evaluation(
             hold_label,
             buy_label,
             sell_label,
@@ -304,6 +304,13 @@ else:
             # st.dataframe(bench_returns)
 
         if show_charts:
+            st.plotly_chart(
+                charts_dict["transactions"], use_container_width=True
+            )
+            st.plotly_chart(
+                charts_dict["portfolio_value"], use_container_width=True
+            )
+
             col1, col2 = st.columns([1, 1])
             col1.write(plots_dict["snapshot"])
             col2.write(plots_dict["heatmap"])
