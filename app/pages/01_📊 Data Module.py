@@ -6,8 +6,8 @@ import streamlit as st
 import yfinance as yf
 from configuration import add_bg_from_local, configure_authors, configure_page
 from create_data import (
+    create_fundamental_data,
     create_technical_indicators,
-    fetch_fundamental_data,
     fred_codes,
     get_financial_data,
     show_prices,
@@ -79,19 +79,10 @@ def reset_click():
 
 
 def add_fundamental_data(fundamentals):
-    data = st.session_state["data"]
-    start = data.index[0]
-    end = data.index[-1]
-    if "Gross Domestic Product" not in list(data.columns):
-        _, col2, _ = st.columns([1, 2, 1])
-        with col2:
-            with st.spinner("Fetching fundamental data"):
-                data = fetch_fundamental_data(data, start, end)
-                st.session_state["data"] = data
-    columns = ["Open", "High", "Low", "Close", "Volume"]
+    columns = list(st.session_state["data_to_show"].columns)
     if len(fundamentals) > 0:
         columns.extend(fundamentals)
-    st.session_state["data_to_show"] = data[columns]
+    st.session_state["data_to_show"] = st.session_state["data"][columns]
 
 
 def add_indicator_data(indicators):
@@ -281,6 +272,7 @@ def main():
                 elif data is not None:
                     _, fetch_col, _ = st.columns([3, 2, 3])
                     fetch_col.success("Data fetched successfully")
+                    st.session_state.data_to_show = st.session_state.data
                     st.markdown("<br>", unsafe_allow_html=True)
     elif data_fetch_way == "Read from a file" and st.session_state.conf_change:
         # col2.markdown("<br><br>", unsafe_allow_html=True)
@@ -312,24 +304,32 @@ def main():
                     st.session_state["data"].index
                 )
                 data = st.session_state["data"]
+                st.session_state.data_to_show = st.session_state.data
                 col2.success("Data fetched successfully")
                 st.session_state.conf_change = False
+            finally:
+                uploaded_file.close()
     if st.session_state["data"] is not None:
+        if "S&P 500" not in list(st.session_state["data"].columns):
+            st.session_state["data"] = create_fundamental_data(
+                st.session_state["data"]
+            )
+        if "ti_momentum_rsi" not in list(st.session_state["data"].columns):
+            st.session_state["data"] = create_technical_indicators(
+                st.session_state["data"]
+            )
+
         col1, col2, col3 = st.columns([4, 1, 5], gap="small")
         st.session_state["fundamentals"] = col1.multiselect(
             "Besides the price data, which fundamental data do you want to add?",
             fred_codes.keys(),
         )
-        add_fundamental_data(st.session_state["fundamentals"])
-
-        if "ti_momentum_rsi" not in list(st.session_state["data"].columns):
-            st.session_state["data"] = create_technical_indicators(
-                st.session_state["data"]
-            )
         st.session_state["indicators"] = col3.multiselect(
             "Besides the price data, which technical indicators data do you want to add?",
             [col for col in st.session_state["data"].columns if "ti_" in col],
         )
+
+        add_fundamental_data(st.session_state["fundamentals"])
         add_indicator_data(st.session_state["indicators"])
 
         st.markdown("<br><br>", unsafe_allow_html=True)

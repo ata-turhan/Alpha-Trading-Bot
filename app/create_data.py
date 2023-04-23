@@ -231,6 +231,16 @@ def create_ohlcv_alike(data: pd.DataFrame, new_asset: str):
     )
 
 
+def create_fundamental_data(ohlcv: pd.DataFrame) -> pd.DataFrame:
+    start = ohlcv.index[0]
+    end = ohlcv.index[-1]
+    _, col2, _ = st.columns([1, 2, 1])
+    with col2:
+        with st.spinner("Fetching fundamental data"):
+            data = fetch_fundamental_data(ohlcv, start, end)
+            return data
+
+
 def create_technical_indicators(ohlcv: pd.DataFrame) -> pd.DataFrame:
     _, col2, _ = st.columns([1, 2, 1])
     with col2:
