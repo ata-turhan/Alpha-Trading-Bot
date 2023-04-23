@@ -5,12 +5,123 @@ import time
 
 import numpy as np
 import pandas as pd
-
-pass
 import plotly.graph_objects as go
+import quantstats as qs
 import streamlit as st
 import yfinance as yf
 from plotly.subplots import make_subplots
+
+returns_names = [
+    "Cumulative Return",
+    "CAGR﹪",
+    "Expected Daily",
+    "Expected Monthly",
+    "Expected Yearly",
+    "Best Day",
+    "Worst Day",
+    "Best Month",
+    "Worst Month",
+    "Best Year",
+    "Worst Year",
+    "Avg. Up Month",
+    "Avg. Down Month",
+]
+ratios_names = [
+    "Alpha",
+    "Beta",
+    "Correlation",
+    "Sharpe",
+    "Prob. Sharpe Ratio",
+    "Smart Sharpe",
+    "Sortino",
+    "Sortino/√2",
+    "Smart Sortino/√2",
+    "Treynor Ratio",
+    "Omega",
+    "R^2",
+    "Information Ratio",
+    "Payoff Ratio",
+    "Profit Factor",
+    "Common Sense Ratio",
+    "CPC Index",
+    "Tail Ratio",
+    "Outlier Win Ratio",
+    "Outlier Loss Ratio",
+    "Ulcer Index",
+    "Serenity Index",
+]
+risks_names = [
+    "Max Drawdown",
+    "Avg. Drawdown",
+    "Avg. Drawdown Days",
+    "Longest DD Days",
+    "Volatility (ann.)",
+    "Skew",
+    "Kurtosis",
+    "Kelly Criterion",
+    "Risk of Ruin",
+    "Daily Value-at-Risk",
+    "Expected Shortfall (cVaR)",
+]
+counts_names = [
+    "Win Days",
+    "Win Month",
+    "Win Quarter",
+    "Win Year",
+]
+extremums_names = [
+    "Max Consecutive Wins",
+    "Max Consecutive Losses",
+]
+
+
+def qs_metrics(strategy_returns, benchmark_returns, risk_free_rate: int = 1):
+    metrics = qs.reports.metrics(
+        returns=strategy_returns,
+        benchmark=benchmark_returns,
+        rf=risk_free_rate,
+        display=False,
+        mode="full",
+        sep=False,
+        compounded=True,
+    )
+    metrics_dict = dict()
+    metrics_dict["returns"] = metrics[metrics.index.isin(returns_names)]
+    metrics_dict["ratios"] = metrics[metrics.index.isin(ratios_names)]
+    metrics_dict["risks"] = metrics[metrics.index.isin(risks_names)]
+    metrics_dict["counts"] = metrics[metrics.index.isin(counts_names)]
+    metrics_dict["extremums"] = metrics[metrics.index.isin(extremums_names)]
+    return metrics_dict
+
+
+def qs_plots(strategy_returns, benchmark_returns, figsize: tuple = (6, 6)):
+    plots_dict = dict()
+    plots_dict["snapshot"] = qs.plots.snapshot(
+        strategy_returns,
+        title=f"{st.session_state['ticker']} Performance",
+        figsize=figsize,
+        show=False,
+        mode="full",
+    )
+
+    plots_dict["heatmap"] = qs.plots.monthly_heatmap(
+        strategy_returns,
+        figsize=figsize,
+        show=False,
+    )
+    plots_dict["normal_returns"] = qs.plots.returns(
+        strategy_returns,
+        benchmark_returns,
+        figsize=figsize,
+        show=False,
+    )
+    plots_dict["log_returns"] = qs.plots.log_returns(
+        strategy_returns,
+        benchmark_returns,
+        figsize=figsize,
+        show=False,
+    )
+    return plots_dict
 
 
 def adjustPrices(ohlcv: pd.DataFrame) -> None:

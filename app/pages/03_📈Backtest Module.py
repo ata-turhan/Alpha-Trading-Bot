@@ -1,6 +1,7 @@
 import create_backtest as cb
 import numpy as np
-import quantstats as qs
+
+pass
 import streamlit as st
 import yfinance as yf
 from configuration import add_bg_from_local, configure_authors, configure_page
@@ -11,8 +12,8 @@ add_bg_from_local("data/background.png", "data/bot.png")
 
 if "data" not in st.session_state:
     st.session_state.data = None
-if "predictions" not in st.session_state:
-    st.session_state.predictions = None
+if "signals" not in st.session_state:
+    st.session_state.signals = None
 if "ticker" not in st.session_state:
     st.session_state.ticker = ""
 if "backtest_configuration_ready" not in st.session_state:
@@ -31,7 +32,7 @@ st.markdown(style, unsafe_allow_html=True)
 st.markdown("<br> <br>", unsafe_allow_html=True)
 if (
     st.session_state["data"] is None
-    or st.session_state["predictions"] is None
+    or st.session_state["signals"] is None
     or st.session_state["ticker"] == ""
 ):
     st.error("Please get the data and create the strategy first.")
@@ -57,7 +58,7 @@ else:
                 "benchmark_ticker"
             ] = benchmark_ticker
         data = st.session_state["data"]
-        predictions = np.array(st.session_state["predictions"])
+        signals = np.array(st.session_state["signals"])
         st.markdown("<br>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1, 1, 1])
         with col1:
@@ -202,7 +203,7 @@ else:
             ticker,
             benchmark_ticker,
             data,
-            predictions,
+            signals,
             risk_free_rate,
             initial_capital,
             commission,
@@ -224,6 +225,15 @@ else:
             show_time,
             precision_point,
         )
+
+        data = yf.download(
+            "AAPL",
+            start=data.index[0],
+            end=data.index[-1],
+            interval="1d",
+            progress=False,
+            auto_adjust=False,
+        )
         bench = yf.download(
             "SPY",
             start=data.index[0],
@@ -232,42 +242,47 @@ else:
             progress=False,
             auto_adjust=False,
         )
-        # st.dataframe(bench)
+
         bench["date"] = bench.index
         bench["date"] = bench["date"].dt.tz_localize(None)
         bench.index = bench["date"]
-        metrics = qs.reports.metrics(
-            returns=data["Adj Close"],
-            benchmark=bench["Adj Close"],
-            rf=0.0,
-            display=False,
-            mode="full",
-            sep=False,
-            compounded=True,
+
+        strategy_returns = data["Adj Close"].pct_change().dropna()
+        benchmark_returns = bench["Adj Close"].pct_change().dropna()
+
+        metrics_dict = cb.qs_metrics(
+            strategy_returns, benchmark_returns, risk_free_rate=1
         )
-        st.dataframe(metrics)
+
+        col1, col2, col3 = st.columns([1, 1, 1])
+        col1.subheader("Returns")
+        col1.dataframe(metrics_dict["returns"], width=500)
+        col2.subheader("Ratios")
+        col2.dataframe(metrics_dict["ratios"], width=500)
+        col3.subheader("Risks")
+        col3.dataframe(metrics_dict["risks"], width=500)
+
+        col1, col2 = st.columns([1, 1])
+        col1.subheader("Trade Counts")
+        col1.dataframe(metrics_dict["counts"], width=500)
+        col2.subheader("Extremums")
+        col2.dataframe(metrics_dict["extremums"], width=500)
+
+        # st.dataframe(data)
         # st.dataframe(bench)
-        snapshot = qs.plots.snapshot(
-            data["Adj Close"],
-            title=f"{st.session_state['ticker']} Performance",
-            show=False,
-            mode="full",
-        )
-        st.write(snapshot)
-        heatmap = qs.plots.monthly_heatmap(
-            data["Adj Close"],
-            show=False,
-        )
-        st.write(heatmap)
-        returns = qs.plots.returns(
-            data["Adj Close"],
-            bench["Adj Close"],
-            show=False,
-        )
-        st.write(returns)
-        log_returns = qs.plots.log_returns(
-            data["Adj Close"],
-            bench["Adj Close"],
-            show=False,
-        )
-        st.write(log_returns)
+        # st.dataframe(returns)
+        # st.dataframe(bench_returns)
+
+        plots_dict = cb.qs_plots(strategy_returns, benchmark_returns)
+
+        col1, col2 = st.columns([1, 1])
+        col1.subheader("Snapshot")
+        col1.write(plots_dict["snapshot"])
+        col2.subheader("Heatmap")
+        col2.write(plots_dict["heatmap"])
+
+        col1, col2 = st.columns([1, 1])
+        col1.subheader("Normal Returns")
+        col1.write(plots_dict["normal_returns"])
+        col2.subheader("Log Returns")
+        col2.write(plots_dict["log_returns"])

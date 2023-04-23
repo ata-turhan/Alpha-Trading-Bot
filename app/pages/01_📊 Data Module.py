@@ -315,7 +315,7 @@ def main():
                 col2.success("Data fetched successfully")
                 st.session_state.conf_change = False
     if st.session_state["data"] is not None:
-        col1, col2, col3 = st.columns([5, 1, 5], gap="small")
+        col1, col2, col3 = st.columns([4, 1, 5], gap="small")
         st.session_state["fundamentals"] = col1.multiselect(
             "Besides the price data, which fundamental data do you want to add?",
             fred_codes.keys(),

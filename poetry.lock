@@ -163,46 +163,6 @@ numpy = ">1"
 pandas = ">1"
 
 [[package]]
-name = "catboost"
-version = "1.0.1"
-description = "Catboost Python Package"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "catboost-1.0.1-cp27-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:ead27f119abb4c7babea305c9a203f0623176063c053f6e337814cbc45942d88"},
-    {file = "catboost-1.0.1-cp27-none-manylinux1_x86_64.whl", hash = "sha256:cc7d78975951dd2df39efeab807fc14dca438455223fbf03476e24986139c6f3"},
-    {file = "catboost-1.0.1-cp27-none-win_amd64.whl", hash = "sha256:4401a176b53a02bb19cc78fc275718a4102aed4c87052a7833bac8b3cc30516e"},
-    {file = "catboost-1.0.1-cp310-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:8ba9db0711f34ddf8b4205b1c63618090e20ace4f118eea33a46efdcdc70ade2"},
-    {file = "catboost-1.0.1-cp310-none-manylinux1_x86_64.whl", hash = "sha256:6ed38c2ed38c187ff4e0c32618ab29680f841a5efefc53d5694a202d22af3f6f"},
-    {file = "catboost-1.0.1-cp310-none-win_amd64.whl", hash = "sha256:4482c5bec8f15c3f6214abae655b1be3bbc9f433ab3d7fabf32feeba182e4797"},
-    {file = "catboost-1.0.1-cp35-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:b80331756477b815d15edf3c2e2f820fa3b65212fabc9300831cf5a4fede7fed"},
-    {file = "catboost-1.0.1-cp35-none-manylinux1_x86_64.whl", hash = "sha256:9adfc2bd2fcaed4779559fd20b62d228fa3b33d23f6dc1c5adf9ac68162d2bae"},
-    {file = "catboost-1.0.1-cp35-none-win_amd64.whl", hash = "sha256:1145125d7ea3b5ed0ecb97c68aa3ce90de49fb00673da19392d19bd1fc495836"},
-    {file = "catboost-1.0.1-cp36-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:a86f2a5e8d6ea3cc41cc231b2674b41e5c62c0383afbb944a69ab4c63c0d7b42"},
-    {file = "catboost-1.0.1-cp36-none-manylinux1_x86_64.whl", hash = "sha256:7bb8dfc22cefef4ebfb55189f65f212a8cb364ee9a51eed7ff57706cb734effb"},
-    {file = "catboost-1.0.1-cp36-none-win_amd64.whl", hash = "sha256:b2d7770dc2765c0a937df158a52fce3ac8c680af7d52bd483ef45f495afcefb3"},
-    {file = "catboost-1.0.1-cp37-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:4659abaef4c673300cf2fecd16562ea65b40e58119701acce3a367a15543a53d"},
-    {file = "catboost-1.0.1-cp37-none-manylinux1_x86_64.whl", hash = "sha256:4754f013fc80fe18f2d3e3ca6d70a66192462d986bed832e358402975ac3bbdf"},
-    {file = "catboost-1.0.1-cp37-none-win_amd64.whl", hash = "sha256:6b0301c0a67df9c87b20144032489b1f3c3fcafc8babdfcdddcee8cca19d0dfe"},
-    {file = "catboost-1.0.1-cp38-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:1f392afde8df465172319020a165f6874c61af547e616c26571b45b51b7516b8"},
-    {file = "catboost-1.0.1-cp38-none-manylinux1_x86_64.whl", hash = "sha256:518ba9f18f37b5f094dc3940fbf6152376143017112c6d66e3617f51f7ad41dd"},
-    {file = "catboost-1.0.1-cp38-none-win_amd64.whl", hash = "sha256:5f1ec217a55bb220c360868dc8e619264d11ba315bfe5656d63c44e1ac258f1e"},
-    {file = "catboost-1.0.1-cp39-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:44bb75f2658ece4b5fe5f2cd899347a83a094557b344474097a023e82d7e2421"},
-    {file = "catboost-1.0.1-cp39-none-manylinux1_x86_64.whl", hash = "sha256:8fe556e610003fe20cd67e714cd41546d5efede6008c52c7ed0612d64f34ba5c"},
-    {file = "catboost-1.0.1-cp39-none-win_amd64.whl", hash = "sha256:db0e9794ac0b2e201ad65e1d7ec7a1942d31210700a56954a4bfbec9300c2731"},
-]
-
-[package.dependencies]
-graphviz = "*"
-matplotlib = "*"
-numpy = ">=1.16.0"
-pandas = ">=0.24.0"
-plotly = "*"
-scipy = "*"
-six = "*"
-
-[[package]]
 name = "certifi"
 version = "2022.12.7"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -708,23 +668,6 @@ files = [
 
 [package.dependencies]
 gitdb = ">=4.0.1,<5"
-
-[[package]]
-name = "graphviz"
-version = "0.20.1"
-description = "Simple Python interface for Graphviz"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "graphviz-0.20.1-py3-none-any.whl", hash = "sha256:587c58a223b51611c0cf461132da386edd896a029524ca61a1462b880bf97977"},
-    {file = "graphviz-0.20.1.zip", hash = "sha256:8c58f14adaa3b947daf26c19bc1e98c4e0702cdc31cf99153e6f06904d492bf8"},
-]
-
-[package.extras]
-dev = ["flake8", "pep8-naming", "tox (>=3)", "twine", "wheel"]
-docs = ["sphinx (>=5)", "sphinx-autodoc-typehints", "sphinx-rtd-theme"]
-test = ["coverage", "mock (>=4)", "pytest (>=7)", "pytest-cov", "pytest-mock (>=3)"]
 
 [[package]]
 name = "html5lib"
@@ -2514,4 +2457,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "cef01fa3b8a891215c8fc79b45391a2248e9c5edb0d07f521aa953c667aab588"
+content-hash = "a874984ab4acf48a012f32062d4e0f32231759849c9e53f9e87a88c68e97df6c"
