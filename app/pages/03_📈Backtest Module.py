@@ -276,13 +276,25 @@ else:
         plots_dict = cb.qs_plots(strategy_returns, benchmark_returns)
 
         col1, col2 = st.columns([1, 1])
-        col1.subheader("Snapshot")
         col1.write(plots_dict["snapshot"])
-        col2.subheader("Heatmap")
         col2.write(plots_dict["heatmap"])
 
         col1, col2 = st.columns([1, 1])
-        col1.subheader("Normal Returns")
         col1.write(plots_dict["normal_returns"])
-        col2.subheader("Log Returns")
         col2.write(plots_dict["log_returns"])
+
+        col1, col2 = st.columns([1, 1])
+        col1.write(plots_dict["histogram"])
+        col2.write(plots_dict["distribution"])
+
+        col1, col2 = st.columns([1, 1])
+        col1.write(plots_dict["rolling_beta"])
+        col2.write(plots_dict["rolling_volatility"])
+
+        col1, col2 = st.columns([1, 1])
+        col1.write(plots_dict["rolling_sharpe"])
+        col2.write(plots_dict["rolling_sortino"])
+
+        col1, col2 = st.columns([1, 1])
+        col1.write(plots_dict["drawdowns_periods"])
+        col2.write(plots_dict["drawdown"])

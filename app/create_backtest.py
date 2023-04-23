@@ -94,7 +94,7 @@ def qs_metrics(strategy_returns, benchmark_returns, risk_free_rate: int = 1):
     return metrics_dict
 
 
-def qs_plots(strategy_returns, benchmark_returns, figsize: tuple = (6, 6)):
+def qs_plots(strategy_returns, benchmark_returns, figsize: tuple = (5, 5)):
     plots_dict = dict()
     plots_dict["snapshot"] = qs.plots.snapshot(
         strategy_returns,
@@ -118,6 +118,59 @@ def qs_plots(strategy_returns, benchmark_returns, figsize: tuple = (6, 6)):
     plots_dict["log_returns"] = qs.plots.log_returns(
         strategy_returns,
         benchmark_returns,
+        figsize=figsize,
+        show=False,
+    )
+    plots_dict["yearly_returns"] = qs.plots.yearly_returns(
+        strategy_returns,
+        benchmark_returns,
+        figsize=figsize,
+        show=False,
+    )
+    plots_dict["daily_returns"] = qs.plots.daily_returns(
+        strategy_returns,
+        figsize=figsize,
+        show=False,
+    )
+    plots_dict["histogram"] = qs.plots.histogram(
+        strategy_returns,
+        figsize=figsize,
+        show=False,
+    )
+    plots_dict["distribution"] = qs.plots.distribution(
+        strategy_returns,
+        figsize=figsize,
+        show=False,
+    )
+    plots_dict["rolling_beta"] = qs.plots.rolling_beta(
+        strategy_returns,
+        benchmark_returns,
+        figsize=figsize,
+        show=False,
+    )
+    plots_dict["rolling_volatility"] = qs.plots.rolling_volatility(
+        strategy_returns,
+        benchmark_returns,
+        figsize=figsize,
+        show=False,
+    )
+    plots_dict["rolling_sharpe"] = qs.plots.rolling_sharpe(
+        strategy_returns,
+        figsize=figsize,
+        show=False,
+    )
+    plots_dict["rolling_sortino"] = qs.plots.rolling_sortino(
+        strategy_returns,
+        figsize=figsize,
+        show=False,
+    )
+    plots_dict["drawdowns_periods"] = qs.plots.drawdowns_periods(
+        strategy_returns,
+        figsize=figsize,
+        show=False,
+    )
+    plots_dict["drawdown"] = qs.plots.drawdown(
+        strategy_returns,
         figsize=figsize,
         show=False,
     )
