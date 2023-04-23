@@ -21,6 +21,14 @@ if "backtest_configuration" not in st.session_state:
     st.session_state.backtest_configuration = {}
 if "run_backtest_button_clicked" not in st.session_state:
     st.session_state.run_backtest_button_clicked = False
+if "initial_conf_df" not in st.session_state:
+    st.session_state.initial_conf_df = None
+if "charts_dict" not in st.session_state:
+    st.session_state.charts_dict = None
+if "portfolio" not in st.session_state:
+    st.session_state.portfolio = None
+if "benchmark" not in st.session_state:
+    st.session_state.benchmark = None
 
 
 st.markdown(
@@ -215,17 +223,14 @@ else:
             pass
 
         st.markdown("<br>", unsafe_allow_html=True)
-    if (
-        st.button("Run the backtest")
-        or st.session_state.run_backtest_button_clicked
-    ):
+    initial_conf_df, charts_dict, portfolio, benchmark = [None] * 4
+    if st.button("Run the backtest"):
         st.session_state.run_backtest_button_clicked = True
         st.session_state["backtest_configuration_ready"] = True
         (
-            initial_conf_df,
-            charts_dict,
-            portfolio,
-            benchmark,
+            st.session_state.portfolio,
+            st.session_state.benchmark,
+            charts_dict_params,
         ) = cb.financial_evaluation(
             hold_label,
             buy_label,
@@ -255,13 +260,44 @@ else:
             True,
             precision_point,
         )
-
+        st.session_state.initial_conf_df = plot_init(
+            ticker,
+            benchmark_ticker,
+            risk_free_rate,
+            start_date,
+            end_date,
+            initial_capital,
+            commission,
+            alpha,
+            threshold,
+            order,
+            short,
+            short_fee,
+            trailing_take_profit,
+            take_profit,
+            trailing_stop_loss,
+            stop_loss,
+            leverage,
+        )
+        st.session_state.charts_dict = plot_charts(*charts_dict_params)
+    if (
+        st.session_state.initial_conf_df is not None
+        and st.session_state.charts_dict is not None
+        and st.session_state.portfolio is not None
+        and st.session_state.benchmark is not None
+        and st.session_state.run_backtest_button_clicked
+    ):
+        st.markdown("<br><br>", unsafe_allow_html=True)
         if show_initial_configuration:
             _, icd_col, _ = st.columns([2, 3, 2])
-            icd_col.dataframe(initial_conf_df, width=500)
+            icd_col.dataframe(st.session_state.initial_conf_df, width=500)
 
-        strategy_returns = portfolio["Value"].pct_change().dropna()
-        benchmark_returns = benchmark["Close"].pct_change().dropna()
+        strategy_returns = (
+            st.session_state.portfolio["Value"].pct_change().dropna()
+        )
+        benchmark_returns = (
+            st.session_state.benchmark["Close"].pct_change().dropna()
+        )
 
         metrics_dict, metrics_df = cb.qs_metrics(
             strategy_returns, benchmark_returns, risk_free_rate=1
@@ -286,6 +322,7 @@ else:
             args=(plots_dict,),
         )
 
+        st.markdown("<br><br>", unsafe_allow_html=True)
         if show_tables:
             col1, col2, col3 = st.columns([1, 1, 1])
             col1.subheader("Returns")
@@ -308,10 +345,12 @@ else:
 
         if show_charts:
             st.plotly_chart(
-                charts_dict["transactions"], use_container_width=True
+                st.session_state.charts_dict["transactions"],
+                use_container_width=True,
             )
             st.plotly_chart(
-                charts_dict["portfolio_value"], use_container_width=True
+                st.session_state.charts_dict["portfolio_value"],
+                use_container_width=True,
             )
 
             col1, col2 = st.columns([1, 1])

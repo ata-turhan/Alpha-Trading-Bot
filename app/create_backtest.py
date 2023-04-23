@@ -422,7 +422,7 @@ def financial_evaluation(
     show_initial_configuration: bool = True,
     show_tables: bool = True,
     show_charts: bool = True,
-    show_time: bool = True,
+    show_time: bool = False,
     precision_point: int = 3,
 ) -> dict:
     start = time.time()
@@ -691,13 +691,17 @@ def financial_evaluation(
         stop_loss,
         leverage,
     )
-    charts_dict = plot_charts(
-        "SPY", ohlcv[:i], transactions[:i], portfolio_value[:i], liquidated
-    )
+    charts_dict_params = [
+        "SPY",
+        ohlcv[:i],
+        transactions[:i],
+        portfolio_value[:i],
+        liquidated,
+    ]
     portfolio = pd.DataFrame(
         portfolio_value[1:], columns=["Value"], index=ohlcv.index
     )
-    return initial_conf_df, charts_dict, portfolio, benchmark
+    return portfolio, benchmark, charts_dict_params
 
 
 def metric_optimization(
