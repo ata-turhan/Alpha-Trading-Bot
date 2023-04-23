@@ -1,7 +1,9 @@
+import base64
 import datetime as dt
 import math
 import random
 import time
+from io import BytesIO
 
 import numpy as np
 import pandas as pd
@@ -96,7 +98,7 @@ def qs_metrics(strategy_returns, benchmark_returns, risk_free_rate: int = 1):
     return metrics_dict, metrics_df
 
 
-def qs_plots(strategy_returns, benchmark_returns, figsize: tuple = (5, 5)):
+def qs_plots(strategy_returns, benchmark_returns, figsize: tuple = (6, 6)):
     plots_dict = dict()
     plots_dict["snapshot"] = qs.plots.snapshot(
         strategy_returns,
@@ -177,6 +179,60 @@ def qs_plots(strategy_returns, benchmark_returns, figsize: tuple = (5, 5)):
         show=False,
     )
     return plots_dict
+
+
+def generate_qs_plots_report(
+    plots_dict, report_name: str = "Backtest QS Plots.html"
+):
+    html_first = """<html>
+                <head>
+                    <style>
+                    {
+                        box-sizing: border-box;
+                    }
+                    /* Set additional styling options for the columns*/
+                    .column {
+                    float: left;
+                    width: 50%;
+                    }
+                    .row:after {
+                    content: "";
+                    display: table;
+                    clear: both;
+                    }
+                    </style>
+                </head>
+                <body>
+                """
+    col1_plots = ""
+    col2_plots = ""
+    for i, plot in enumerate(plots_dict.values()):
+        tmpfile = BytesIO()
+        plot.savefig(tmpfile, format="png")
+        encoded = base64.b64encode(tmpfile.getvalue()).decode("utf-8")
+        html = (
+            "<br>"
+            + "<img src='data:image/png;base64,{}'>".format(encoded)
+            + "<br>"
+        )
+        if i % 2 == 0:
+            col1_plots += html
+        else:
+            col2_plots += html
+    html_last = f"""
+                        <div class="row">
+                            <div class="column">
+                                {col1_plots}
+                            </div>
+                            <div class="column">
+                                {col2_plots}
+                            </div>
+                        </div>
+                    </body>
+                    </html>"""
+    output = html_first + html_last
+    with open(report_name, "w") as f:
+        f.write(output)
 
 
 def adjustPrices(ohlcv: pd.DataFrame) -> None:

@@ -1,5 +1,5 @@
-import base64
-from io import BytesIO
+pass
+pass
 
 import create_backtest as cb
 import numpy as np
@@ -21,6 +21,8 @@ if "backtest_configuration_ready" not in st.session_state:
     st.session_state.backtest_configuration_ready = False
 if "backtest_configuration" not in st.session_state:
     st.session_state.backtest_configuration = {}
+if "run_backtest_button_clicked" not in st.session_state:
+    st.session_state.run_backtest_button_clicked = False
 
 
 st.markdown(
@@ -195,7 +197,11 @@ else:
             pass
 
         st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("Run the backtest"):
+    if (
+        st.button("Run the backtest")
+        or st.session_state.run_backtest_button_clicked
+    ):
+        st.session_state.run_backtest_button_clicked = True
         st.session_state["backtest_configuration_ready"] = True
         metrics = cb.financial_evaluation(
             hold_label,
@@ -254,11 +260,24 @@ else:
         metrics_dict, metrics_df = cb.qs_metrics(
             strategy_returns, benchmark_returns, risk_free_rate=1
         )
+        plots_dict = cb.qs_plots(strategy_returns, benchmark_returns)
 
-        st.download_button(
+        col1, col2 = st.columns(
+            [
+                1,
+                1,
+            ]
+        )
+
+        col1.download_button(
             "Download the metrics of the backtest",
             metrics_df.to_html().encode("utf-8"),
             "Metrics.html",
+        )
+        col2.button(
+            "Download the plots of the backtest",
+            on_click=cb.generate_qs_plots_report,
+            args=(plots_dict,),
         )
 
         col1, col2, col3 = st.columns([1, 1, 1])
@@ -279,8 +298,6 @@ else:
         # st.dataframe(bench)
         # st.dataframe(returns)
         # st.dataframe(bench_returns)
-
-        plots_dict = cb.qs_plots(strategy_returns, benchmark_returns)
 
         col1, col2 = st.columns([1, 1])
         col1.write(plots_dict["snapshot"])
@@ -307,54 +324,3 @@ else:
         col2.write(plots_dict["drawdown"])
 
         # if st.button("Download the plots of the backtest"):
-        html_first = """<html>
-                        <head>
-                            <style>
-                            {
-                                box-sizing: border-box;
-                            }
-                            /* Set additional styling options for the columns*/
-                            .column {
-                            float: left;
-                            width: 50%;
-                            }
-
-                            .row:after {
-                            content: "";
-                            display: table;
-                            clear: both;
-                            }
-                            </style>
-                        </head>
-                        <body>
-                        """
-        col1_plots = ""
-        col2_plots = ""
-        for i, plot in enumerate(plots_dict.values()):
-            tmpfile = BytesIO()
-            plot.savefig(tmpfile, format="png")
-            encoded = base64.b64encode(tmpfile.getvalue()).decode("utf-8")
-            html = (
-                "<br>"
-                + "<img src='data:image/png;base64,{}'>".format(encoded)
-                + "<br>"
-            )
-            if i % 2 == 0:
-                col1_plots += html
-            else:
-                col2_plots += html
-
-        html_last = f"""
-                            <div class="row">
-                                <div class="column">
-                                    {col1_plots}
-                                </div>
-                                <div class="column">
-                                    {col2_plots}
-                                </div>
-                            </div>
-                        </body>
-                        </html>"""
-        output = html_first + html_last
-        with open("Backtest Plots.html", "w") as f:
-            f.write(output)
