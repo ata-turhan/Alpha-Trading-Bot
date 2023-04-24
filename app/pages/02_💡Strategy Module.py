@@ -77,11 +77,18 @@ def main():
                         uploaded_file,
                         index_col="Date",
                     )
+                    if len(st.session_state["data"]) != len(
+                        st.session_state["signals"]
+                    ):
+                        raise Exception(
+                            "Indices of data and signals does not match. \
+                                Please, upload another signals file."
+                        )
                 except FileNotFoundError as exception:
                     center_col_get.error(
                         "you need to upload a csv or excel file."
                     )
-                except Except as e:
+                except Exception as e:
                     center_col_get.error(e)
                 else:
                     signals = st.session_state["signals"]
