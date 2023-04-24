@@ -103,7 +103,6 @@ def main():
                     "sell_label"
                 ] = sell_label
             st.markdown("<br>", unsafe_allow_html=True)
-            col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
                 initial_capital = st.number_input(
                     "Enter the initial capital", value=1000.0, step=1000.0
@@ -126,7 +125,6 @@ def main():
                     "commission"
                 ] = commission
             st.markdown("<br>", unsafe_allow_html=True)
-            col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
                 alpha = st.number_input(
                     "Enter the alpha", value=0.05, step=0.01
@@ -143,7 +141,6 @@ def main():
                 order = st.number_input("Enter the order", value=1.0, step=1.0)
                 st.session_state["backtest_configuration"]["order"] = order
             st.markdown("<br>", unsafe_allow_html=True)
-            col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
                 order_type = st.selectbox(
                     "Select the order type", ["market", "limit"]
@@ -168,7 +165,6 @@ def main():
                     "precision_point"
                 ] = precision_point
             st.markdown("<br>", unsafe_allow_html=True)
-            col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
                 short = st.checkbox("Use short positions")
                 st.session_state["backtest_configuration"]["short"] = short
@@ -183,7 +179,6 @@ def main():
                     "trailing_stop_loss"
                 ] = trailing_stop_loss
             st.markdown("<br>", unsafe_allow_html=True)
-            col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
                 short_fee = st.number_input(
                     "Enter the short fee (Default is 1)", value=1.0, step=1.0
@@ -210,9 +205,7 @@ def main():
                     "stop_loss"
                 ] = stop_loss
             st.markdown("<br>", unsafe_allow_html=True)
-
-            col1, col2, col3 = st.columns([1, 1, 1])
-            with col1:
+            with col2:
                 leverage = st.number_input(
                     "Enter the leverage multiplier (Default is 1)",
                     value=1.0,
@@ -221,12 +214,6 @@ def main():
                 st.session_state["backtest_configuration"][
                     "leverage"
                 ] = leverage
-            with col2:
-                pass
-            with col3:
-                pass
-
-            st.markdown("<br>", unsafe_allow_html=True)
         initial_conf_df, charts_dict, portfolio, benchmark = [None] * 4
         if st.button("Run the backtest"):
             st.session_state.run_backtest_button_clicked = True
