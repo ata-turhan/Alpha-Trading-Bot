@@ -99,7 +99,7 @@ def qs_metrics(strategy_returns, benchmark_returns, risk_free_rate: int = 1):
     return metrics_dict, metrics_df
 
 
-def qs_plots(strategy_returns, benchmark_returns, figsize: tuple = (6, 6)):
+def qs_plots(strategy_returns, benchmark_returns, figsize: tuple = (7, 7)):
     plots_dict = dict()
     plots_dict["snapshot"] = qs.plots.snapshot(
         strategy_returns,
@@ -182,9 +182,7 @@ def qs_plots(strategy_returns, benchmark_returns, figsize: tuple = (6, 6)):
     return plots_dict
 
 
-def generate_qs_plots_report(
-    plots_dict, report_name: str = "Backtest QS Plots.html"
-):
+def generate_qs_plots_report(plots_dict, report_name):
     html_first = """<html>
                 <head>
                     <style>
@@ -205,6 +203,10 @@ def generate_qs_plots_report(
                 </head>
                 <body>
                 """
+    report_name = "Backtest QS Plots - " + report_name
+    header = f"<h1 style='text-align: center; color: black; font-size: 65px;'> \
+    {report_name} </h1> <br>"
+    html_first += header
     col1_plots = ""
     col2_plots = ""
     for i, plot in enumerate(plots_dict.values()):
@@ -232,6 +234,7 @@ def generate_qs_plots_report(
                     </body>
                     </html>"""
     output = html_first + html_last
+    report_name += ".html"
     with open(report_name, "w") as f:
         f.write(output)
 
