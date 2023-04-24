@@ -638,6 +638,7 @@ def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
         fig.update_layout(
             title="<span style='font-size: 30px;'><b>Close Price with Bollinger Bands</b></span>",
             title_x=0.5,
+            title_xanchor="center",
         )
         st.plotly_chart(fig, use_container_width=True)
     elif indicator_name == "EMA":
@@ -674,6 +675,7 @@ def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
         fig.update_layout(
             title="<span style='font-size: 30px;'><b>Close Price with EMAs</b></span>",
             title_x=0.5,
+            title_xanchor="center",
         )
         st.plotly_chart(fig, use_container_width=True)
     elif indicator_name == "RSI":
@@ -714,6 +716,9 @@ def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
             col=1,
         )
         fig.update_layout(
+            title="<span style='font-size: 30px;'><b>RSI Value and Close Price</b></span>",
+            title_x=0.5,
+            title_xanchor="center",
             autosize=True,
             width=950,
             height=600,
@@ -753,5 +758,6 @@ def draw_technical_indicators(ohlcv: pd.DataFrame, indicator_name: str):
         fig.update_layout(
             title="<span style='font-size: 30px;'><b>Close Price with SMAs</b></span>",
             title_x=0.5,
+            title_xanchor="center",
         )
         st.plotly_chart(fig, use_container_width=True)

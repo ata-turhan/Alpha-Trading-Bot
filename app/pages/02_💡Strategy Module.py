@@ -505,7 +505,8 @@ def main():
                         break_line = '<hr style="height:2px;border-width:10;color:black;background-color:black">'
                         st.markdown(break_line, unsafe_allow_html=True)
     st.session_state.all_strategy_areas_filled = (
-        key_name != "" and strategy_fetch_way != DEFAULT_CHOICE
+        st.session_state.last_strategy != ""
+        and strategy_fetch_way != DEFAULT_CHOICE
     )
     if (
         st.session_state["smoothed_data"] is not None
