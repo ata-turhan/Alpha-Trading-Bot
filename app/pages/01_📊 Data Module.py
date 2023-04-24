@@ -25,6 +25,8 @@ def set_session_variables():
         st.session_state.conf_change = True
     if "ticker" not in st.session_state:
         st.session_state.ticker = ""
+    if "market" not in st.session_state:
+        st.session_state.market = ""
     if "indicators" not in st.session_state:
         st.session_state.indicators = None
     if "fundamentals" not in st.session_state:
@@ -192,6 +194,7 @@ def main():
             on_change=clear_data,
         )
         if market != DEFAULT_CHOICE:
+            st.session_state.market = market
             assets = st.session_state["tickers_list"][market]
             assets = [DEFAULT_CHOICE] + assets
             asset = col2.selectbox(
@@ -274,6 +277,13 @@ def main():
                     st.markdown("<br>", unsafe_allow_html=True)
     elif data_fetch_way == "Read from a file" and st.session_state.conf_change:
         # col2.markdown("<br><br>", unsafe_allow_html=True)
+        market = col2.selectbox(
+            "Select the market: ",
+            [DEFAULT_CHOICE, "Stock", "ETF", "Forex", "Crypto"],
+            on_change=clear_data,
+        )
+        if market != DEFAULT_CHOICE:
+            st.session_state.market = market
         uploaded_file = col2.file_uploader(
             "To upload, select a csv or excel file whose first word matches the ticker name.",
             on_change=clear_data,

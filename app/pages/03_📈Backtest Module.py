@@ -42,14 +42,25 @@ def set_session_variables():
         st.session_state.plots_dict = None
 
 
+def determine_benchmark(market):
+    if market == "Stock":
+        st.session_state.backtest_configuration["benchmark_ticker"] = "AAPL"
+    elif market == "ETF":
+        st.session_state.backtest_configuration["benchmark_ticker"] = "SPY"
+    elif market == "Forex":
+        st.session_state.backtest_configuration[
+            "benchmark_ticker"
+        ] = "EURUSD=X"
+    elif market == "Crypto":
+        st.session_state.backtest_configuration["benchmark_ticker"] = "BTC-USD"
+
+
 def main():
     set_session_variables()
     configure_page()
     configure_authors()
     add_bg_from_local("data/background.png", "data/bot.png")
     local_css("style/style.css")
-
-    st.session_state.backtest_configuration["benchmark_ticker"] = "SPY"
 
     st.markdown(
         "<h1 style='text-align: center; color: black; font-size: 65px;'> 📈 Backtest Module </h1> <br> <br>",
@@ -65,6 +76,7 @@ def main():
         st.error("Please get the data and create the strategy first.")
     else:
         ticker = st.session_state["ticker"]
+        determine_benchmark(st.session_state.market)
         col1, col2, col3 = st.columns([1, 1, 1])
         with col1:
             show_initial_configuration = st.checkbox(
@@ -218,7 +230,6 @@ def main():
         if st.button("Run the backtest"):
             st.session_state.run_backtest_button_clicked = True
             st.session_state["backtest_configuration_ready"] = True
-            st.write(st.session_state.backtest_configuration.keys())
             (
                 st.session_state.portfolio,
                 st.session_state.benchmark,
