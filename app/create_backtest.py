@@ -182,7 +182,8 @@ def qs_plots(strategy_returns, benchmark_returns, figsize: tuple = (7, 7)):
     return plots_dict
 
 
-def generate_qs_plots_report(plots_dict, report_name):
+def generate_qs_plots_report(plots_dict, charts_dict, report_name):
+    report_html = ""
     html_first = """<html>
                 <head>
                     <style>
@@ -199,6 +200,12 @@ def generate_qs_plots_report(plots_dict, report_name):
                     display: table;
                     clear: both;
                     }
+                    .center {
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                    width: 80%;
+                    }
                     </style>
                 </head>
                 <body>
@@ -207,6 +214,29 @@ def generate_qs_plots_report(plots_dict, report_name):
     header = f"<h1 style='text-align: center; color: black; font-size: 65px;'> \
     {report_name} </h1> <br>"
     html_first += header
+    report_html += html_first
+
+    row_plots = ""
+    for i, plot in enumerate(charts_dict.values()):
+        tmpfile = BytesIO()
+        plot.write_image(tmpfile, format="png")
+
+        encoded = base64.b64encode(tmpfile.getvalue()).decode("utf-8")
+        html = (
+            "<br>"
+            + "<img class='center' src='data:image/png;base64,{}'>".format(
+                encoded
+            )
+            + "<br>"
+        )
+        row_plots += html
+    html_middle = f"""
+    <div class="row">
+    {row_plots}
+    </div>
+    """
+    report_html += html_middle
+
     col1_plots = ""
     col2_plots = ""
     for i, plot in enumerate(plots_dict.values()):
@@ -215,7 +245,9 @@ def generate_qs_plots_report(plots_dict, report_name):
         encoded = base64.b64encode(tmpfile.getvalue()).decode("utf-8")
         html = (
             "<br>"
-            + "<img src='data:image/png;base64,{}'>".format(encoded)
+            + "<img class='center' src='data:image/png;base64,{}'>".format(
+                encoded
+            )
             + "<br>"
         )
         if i % 2 == 0:
@@ -233,10 +265,10 @@ def generate_qs_plots_report(plots_dict, report_name):
                         </div>
                     </body>
                     </html>"""
-    output = html_first + html_last
+    report_html += html_last
     report_name += ".html"
     with open(report_name, "w") as f:
-        f.write(output)
+        f.write(report_html)
 
 
 def adjustPrices(ohlcv: pd.DataFrame) -> None:

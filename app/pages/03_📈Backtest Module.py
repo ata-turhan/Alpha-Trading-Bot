@@ -319,9 +319,12 @@ else:
         col2.button(
             "Download the plots of the backtest",
             on_click=cb.generate_qs_plots_report,
-            args=(plots_dict, st.session_state.last_strategy),
+            args=(
+                plots_dict,
+                st.session_state.charts_dict,
+                st.session_state.last_strategy,
+            ),
         )
-        st.write(st.session_state.last_strategy)
 
         st.markdown("<br><br>", unsafe_allow_html=True)
         if show_tables:
