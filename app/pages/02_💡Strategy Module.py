@@ -400,6 +400,7 @@ def main():
                         "Advanced Machine Learning",
                         "Deep Learning",
                     ],
+                    on_change=clean_signals,
                 )
                 if ai_method == "Basic Machine Learning":
                     bml_model = center_col_get.selectbox(
@@ -520,41 +521,42 @@ def main():
             signals=st.session_state["signals"],
             last_strategy_name=st.session_state.last_strategy,
         )
-        st.markdown("<br>", unsafe_allow_html=True)
-        _, center_col_strategies_created, _ = st.columns([1, 2, 1])
-        center_col_strategies_created.subheader(
-            "These strategies have been created:"
-        )
-        st.markdown("<br>", unsafe_allow_html=True)
 
-        strategies = st.session_state["strategies"]
-        # st.write(strategies)
-        for key, val in strategies.items():
-            _, strategies_col, _ = st.columns([1, 2, 1])
-            strategies_col.write(key)
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        _, center_col3, _ = st.columns([1, 2, 1])
+    st.markdown("<br>", unsafe_allow_html=True)
+    _, center_col_strategies_created, _ = st.columns([1, 2, 1])
+    center_col_strategies_created.subheader(
+        "These strategies have been created:"
+    )
+    st.markdown("<br>", unsafe_allow_html=True)
 
-        mixing_logic = center_col3.text_input(
-            "Write your logic to mix the strategies with and & or:",
-            help="For example: 'S1 and S2 and S3'",
+    strategies = st.session_state["strategies"]
+    # st.write(strategies)
+    for key, val in strategies.items():
+        _, strategies_col, _ = st.columns([1, 2, 1])
+        strategies_col.write(key)
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    _, center_col3, _ = st.columns([1, 2, 1])
+
+    mixing_logic = center_col3.text_input(
+        "Write your logic to mix the strategies with and & or:",
+        help="For example: 'S1 and S2 and S3'",
+    )
+    if st.button("Mix the strategies"):
+        st.session_state["signals"] = cs.mix_strategies(
+            list(strategies.values()), mixing_logic
         )
-        if st.button("Mix the strategies"):
-            st.session_state["signals"] = cs.mix_strategies(
-                list(strategies.values()), mixing_logic
+        if st.session_state["signals"] is None:
+            center_col3.error(
+                "The signals of the strategies cannot be mixed, please write a correct logic statement."
             )
-            if st.session_state["signals"] is None:
-                center_col3.error(
-                    "The signals of the strategies cannot be mixed, please write a correct logic statement."
-                )
-            else:
-                # for m in st.session_state.strategies.values():
-                #    st.dataframe(m)
-                # st.dataframe(st.session_state["signals"])
-                center_col3.success(
-                    "The signals of the strategies mixed successfully"
-                )
-                st.session_state.last_strategy = "Mixed Strategy"
+        else:
+            # for m in st.session_state.strategies.values():
+            #    st.dataframe(m)
+            # st.dataframe(st.session_state["signals"])
+            center_col3.success(
+                "The signals of the strategies mixed successfully"
+            )
+            st.session_state.last_strategy = "Mixed Strategy"
 
 
 if __name__ == "__main__":

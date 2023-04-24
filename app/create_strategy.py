@@ -510,7 +510,12 @@ def dl_trading(dl_model_layer: str, data: pd.DataFrame):
     X_train, y_train = train.drop(["Label"], axis=1), train["Label"]
     X_test, y_test = test.drop(["Label"], axis=1), test["Label"]
     # st.dataframe(data)
-    model = MLPClassifier(hidden_layer_sizes=(32,) * dl_model_layer)
+    model = MLPClassifier(
+        hidden_layer_sizes=[
+            32,
+        ]
+        * dl_model_layer
+    )
     model.fit(X_train, y_train)
     pred = model.predict(X_test)
     # st.dataframe(pred)
