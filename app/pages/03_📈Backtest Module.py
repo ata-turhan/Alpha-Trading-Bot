@@ -339,8 +339,8 @@ def main():
             and st.session_state.plots_dict is not None
         ):
             initial_conf_df = st.session_state.initial_conf_df
-            charts_dict = (st.session_state.charts_dict,)
-            last_strategy = (st.session_state.last_strategy,)
+            charts_dict = st.session_state.charts_dict
+            last_strategy = st.session_state.last_strategy
             metrics_dict = st.session_state.metrics_dict
             metrics_df = st.session_state.metrics_df
             plots_dict = st.session_state.plots_dict

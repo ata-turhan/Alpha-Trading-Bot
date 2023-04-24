@@ -524,6 +524,7 @@ def main():
         strategies_col.write(key)
     _, center_col3, _ = st.columns([1, 2, 1])
 
+    center_col3.markdown("<br><br>", unsafe_allow_html=True)
     mixing_logic = center_col3.text_input(
         "Write your logic to mix the strategies with and & or:",
         help="For example: 'S1 and S2 and S3'",
