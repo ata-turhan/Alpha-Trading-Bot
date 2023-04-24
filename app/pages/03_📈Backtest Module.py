@@ -30,6 +30,16 @@ def set_session_variables():
         st.session_state.portfolio = None
     if "benchmark" not in st.session_state:
         st.session_state.benchmark = None
+    if "strategy_returns" not in st.session_state:
+        st.session_state.strategy_returns = None
+    if "benchmark_returns" not in st.session_state:
+        st.session_state.benchmark_returns = None
+    if "metrics_dict" not in st.session_state:
+        st.session_state.metrics_dict = None
+    if "metrics_df" not in st.session_state:
+        st.session_state.metrics_df = None
+    if "plots_dict" not in st.session_state:
+        st.session_state.plots_dict = None
 
 
 def main():
@@ -38,6 +48,8 @@ def main():
     configure_authors()
     add_bg_from_local("data/background.png", "data/bot.png")
     local_css("style/style.css")
+
+    st.session_state.backtest_configuration["benchmark_ticker"] = "SPY"
 
     st.markdown(
         "<h1 style='text-align: center; color: black; font-size: 65px;'> 📈 Backtest Module </h1> <br> <br>",
@@ -63,15 +75,8 @@ def main():
         with col3:
             show_charts = st.checkbox("Show charts")
         st.markdown("<br>", unsafe_allow_html=True)
+
         with st.expander("See extra configuration for backtest"):
-            col1, col2 = st.columns([1, 1])
-            with col1:
-                benchmark_ticker = st.text_input(
-                    "Enter the benchmark ticker (Default is SPY)", "SPY"
-                )
-                st.session_state["backtest_configuration"][
-                    "benchmark_ticker"
-                ] = benchmark_ticker
             data = st.session_state["data"]
             signals = np.array(st.session_state["signals"])
             st.markdown("<br>", unsafe_allow_html=True)
@@ -226,42 +231,23 @@ def main():
         if st.button("Run the backtest"):
             st.session_state.run_backtest_button_clicked = True
             st.session_state["backtest_configuration_ready"] = True
+            st.write(st.session_state.backtest_configuration.keys())
             (
                 st.session_state.portfolio,
                 st.session_state.benchmark,
                 charts_dict_params,
             ) = cb.financial_evaluation(
-                hold_label,
-                buy_label,
-                sell_label,
-                ticker,
-                benchmark_ticker,
-                data,
-                signals,
-                risk_free_rate,
-                initial_capital,
-                commission,
-                alpha,
-                threshold,
-                order,
-                order_type,
-                short,
-                short_fee,
-                trailing_take_profit,
-                take_profit,
-                trailing_stop_loss,
-                stop_loss,
-                leverage,
-                miss_rate,
-                show_initial_configuration,
-                show_tables,
-                show_charts,
-                True,
-                precision_point,
+                ohlcv=data,
+                predictions=signals,
+                show_initial_configuration=show_initial_configuration,
+                show_tables=show_tables,
+                show_charts=show_charts,
+                show_time=True,
+                **st.session_state["backtest_configuration"],
             )
             st.session_state.initial_conf_df = cb.plot_init(
                 ticker,
-                benchmark_ticker,
+                st.session_state["backtest_configuration"]["benchmark_ticker"],
                 risk_free_rate,
                 data.index[0],
                 data.index[-1],
@@ -279,24 +265,44 @@ def main():
                 leverage,
             )
             st.session_state.charts_dict = cb.plot_charts(*charts_dict_params)
+
+            st.session_state.strategy_returns = (
+                st.session_state.portfolio["Value"].pct_change().dropna()
+            )
+            st.session_state.benchmark_returns = (
+                st.session_state.benchmark["Close"].pct_change().dropna()
+            )
+
+            (
+                st.session_state.metrics_dict,
+                st.session_state.metrics_df,
+            ) = cb.qs_metrics(
+                st.session_state.strategy_returns,
+                st.session_state.benchmark_returns,
+                risk_free_rate=0.03,
+            )
+            st.session_state.plots_dict = cb.qs_plots(
+                st.session_state.strategy_returns,
+                st.session_state.benchmark_returns,
+            )
+
         if (
             st.session_state.initial_conf_df is not None
             and st.session_state.charts_dict is not None
             and st.session_state.portfolio is not None
             and st.session_state.benchmark is not None
             and st.session_state.run_backtest_button_clicked
+            and st.session_state.strategy_returns is not None
+            and st.session_state.benchmark_returns is not None
+            and st.session_state.metrics_dict is not None
+            and st.session_state.plots_dict is not None
         ):
-            strategy_returns = (
-                st.session_state.portfolio["Value"].pct_change().dropna()
-            )
-            benchmark_returns = (
-                st.session_state.benchmark["Close"].pct_change().dropna()
-            )
-
-            metrics_dict, metrics_df = cb.qs_metrics(
-                strategy_returns, benchmark_returns, risk_free_rate=0.03
-            )
-            plots_dict = cb.qs_plots(strategy_returns, benchmark_returns)
+            initial_conf_df = st.session_state.initial_conf_df
+            charts_dict = (st.session_state.charts_dict,)
+            last_strategy = (st.session_state.last_strategy,)
+            metrics_dict = st.session_state.metrics_dict
+            metrics_df = st.session_state.metrics_df
+            plots_dict = st.session_state.plots_dict
 
             col1, col2 = st.columns(
                 [
@@ -315,15 +321,15 @@ def main():
                 on_click=cb.generate_qs_plots_report,
                 args=(
                     plots_dict,
-                    st.session_state.charts_dict,
-                    st.session_state.last_strategy,
+                    charts_dict,
+                    last_strategy,
                 ),
             )
 
             st.markdown("<br>", unsafe_allow_html=True)
             if show_initial_configuration:
                 _, icd_col, _ = st.columns([2, 3, 2])
-                icd_col.dataframe(st.session_state.initial_conf_df, width=500)
+                icd_col.dataframe(initial_conf_df, width=500)
 
             st.markdown("<br>", unsafe_allow_html=True)
             if show_tables:

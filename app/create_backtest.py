@@ -434,9 +434,9 @@ def plot_charts(
 
 
 def financial_evaluation(
-    holdLabel: int = 0,
-    buyLabel: int = 1,
-    sellLabel: int = 2,
+    hold_label: int = 0,
+    buy_label: int = 1,
+    sell_label: int = 2,
     ticker: str = "SPY",
     benchmark_ticker: str = "SPY",
     ohlcv: pd.DataFrame = None,
@@ -507,8 +507,8 @@ def financial_evaluation(
                 low_prices[i] <= stop_loss_price <= high_prices[i]
                 or low_prices[i] <= take_profit_price <= high_prices[i]
             ):
-                predictions[i] = sellLabel
-            if predictions[i] == buyLabel and long_open == False:
+                predictions[i] = sell_label
+            if predictions[i] == buy_label and long_open == False:
                 if order_type == "market":
                     long_open = True
                     long_price = round(
@@ -523,8 +523,8 @@ def financial_evaluation(
                     stop_loss_price = long_price * (1 - stop_loss / 100)
                     take_profit_price = long_price * (1 + take_profit / 100)
                     capital -= commission
-                    transactions[i] = buyLabel
-            elif predictions[i] == sellLabel and long_open == True:
+                    transactions[i] = buy_label
+            elif predictions[i] == sell_label and long_open == True:
                 if order_type == "market":
                     long_open = False
                     change = (
@@ -548,7 +548,7 @@ def financial_evaluation(
                 if long_open == False:
                     capital *= 1 + change
                     capital -= commission
-                    transactions[i] = sellLabel
+                    transactions[i] = sell_label
                     if capital <= 0:
                         liquidated = True
                         break
@@ -566,7 +566,7 @@ def financial_evaluation(
                 and long_open == False
                 and short_open == False
             ):
-                if predictions[i] == buyLabel:
+                if predictions[i] == buy_label:
                     if order_type == "market":
                         long_open = True
                         long_price = round(
@@ -585,7 +585,7 @@ def financial_evaluation(
                         take_profit_price = long_price * (
                             1 + take_profit / 100
                         )
-                elif predictions[i] == sellLabel:
+                elif predictions[i] == sell_label:
                     if order_type == "market":
                         short_open = True
                         short_price = round(
@@ -608,14 +608,14 @@ def financial_evaluation(
                 low_prices[i] <= stop_loss_price <= high_prices[i]
                 or low_prices[i] <= take_profit_price <= high_prices[i]
             ):
-                predictions[i] = sellLabel
+                predictions[i] = sell_label
             if short_open == True and (
                 low_prices[i] <= stop_loss_price <= high_prices[i]
                 or low_prices[i] <= take_profit_price <= high_prices[i]
             ):
-                predictions[i] = buyLabel
+                predictions[i] = buy_label
             if (
-                predictions[i] == sellLabel
+                predictions[i] == sell_label
                 and long_open == True
                 and short_open == False
             ):
@@ -643,7 +643,7 @@ def financial_evaluation(
                     stop_loss_price = short_price * (1 + stop_loss / 100)
                     take_profit_price = short_price * (1 - take_profit / 100)
             elif (
-                predictions[i] == buyLabel
+                predictions[i] == buy_label
                 and long_open == False
                 and short_open == True
             ):
@@ -749,9 +749,9 @@ def metric_optimization(
     stop_loss_value: float,
     leverage_value: float,
 ):
-    holdLabel: int = st.session_state["backtest_configuration"]["hold_label"]
-    buyLabel: int = st.session_state["backtest_configuration"]["buy_label"]
-    sellLabel: int = st.session_state["backtest_configuration"]["sell_label"]
+    hold_label: int = st.session_state["backtest_configuration"]["hold_label"]
+    buy_label: int = st.session_state["backtest_configuration"]["buy_label"]
+    sell_label: int = st.session_state["backtest_configuration"]["sell_label"]
     ticker: str = st.session_state["ticker"]
     benchmark_ticker: str = st.session_state["backtest_configuration"][
         "benchmark_ticker"
@@ -792,9 +792,9 @@ def metric_optimization(
     ]
 
     metrics = financial_evaluation(
-        holdLabel,
-        buyLabel,
-        sellLabel,
+        hold_label,
+        buy_label,
+        sell_label,
         ticker,
         benchmark_ticker,
         ohlcv,
