@@ -563,8 +563,9 @@ def show_signals_on_chart(
             name="Sell",
         )
     )
+    font_size = min(30, 40 - (len(last_strategy_name)) // 3)
     fig.update_layout(
-        title=f"<span style='font-size: 30px;'><b>Close Price with the Signals of the {last_strategy_name}</b></span>",
+        title=f"<span style='font-size: {font_size}px;'><b>Close Price with the Signals of the {last_strategy_name}</b></span>",
         title_x=0.5,
         title_xanchor="center",
         autosize=True,
