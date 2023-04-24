@@ -230,6 +230,43 @@ def main():
         if st.button("Run the backtest"):
             st.session_state.run_backtest_button_clicked = True
             st.session_state["backtest_configuration_ready"] = True
+            if (
+                "optimized_stop_loss"
+                in st.session_state["backtest_configuration"]
+            ):
+                st.session_state["backtest_configuration"][
+                    "stop_loss"
+                ] = st.session_state["backtest_configuration"][
+                    "optimized_stop_loss"
+                ]
+                del st.session_state["backtest_configuration"][
+                    "optimized_stop_loss"
+                ]
+            if (
+                "optimized_take_profit"
+                in st.session_state["backtest_configuration"]
+            ):
+                st.session_state["backtest_configuration"][
+                    "take_profit"
+                ] = st.session_state["backtest_configuration"][
+                    "optimized_take_profit"
+                ]
+                del st.session_state["backtest_configuration"][
+                    "optimized_take_profit"
+                ]
+            if (
+                "optimized_leverage"
+                in st.session_state["backtest_configuration"]
+            ):
+                st.session_state["backtest_configuration"][
+                    "leverage"
+                ] = st.session_state["backtest_configuration"][
+                    "optimized_leverage"
+                ]
+                del st.session_state["backtest_configuration"][
+                    "optimized_leverage"
+                ]
+
             (
                 st.session_state.portfolio,
                 st.session_state.benchmark,
@@ -257,10 +294,16 @@ def main():
                 short,
                 short_fee,
                 trailing_take_profit,
-                take_profit,
-                trailing_stop_loss,
-                stop_loss,
-                leverage,
+                take_profit=st.session_state["backtest_configuration"][
+                    "take_profit"
+                ],
+                trailing_stop_loss=trailing_stop_loss,
+                stop_loss=st.session_state["backtest_configuration"][
+                    "stop_loss"
+                ],
+                leverage=st.session_state["backtest_configuration"][
+                    "leverage"
+                ],
             )
             st.session_state.charts_dict = cb.plot_charts(*charts_dict_params)
 

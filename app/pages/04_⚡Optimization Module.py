@@ -34,9 +34,6 @@ def main():
         unsafe_allow_html=True,
     )
 
-    style = "<style>.row-widget.stButton {text-align: center;}</style>"
-    st.markdown(style, unsafe_allow_html=True)
-
     if (
         st.session_state["data"] is None
         or st.session_state["signals"] is None
@@ -78,7 +75,26 @@ def main():
             "Select a range for leverage values", 1, 20, (1, 5)
         )
         st.markdown("<br>", unsafe_allow_html=True)
-        _, col2, _ = center_col.columns([1, 3, 1])
+
+        col1, col2 = center_col.columns([1, 1])
+        population_size = int(
+            col1.number_input(
+                "Choose the population size.",
+                value=15,
+                max_value=100,
+                min_value=10,
+                step=5,
+            )
+        )
+        mutation_probability = col2.number_input(
+            "Choose the mutation probability.",
+            value=0.1,
+            max_value=1.0,
+            min_value=0.0,
+            step=0.1,
+        )
+
+        _, col2, _ = center_col.columns([1, 4, 1])
         with col2:
             iteration = int(
                 st.number_input(
@@ -86,11 +102,9 @@ def main():
                     value=0,
                 )
             )
-        _, col2, _ = center_col.columns([2, 3, 1])
-        with col2:
-            verbose = st.checkbox("Optimize verbosely")
 
         _, col2, _ = center_col.columns([1, 3, 1])
+        col2.markdown("<br>", unsafe_allow_html=True)
         if col2.button("Run the optimization"):
             if metric_optimized == "<Select>" or iteration == 0:
                 center_col.error("Please fill all the required fields.")
@@ -103,8 +117,9 @@ def main():
                     take_profit_values=take_profit_ranges,
                     stop_loss_values=stop_loss_ranges,
                     leverage_values=leverage_ranges,
+                    population_size=population_size,
+                    mutation_probability=mutation_probability,
                     iteration=iteration,
-                    verbose=verbose,
                 )
                 center_col.success("Optimization is successful!")
                 center_col.balloons()

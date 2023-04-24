@@ -23,9 +23,13 @@ def fitness(ohlcv, predictions, metric_optimized, individual):
     portfolio, benchmark, charts_dict_params = financial_evaluation(
         ohlcv=ohlcv,
         predictions=predictions,
+        **st.session_state["backtest_configuration"],
         take_profit=individual[0],
         stop_loss=individual[1],
         leverage=individual[2],
+        show_initial_configuration=False,
+        show_tables=False,
+        show_charts=False,
         show_time=False,
     )
     strategy_returns = portfolio["Value"].pct_change().dropna()
@@ -55,13 +59,13 @@ def gene_crossover(parent1, parent2):
     return child1, child2
 
 
-def mutate(individual, constraints):
+def mutate(individual, constraints, mutation_probability):
     MUTATION_RANGE = [
         (-15, 15),
         (-15, 15),
         (-5, 5),
     ]
-    MUTATION_PROB = 0.2
+    MUTATION_PROB = mutation_probability
     mutated = deepcopy(individual)
     for i in range(len(individual)):
         prob = np.random.uniform(0, 1, 1)
@@ -88,10 +92,14 @@ def optimize(
     take_profit_values,
     stop_loss_values,
     leverage_values,
+    population_size,
+    mutation_probability,
     iteration,
-    verbose,
 ):
-    POPULATION_SIZE = 50
+    del st.session_state["backtest_configuration"]["take_profit"]
+    del st.session_state["backtest_configuration"]["stop_loss"]
+    del st.session_state["backtest_configuration"]["leverage"]
+    POPULATION_SIZE = population_size
     ITERATIONS = iteration
     PARAMS = [
         np.mean(take_profit_values),
@@ -130,11 +138,16 @@ def optimize(
                 ) = financial_evaluation(
                     ohlcv=ohlcv,
                     predictions=predictions,
+                    **st.session_state["backtest_configuration"],
                     take_profit=individual[0],
                     stop_loss=individual[1],
                     leverage=individual[2],
+                    show_initial_configuration=False,
+                    show_tables=False,
+                    show_charts=False,
                     show_time=False,
                 )
+
                 strategy_returns = portfolio["Value"].pct_change().dropna()
                 benchmark_returns = benchmark["Close"].pct_change().dropna()
 
@@ -144,13 +157,12 @@ def optimize(
                 scores = np.append(
                     scores, metrics_df["Strategy"][metric_optimized]
                 )
-    _, col, _ = st.columns([1, 6, 1])
-    t = col.empty()
+    t = st.empty()
     for i in range(ITERATIONS):
         best_return = max(scores)
-        if verbose:
-            output = f"Iteration: {i}, Best value of {metric_optimized} so far: {best_return}"
-            t.markdown("## %s ..." % output)
+        output = f"Iteration: {i}, Best value of {metric_optimized} so far: {best_return}"
+        t.markdown("## %s ..." % output)
+
         beta = 1
         scores = np.array(scores)
         avg_cost = np.mean(scores)
@@ -162,8 +174,8 @@ def optimize(
         parent2 = population[roulette_wheel_selection(probs)]
         child1, child2 = gene_crossover(parent1, parent2)
 
-        child1 = mutate(child1, CONSTRAINTS)
-        child2 = mutate(child2, CONSTRAINTS)
+        child1 = mutate(child1, CONSTRAINTS, mutation_probability)
+        child2 = mutate(child2, CONSTRAINTS, mutation_probability)
 
         fitness1 = fitness(ohlcv, predictions, metric_optimized, child1)
         fitness2 = fitness(ohlcv, predictions, metric_optimized, child2)
@@ -179,6 +191,18 @@ def optimize(
             scores = np.delete(scores, index)
             population = np.vstack([population, child2])
             scores = np.append(scores, fitness2)
-    result = f"Best parameters: {population[np.where(scores==max(scores))[0]][0]}, \
+    best_params = population[np.where(scores == max(scores))[0]][0]
+    result = f"Best parameters: {best_params}, \
         Best value of {metric_optimized}: {max(scores)} "
-    st.markdown("## %s" % result)
+    t.markdown("## %s" % result)
+
+    st.session_state["backtest_configuration"][
+        "optimized_take_profit"
+    ] = best_params[0]
+    st.session_state["backtest_configuration"][
+        "optimized_stop_loss"
+    ] = best_params[1]
+    st.session_state["backtest_configuration"][
+        "optimized_leverage"
+    ] = best_params[2]
+    st.success("Best parameters added to the strategy.")
