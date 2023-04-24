@@ -509,18 +509,6 @@ def main():
         st.session_state.last_strategy != ""
         and strategy_fetch_way != DEFAULT_CHOICE
     )
-    if (
-        st.session_state["smoothed_data"] is not None
-        and st.session_state["signals"] is not None
-        and st.session_state.last_strategy != ""
-        and st.session_state.all_strategy_areas_filled
-        and len(st.session_state["strategies"]) > 0
-    ):
-        cs.show_signals_on_chart(
-            ohlcv=st.session_state["smoothed_data"],
-            signals=st.session_state["signals"],
-            last_strategy_name=st.session_state.last_strategy,
-        )
 
     st.markdown("<br>", unsafe_allow_html=True)
     _, center_col_strategies_created, _ = st.columns([1, 2, 1])
@@ -534,7 +522,6 @@ def main():
     for key, val in strategies.items():
         _, strategies_col, _ = st.columns([1, 2, 1])
         strategies_col.write(key)
-    st.markdown("<br><br>", unsafe_allow_html=True)
     _, center_col3, _ = st.columns([1, 2, 1])
 
     mixing_logic = center_col3.text_input(
@@ -556,7 +543,22 @@ def main():
             center_col3.success(
                 "The signals of the strategies mixed successfully"
             )
-            st.session_state.last_strategy = "Mixed Strategy"
+            st.session_state.last_strategy = (
+                f"Mixed Strategy - ({mixing_logic})"
+            )
+    if (
+        st.session_state["smoothed_data"] is not None
+        and st.session_state["signals"] is not None
+        and st.session_state.last_strategy != ""
+        and st.session_state.all_strategy_areas_filled
+        and len(st.session_state["strategies"]) > 0
+    ):
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        cs.show_signals_on_chart(
+            ohlcv=st.session_state["smoothed_data"],
+            signals=st.session_state["signals"],
+            last_strategy_name=st.session_state.last_strategy,
+        )
 
 
 if __name__ == "__main__":
