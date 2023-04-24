@@ -353,7 +353,7 @@ def main():
             )
             if smooth_method != DEFAULT_CHOICE:
                 st.session_state["data_to_show"] = signal_smoothing(
-                    df=st.session_state["data"],
+                    df=st.session_state["data_to_show"],
                     smoothing_method=smooth_method,
                     parameters={"window": 20},
                 )
