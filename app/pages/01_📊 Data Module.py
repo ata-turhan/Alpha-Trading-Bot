@@ -415,13 +415,13 @@ def main():
                 writer, sheet_name="Data"
             )
             writer.save()
-            if col6.download_button(
+            col6.download_button(
                 label="Download data as Excel",
                 data=buffer,
                 file_name=file_name + ".xlsx",
                 mime="application/vnd.ms-excel",
-            ):
-                col6.success("Data was saved successfully")
+            )
+            col6.success("Data was saved successfully")
 
 
 if __name__ == "__main__":
