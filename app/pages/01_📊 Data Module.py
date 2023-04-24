@@ -410,18 +410,19 @@ def main():
         ):
             col2.success("Data was saved successfully")
         buffer = BytesIO()
-        with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
-            st.session_state["data_to_show"].to_excel(
-                writer, sheet_name="Data"
-            )
-            writer.save()
-            col6.download_button(
-                label="Download data as Excel",
-                data=buffer,
-                file_name=file_name + ".xlsx",
-                mime="application/vnd.ms-excel",
-            )
-            col6.success("Data was saved successfully")
+
+        if col6.download_button(
+            label="Download data as Excel",
+            data=buffer,
+            file_name=file_name + ".xlsx",
+            mime="application/vnd.ms-excel",
+        ):
+            with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+                st.session_state["data_to_show"].to_excel(
+                    writer, sheet_name="Data"
+                )
+                writer.save()
+                col6.success("Data was saved successfully")
 
 
 if __name__ == "__main__":
