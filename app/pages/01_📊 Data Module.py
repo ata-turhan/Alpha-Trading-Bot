@@ -4,7 +4,12 @@ from io import BytesIO
 import pandas as pd
 import streamlit as st
 import yfinance as yf
-from configuration import add_bg_from_local, configure_authors, configure_page
+from configuration import (
+    add_bg_from_local,
+    configure_authors,
+    configure_page,
+    local_css,
+)
 from create_data import (
     create_fundamental_data,
     create_technical_indicators,
@@ -164,6 +169,7 @@ def main():
     configure_page()
     configure_authors()
     add_bg_from_local("data/background.png", "data/bot.png")
+    local_css("style/style.css")
 
     DEFAULT_CHOICE = "<Select>"
 
@@ -171,9 +177,6 @@ def main():
         "<h1 style='text-align: center; color: black; font-size: 65px;'> 📊 Data Module </h1> <br> ",
         unsafe_allow_html=True,
     )
-
-    style = "<style>.row-widget.stButton {text-align: center;}</style>"
-    st.markdown(style, unsafe_allow_html=True)
 
     _, col2, _ = st.columns([1, 2, 1])
     data_fetch_way = col2.selectbox(

@@ -3,7 +3,12 @@ import create_strategy as cs
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
-from configuration import add_bg_from_local, configure_authors, configure_page
+from configuration import (
+    add_bg_from_local,
+    configure_authors,
+    configure_page,
+    local_css,
+)
 from sklearn.metrics import (
     ConfusionMatrixDisplay,
     classification_report,
@@ -41,7 +46,7 @@ def main():
     configure_page()
     configure_authors()
     add_bg_from_local("data/background.png", "data/bot.png")
-    # st.dataframe(st.session_state["smoothed_data"])
+    local_css("style/style.css")
 
     DEFAULT_CHOICE = "<Select>"
 
@@ -50,9 +55,6 @@ def main():
         unsafe_allow_html=True,
     )
     _, center_col_get, _ = st.columns([1, 2, 1])
-
-    style = "<style>.row-widget.stButton {text-align: center;}</style>"
-    st.markdown(style, unsafe_allow_html=True)
 
     if st.session_state["data"] is None:
         st.error("Please get the data first.")
