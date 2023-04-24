@@ -78,7 +78,9 @@ extremums_names = [
 ]
 
 
-def qs_metrics(strategy_returns, benchmark_returns, risk_free_rate: int = 1):
+def qs_metrics(
+    strategy_returns, benchmark_returns, risk_free_rate: int = 0.03
+):
     metrics_df = qs.reports.metrics(
         returns=strategy_returns,
         benchmark=benchmark_returns,
@@ -325,7 +327,7 @@ def plot_init(
     values = [
         f"{ticker}",
         f"{benchmark_ticker}",
-        round(risk_free_rate, 2),
+        f"%{risk_free_rate*100}",
         start_date,
         end_date,
         f"{initial_capital}$",
@@ -439,7 +441,7 @@ def financial_evaluation(
     benchmark_ticker: str = "SPY",
     ohlcv: pd.DataFrame = None,
     predictions: np.array = None,
-    risk_free_rate: float = 0.01 / 252,
+    risk_free_rate: float = 0.03,
     initial_capital: float = 1000,
     commission: float = 1,
     alpha: float = 0.05,

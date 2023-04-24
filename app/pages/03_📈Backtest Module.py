@@ -107,11 +107,8 @@ def main():
                     "initial_capital"
                 ] = initial_capital
             with col2:
-                risk_free_rate = (
-                    st.number_input(
-                        "Enter the risk free rate", value=0.01, step=0.01
-                    )
-                    / 252
+                risk_free_rate = st.number_input(
+                    "Enter the risk free rate", value=0.03, step=0.01
                 )
                 st.session_state["backtest_configuration"][
                     "risk_free_rate"
@@ -289,11 +286,6 @@ def main():
             and st.session_state.benchmark is not None
             and st.session_state.run_backtest_button_clicked
         ):
-            st.markdown("<br><br>", unsafe_allow_html=True)
-            if show_initial_configuration:
-                _, icd_col, _ = st.columns([2, 3, 2])
-                icd_col.dataframe(st.session_state.initial_conf_df, width=500)
-
             strategy_returns = (
                 st.session_state.portfolio["Value"].pct_change().dropna()
             )
@@ -302,7 +294,7 @@ def main():
             )
 
             metrics_dict, metrics_df = cb.qs_metrics(
-                strategy_returns, benchmark_returns, risk_free_rate=1
+                strategy_returns, benchmark_returns, risk_free_rate=0.03
             )
             plots_dict = cb.qs_plots(strategy_returns, benchmark_returns)
 
@@ -328,7 +320,12 @@ def main():
                 ),
             )
 
-            st.markdown("<br><br>", unsafe_allow_html=True)
+            st.markdown("<br>", unsafe_allow_html=True)
+            if show_initial_configuration:
+                _, icd_col, _ = st.columns([2, 3, 2])
+                icd_col.dataframe(st.session_state.initial_conf_df, width=500)
+
+            st.markdown("<br>", unsafe_allow_html=True)
             if show_tables:
                 col1, col2, col3 = st.columns([1, 1, 1])
                 col1.subheader("Returns")
