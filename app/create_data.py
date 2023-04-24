@@ -115,7 +115,7 @@ def signal_smoothing(
         data["High"] = data["High"].rolling(parameters["window"]).mean()
         data["Low"] = data["Low"].rolling(parameters["window"]).mean()
         data["Close"] = data["Close"].rolling(parameters["window"]).mean()
-        data.dropna(inplace=True)
+        # data.dropna(inplace=True)
     elif smoothing_method == "Heikin-Ashi":
         data = data.assign(HeikinAshi_Open=np.zeros((data.shape[0])))
         data = data.assign(HeikinAshi_High=np.zeros((data.shape[0])))
@@ -199,6 +199,7 @@ def signal_smoothing(
         data["Low"] = data["TN_Low"]
         data["Close"] = data["TN_Close"]
         data.drop(index=data.index[:30], axis=0, inplace=True)
+        data.loc[data.index[:30], ["Open", "High", "Low", "Close"]] = 0
         data.drop(
             [
                 "rowNumber",
@@ -252,7 +253,7 @@ def create_technical_indicators(ohlcv: pd.DataFrame) -> pd.DataFrame:
                 low="Low",
                 close="Close",
                 volume="Volume",
-                colprefix="ti_",
+                colprefix="ta_",
             )
             return data
 

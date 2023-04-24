@@ -308,28 +308,30 @@ def main():
             finally:
                 uploaded_file.close()
     if st.session_state["data"] is not None:
+        # start of extra data integration
         if "S&P 500" not in list(st.session_state["data"].columns):
             st.session_state["data"] = create_fundamental_data(
                 st.session_state["data"]
             )
-        if "ti_momentum_rsi" not in list(st.session_state["data"].columns):
+        if "ta_momentum_rsi" not in list(st.session_state["data"].columns):
             st.session_state["data"] = create_technical_indicators(
                 st.session_state["data"]
             )
 
-        col1, col2, col3 = st.columns([4, 1, 5], gap="small")
+        col1, col2, col3 = st.columns([4, 1, 4], gap="small")
         st.session_state["fundamentals"] = col1.multiselect(
             "Besides the price data, which fundamental data do you want to add?",
             fred_codes.keys(),
         )
         st.session_state["indicators"] = col3.multiselect(
-            "Besides the price data, which technical indicators data do you want to add?",
-            [col for col in st.session_state["data"].columns if "ti_" in col],
+            "Besides the price data, which technical indicators do you want to add?",
+            [col for col in st.session_state["data"].columns if "ta_" in col],
         )
 
         add_fundamental_and_indicator_data(
             st.session_state["fundamentals"], st.session_state["indicators"]
         )
+        # end of extra data integration
 
         st.markdown("<br><br>", unsafe_allow_html=True)
         smooth_button = st.button("Smooth the data")
@@ -349,10 +351,11 @@ def main():
             )
             if smooth_method != DEFAULT_CHOICE:
                 st.session_state["data_to_show"] = signal_smoothing(
-                    df=st.session_state["data_to_show"],
+                    df=st.session_state["data"],
                     smoothing_method=smooth_method,
                     parameters={"window": 20},
                 )
+
         st.markdown("<br> <br>", unsafe_allow_html=True)
         show_data_button = st.button("Show the data in a tabular format")
         if (
