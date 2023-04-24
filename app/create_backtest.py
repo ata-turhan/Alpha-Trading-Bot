@@ -704,7 +704,9 @@ def financial_evaluation(
         return
     end = time.time()
     if show_time:
-        st.write(
+        st.markdown("<br>", unsafe_allow_html=True)
+        _, center_col, _ = st.columns([1, 5, 1])
+        center_col.subheader(
             f"\nBacktest was completed in {second_2_minute_converter(end-start)}.\n"
         )
     initial_conf_df = plot_init(

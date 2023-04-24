@@ -543,9 +543,7 @@ def main():
             center_col3.success(
                 "The signals of the strategies mixed successfully"
             )
-            st.session_state.last_strategy = (
-                f"Mixed Strategy - ({mixing_logic})"
-            )
+            st.session_state.last_strategy = f"Mixed Strategy - {mixing_logic}"
     if (
         st.session_state["smoothed_data"] is not None
         and st.session_state["signals"] is not None
@@ -554,6 +552,8 @@ def main():
         and len(st.session_state["strategies"]) > 0
     ):
         st.markdown("<br><br>", unsafe_allow_html=True)
+        _, center_col, _ = st.columns([1, 3, 1])
+        center_col.header("Close Price and Signals")
         cs.show_signals_on_chart(
             ohlcv=st.session_state["smoothed_data"],
             signals=st.session_state["signals"],
