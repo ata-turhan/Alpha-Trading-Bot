@@ -83,15 +83,10 @@ def reset_click():
     st.session_state["show_chart_selectbox_clicked"] = False
 
 
-def add_fundamental_data(fundamentals):
-    columns = list(st.session_state["data_to_show"].columns)
+def add_fundamental_and_indicator_data(fundamentals, indicators):
+    columns = ["Open", "High", "Low", "Close", "Volume"]
     if len(fundamentals) > 0:
         columns.extend(fundamentals)
-    st.session_state["data_to_show"] = st.session_state["data"][columns]
-
-
-def add_indicator_data(indicators):
-    columns = list(st.session_state["data_to_show"].columns)
     if len(indicators) > 0:
         columns.extend(indicators)
     st.session_state["data_to_show"] = st.session_state["data"][columns]
@@ -332,8 +327,9 @@ def main():
             [col for col in st.session_state["data"].columns if "ti_" in col],
         )
 
-        add_fundamental_data(st.session_state["fundamentals"])
-        add_indicator_data(st.session_state["indicators"])
+        add_fundamental_and_indicator_data(
+            st.session_state["fundamentals"], st.session_state["indicators"]
+        )
 
         st.markdown("<br><br>", unsafe_allow_html=True)
         smooth_button = st.button("Smooth the data")
