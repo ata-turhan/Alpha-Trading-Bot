@@ -2,8 +2,6 @@ import datetime as dt
 import json
 import random
 
-pass
-
 import numpy as np
 import pandas as pd
 import pandas_datareader as pdr
@@ -63,7 +61,7 @@ def show_prices(
         cols=1,
         shared_xaxes=False,
         vertical_spacing=0.1,
-        subplot_titles=(f"Chart", f"Volume"),
+        subplot_titles=("Chart", "Volume"),
         row_width=[1, 5],
     )
     if "Candlestick" in show_which_price:
@@ -238,15 +236,14 @@ def create_fundamental_data(ohlcv: pd.DataFrame) -> pd.DataFrame:
     _, col2, _ = st.columns([1, 2, 1])
     with col2:
         with st.spinner("Fetching fundamental data"):
-            data = fetch_fundamental_data(ohlcv, start, end)
-            return data
+            return fetch_fundamental_data(ohlcv, start, end)
 
 
 def create_technical_indicators(ohlcv: pd.DataFrame) -> pd.DataFrame:
     _, col2, _ = st.columns([1, 2, 1])
     with col2:
         with st.spinner("Fetching indicator data"):
-            data = add_all_ta_features(
+            return add_all_ta_features(
                 ohlcv,
                 open="Open",
                 high="High",
@@ -255,7 +252,6 @@ def create_technical_indicators(ohlcv: pd.DataFrame) -> pd.DataFrame:
                 volume="Volume",
                 colprefix="ta_",
             )
-            return data
 
 
 def create_labels(ohlcv: pd.DataFrame) -> None:
@@ -431,17 +427,15 @@ def fetch_cpi_data(start_date, end_date):
 def fetch_fundamental_data(
     data: pd.DataFrame, start_date, end_date
 ) -> pd.DataFrame:
-    fed_data_exists = False
     cpi_data_exists = True
     fundamentals = [
         "FED 2Y Interest Rate",
         "FED 10Y Interest Rate",
         "Yield Difference",
     ]
-    for fundamental in fundamentals[:3]:
-        if fundamental in data.columns:
-            fed_data_exists = True
-
+    fed_data_exists = any(
+        fundamental in data.columns for fundamental in fundamentals[:3]
+    )
     data = data.tz_localize(None)
     data.index.names = ["Date"]
 
