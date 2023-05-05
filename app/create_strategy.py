@@ -46,7 +46,6 @@ candlestick_bullish_patterns = [
     "Bullish Harami",
 ]
 
-
 candlestick_bearish_patterns = [
     "<Select>",
     "Doji",
@@ -359,30 +358,24 @@ def support_resistance_trading(
 
 
 def classify_candle(open, high, low, close):
-    if open > close:
-        body_color = "filled"
-    else:
-        body_color = "hollow"
+    body_color = "filled" if open > close else "hollow"
     body_height = abs(close - open)
     wick_height = high - max(open, close)
     shadow_height = body_height - wick_height
     if body_height > 2 * wick_height:
-        sentiment = "bullish" if body_color == "hollow" else "bearish"
+        return "bullish" if body_color == "hollow" else "bearish"
     elif body_height > wick_height:
-        sentiment = "bullish" if body_color == "hollow" else "bearish"
+        return "bullish" if body_color == "hollow" else "bearish"
     elif wick_height > body_height:
-        sentiment = "bearish" if body_color == "hollow" else "bullish"
+        return "bearish" if body_color == "hollow" else "bullish"
     elif wick_height < body_height / 2:
-        sentiment = (
-            "very bullish" if body_color == "hollow" else "very bearish"
-        )
+        return "very bullish" if body_color == "hollow" else "very bearish"
     elif shadow_height < body_height / 2:
-        sentiment = "bullish" if body_color == "hollow" else "bearish"
+        return "bullish" if body_color == "hollow" else "bearish"
     elif shadow_height > body_height / 2:
-        sentiment = "bullish" if body_color == "hollow" else "bearish"
+        return "bullish" if body_color == "hollow" else "bearish"
     else:
-        sentiment = "neutral"
-    return sentiment
+        return "neutral"
 
 
 def candlestick_sentiment_trading(
@@ -601,7 +594,7 @@ def mix_strategies(mix: set, mixing_logic: str):
             if sell_evaluation:
                 mix_signal[i] = 2
         return pd.DataFrame(index=mix[0].index, data={"Signals": mix_signal})
-    except:
+    except Exception:
         return None
 
 
