@@ -1,7 +1,5 @@
 import base64
 import datetime as dt
-
-pass
 import random
 import time
 from io import BytesIO
@@ -29,6 +27,7 @@ returns_names = [
     "Avg. Up Month",
     "Avg. Down Month",
 ]
+
 ratios_names = [
     "Alpha",
     "Beta",
@@ -53,6 +52,7 @@ ratios_names = [
     "Ulcer Index",
     "Serenity Index",
 ]
+
 risks_names = [
     "Max Drawdown",
     "Avg. Drawdown",
@@ -66,12 +66,14 @@ risks_names = [
     "Daily Value-at-Risk",
     "Expected Shortfall (cVaR)",
 ]
+
 counts_names = [
     "Win Days",
     "Win Month",
     "Win Quarter",
     "Win Year",
 ]
+
 extremums_names = [
     "Max Consecutive Wins",
     "Max Consecutive Losses",
@@ -90,8 +92,9 @@ def qs_metrics(
         sep=False,
         compounded=True,
     )
-    metrics_dict = dict()
-    metrics_dict["returns"] = metrics_df[metrics_df.index.isin(returns_names)]
+    metrics_dict = {
+        "returns": metrics_df[metrics_df.index.isin(returns_names)]
+    }
     metrics_dict["ratios"] = metrics_df[metrics_df.index.isin(ratios_names)]
     metrics_dict["risks"] = metrics_df[metrics_df.index.isin(risks_names)]
     metrics_dict["counts"] = metrics_df[metrics_df.index.isin(counts_names)]
@@ -102,15 +105,15 @@ def qs_metrics(
 
 
 def qs_plots(strategy_returns, benchmark_returns, figsize: tuple = (7, 7)):
-    plots_dict = dict()
-    plots_dict["snapshot"] = qs.plots.snapshot(
-        strategy_returns,
-        title=f"{st.session_state['ticker']} Performance",
-        figsize=figsize,
-        show=False,
-        mode="full",
-    )
-
+    plots_dict = {
+        "snapshot": qs.plots.snapshot(
+            strategy_returns,
+            title=f"{st.session_state['ticker']} Performance",
+            figsize=figsize,
+            show=False,
+            mode="full",
+        )
+    }
     plots_dict["heatmap"] = qs.plots.monthly_heatmap(
         strategy_returns,
         figsize=figsize,
@@ -219,18 +222,12 @@ def generate_qs_plots_report(plots_dict, charts_dict, report_name):
     report_html += html_first
 
     row_plots = ""
-    for i, plot in enumerate(charts_dict.values()):
+    for plot in charts_dict.values():
         tmpfile = BytesIO()
         plot.write_image(tmpfile, format="png")
 
         encoded = base64.b64encode(tmpfile.getvalue()).decode("utf-8")
-        html = (
-            "<br>"
-            + "<img class='center' src='data:image/png;base64,{}'>".format(
-                encoded
-            )
-            + "<br>"
-        )
+        html = f"<br><img class='center' src='data:image/png;base64,{encoded}'><br>"
         row_plots += html
     html_middle = f"""
     <div class="row">
@@ -245,13 +242,7 @@ def generate_qs_plots_report(plots_dict, charts_dict, report_name):
         tmpfile = BytesIO()
         plot.savefig(tmpfile, format="png")
         encoded = base64.b64encode(tmpfile.getvalue()).decode("utf-8")
-        html = (
-            "<br>"
-            + "<img class='center' src='data:image/png;base64,{}'>".format(
-                encoded
-            )
-            + "<br>"
-        )
+        html = f"<br><img class='center' src='data:image/png;base64,{encoded}'><br>"
         if i % 2 == 0:
             col1_plots += html
         else:
@@ -369,7 +360,6 @@ def plot_charts(
         st.write(
             "\n----------------------------\nThis strategy is liquidated\n-------------------------------"
         )
-    charts_dict = dict()
     fig = go.Figure()
     buy_labels = transactions == 1
     sell_labels = transactions == 2
@@ -408,8 +398,7 @@ def plot_charts(
         width=950,
         height=400,
     )
-    charts_dict["transactions"] = fig
-
+    charts_dict = {"transactions": fig}
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
