@@ -1,22 +1,17 @@
 from copy import deepcopy
 
 import numpy as np
-
-pass
 import streamlit as st
-
-pass
 from create_backtest import financial_evaluation, qs_metrics
 
 
 def check_constraints(params, constraints):
     if len(params) != len(constraints):
-        raise Exception("Length of parameters and constraints should be same")
-    for i in range(len(params)):
-        if params[i] > constraints[i][1] or params[i] < constraints[i][0]:
-            # if not (constraints[i][0]<=params[i]<=constraints[i][1]):
-            return False
-    return True
+        raise ValueError("Length of parameters and constraints should be same")
+    return not any(
+        params[i] > constraints[i][1] or params[i] < constraints[i][0]
+        for i in range(len(params))
+    )
 
 
 def fitness(ohlcv, predictions, metric_optimized, individual):
@@ -115,7 +110,7 @@ def optimize(
 
     with col:
         with st.spinner("Creating the initial population..."):
-            for j in range(POPULATION_SIZE):
+            for _ in range(POPULATION_SIZE):
                 params = np.array([])
                 for i in range(len(PARAMS)):
                     random_param = np.random.uniform(
@@ -158,12 +153,12 @@ def optimize(
                     scores, metrics_df["Strategy"][metric_optimized]
                 )
     t = st.empty()
+    beta = 1
     for i in range(ITERATIONS):
         best_return = max(scores)
         output = f"Iteration: {i}, Best value of {metric_optimized} so far: {best_return}"
-        t.markdown("## %s ..." % output)
+        t.markdown(f"## {output} ...")
 
-        beta = 1
         scores = np.array(scores)
         avg_cost = np.mean(scores)
         if avg_cost != 0:
@@ -194,7 +189,7 @@ def optimize(
     best_params = population[np.where(scores == max(scores))[0]][0]
     result = f"Best parameters: {best_params}, \
         Best value of {metric_optimized}: {max(scores)} "
-    t.markdown("## %s" % result)
+    t.markdown(f"## {result}")
 
     st.session_state["backtest_configuration"][
         "optimized_take_profit"
