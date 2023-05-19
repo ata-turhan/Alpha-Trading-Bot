@@ -66,5 +66,7 @@ poetry shell
 2. Run the project:
 
 ```
-click start.bat file or streamlit run "app\🤖Welcome.py"
+streamlit run "app\🤖Welcome.py"
 ```
+
+or click start.bat file
