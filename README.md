@@ -10,7 +10,7 @@
 </div>
 ---
 
-<br>
+<hr>
 
 # Trading Bot
 
