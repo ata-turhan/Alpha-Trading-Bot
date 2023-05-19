@@ -1,4 +1,5 @@
 ---
+
 <div align="center">
 
 [![Sourcery](https://img.shields.io/badge/Sourcery-enabled-brightgreen)](https://sourcery.ai)
@@ -8,11 +9,10 @@
 [![isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 
 </div>
----
 
 <hr>
 
-# Trading Bot
+# <center> Trading Bot <center/>
 
 It is a trading bot that has many modules to fetch data, visualize graphs, create strategies, back test the strategies, and optimize them.
 
