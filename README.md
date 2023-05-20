@@ -1,4 +1,4 @@
----
+-----
 
 <div align="center">
 
@@ -12,7 +12,7 @@
 
 <hr>
 
-# Trading Bot
+# TradingBot
 
 It is a trading bot that has many modules to fetch data, visualize graphs, create strategies, back test the strategies, and optimize them.
 
@@ -23,6 +23,8 @@ https://alpha-tradingbot.streamlit.app/
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Prerequisites
 
@@ -70,3 +72,31 @@ streamlit run "app\🤖Welcome.py"
 ```
 
 or click start.bat file
+
+
+## Contributing
+
+If you would like to contribute to this project, follow the guidelines below:
+
+1. Fork the repository and clone it locally.
+
+2. Create a new branch for your feature or bug fix:
+   ```
+   git checkout -b feature/your-feature
+   ```
+
+3. Make your changes and commit them with descriptive commit messages.
+
+4. Push your changes to your forked repository:
+   ```
+   git push origin feature/your-feature
+   ```
+
+5. Open a pull request in the original repository, describing your changes in detail.
+
+
+## License
+
+GPL v3
+
+---
