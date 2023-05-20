@@ -12,7 +12,7 @@
 
 <hr>
 
-# TradingBot
+# Alpha TradingBot
 
 It is a trading bot that has many modules to fetch data, visualize graphs, create strategies, back test the strategies, and optimize them.
 
